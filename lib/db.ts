@@ -15,6 +15,7 @@ declare global {
  * En desarrollo usa una variable global para evitar múltiples instancias en hot reload
  */
 export const prisma = global.prisma || new PrismaClient()
+export const db = prisma // Alias para compatibilidad
 
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma

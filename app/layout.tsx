@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { SessionProvider } from '@/components/providers/session-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,8 +15,7 @@ export const metadata: Metadata = {
     default: 'Ule - Gestión de Seguridad Social',
     template: '%s | Ule',
   },
-  description:
-    'Sistema integral de gestión de seguridad social para Colombia',
+  description: 'Sistema integral de gestión de seguridad social para Colombia',
   keywords: ['seguridad social', 'Colombia', 'gestión', 'salud', 'pensiones'],
   authors: [{ name: 'Ule Team' }],
   creator: 'Ule',
@@ -28,7 +28,8 @@ export const metadata: Metadata = {
   ),
   openGraph: {
     title: 'Ule - Gestión de Seguridad Social',
-    description: 'Sistema integral de gestión de seguridad social para Colombia',
+    description:
+      'Sistema integral de gestión de seguridad social para Colombia',
     siteName: 'Ule',
     locale: 'es_CO',
     type: 'website',
@@ -36,7 +37,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Ule - Gestión de Seguridad Social',
-    description: 'Sistema integral de gestión de seguridad social para Colombia',
+    description:
+      'Sistema integral de gestión de seguridad social para Colombia',
   },
   robots: {
     index: false, // Cambiar a true en producción
@@ -51,7 +53,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es-CO" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   )
 }

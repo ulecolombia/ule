@@ -4,11 +4,16 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { hashPassword } from '../lib/password'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Iniciando seed de base de datos...')
+
+  // Hash de contraseñas de ejemplo (password: "admin123" y "user123")
+  const adminPassword = await hashPassword('admin123')
+  const userPassword = await hashPassword('user123')
 
   // Crear usuarios de ejemplo
   const admin = await prisma.user.upsert({
@@ -17,6 +22,7 @@ async function main() {
     create: {
       email: 'admin@ule.app',
       name: 'Administrador Ule',
+      password: adminPassword,
       role: 'ADMIN',
     },
   })
@@ -27,11 +33,15 @@ async function main() {
     create: {
       email: 'usuario@ule.app',
       name: 'Usuario Demo',
+      password: userPassword,
       role: 'USER',
     },
   })
 
   console.log('✅ Usuarios creados:', { admin, user })
+  console.log('📋 Credenciales de prueba:')
+  console.log('   Admin: admin@ule.app / admin123')
+  console.log('   User: usuario@ule.app / user123')
 }
 
 main()
