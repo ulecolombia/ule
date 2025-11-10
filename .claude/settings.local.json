@@ -35,7 +35,13 @@
       "Bash(chmod:*)",
       "Bash(./scripts/fix-auth-imports.sh:*)",
       "Bash(tee:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git rm:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(git stash show:*)",
+      "Bash(git log:*)",
+      "Bash(CI=1 npx prisma migrate dev --name expand_user_profile --skip-generate)"
     ],
     "deny": [],
     "ask": []

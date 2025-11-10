@@ -43,3 +43,18 @@ function validateEnv(): Env {
 export const env = process.env.NODE_ENV === 'development'
   ? (process.env as unknown as Env)
   : validateEnv()
+
+/**
+ * Valida que NEXTAUTH_SECRET esté configurado
+ */
+export function validateNextAuthSecret(): void {
+  if (!process.env.NEXTAUTH_SECRET) {
+    throw new Error(
+      '❌ NEXTAUTH_SECRET no está configurado.\nGenera uno con: openssl rand -base64 32'
+    )
+  }
+
+  if (process.env.NEXTAUTH_SECRET.length < 32) {
+    console.warn('⚠️ NEXTAUTH_SECRET es muy corto. Se recomienda al menos 32 caracteres.')
+  }
+}

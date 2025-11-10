@@ -25,15 +25,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           message: 'Demasiados intentos de registro. Por favor intenta más tarde.',
-          retryAfter: new Date(rateLimitResult.reset).toISOString(),
         },
         {
           status: 429,
-          headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
-          },
         }
       )
     }
@@ -60,7 +54,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (isSimilarToUserInfo(password, email, name)) {
+    if (isSimilarToUserInfo(password, { name, email })) {
       return NextResponse.json(
         { message: 'La contraseña no debe contener tu email o nombre.' },
         { status: 400 }

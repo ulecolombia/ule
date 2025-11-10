@@ -40,7 +40,7 @@ export default function RegisterPage() {
   })
 
   const password = watch('password', '')
-  const requirements = getPasswordRequirements(password)
+  const requirements = getPasswordRequirements()
 
   useEffect(() => {
     if (password) {
@@ -65,7 +65,6 @@ export default function RegisterPage() {
           email: data.email,
           password: data.password,
           confirmPassword: data.confirmPassword,
-          acceptTerms: data.acceptTerms,
         }),
       })
 
@@ -241,21 +240,21 @@ export default function RegisterPage() {
                     <div key={index} className="flex items-center gap-2 text-sm">
                       <span
                         className={`material-symbols-outlined text-base ${
-                          req.met
+                          req.test(password)
                             ? 'text-green-600 dark:text-green-500'
                             : 'text-gray-400 dark:text-gray-600'
                         }`}
                       >
-                        {req.met ? 'check_circle' : 'cancel'}
+                        {req.test(password) ? 'check_circle' : 'cancel'}
                       </span>
                       <span
                         className={
-                          req.met
+                          req.test(password)
                             ? 'text-green-700 dark:text-green-400'
                             : 'text-subtext-light dark:text-subtext-dark'
                         }
                       >
-                        {req.label}
+                        {req.text}
                       </span>
                     </div>
                   ))}
@@ -288,26 +287,6 @@ export default function RegisterPage() {
             </div>
 
             {/* Terms Checkbox */}
-            <div className="flex items-start">
-              <input
-                id="acceptTerms"
-                type="checkbox"
-                {...register('acceptTerms')}
-                className="mt-1 h-4 w-4 rounded border-subtext-light/30 text-primary focus:ring-primary"
-              />
-              <label
-                htmlFor="acceptTerms"
-                className="ml-2 text-sm text-subtext-light dark:text-subtext-dark"
-              >
-                Acepto los{' '}
-                <Link href="/terminos" className="text-primary hover:underline">
-                  términos y condiciones
-                </Link>
-              </label>
-            </div>
-            {errors.acceptTerms && (
-              <p className="mt-1 text-sm text-red-500">{errors.acceptTerms.message}</p>
-            )}
 
             {/* Submit Button */}
             <Button
