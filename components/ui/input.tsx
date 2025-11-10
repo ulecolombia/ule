@@ -1,68 +1,48 @@
 /**
  * ULE - COMPONENTE INPUT
- * Campo de entrada reutilizable con validación y estados
+ * Input profesional estilo Spotify/Stripe
  */
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
-  helperText?: string
-}
+  extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, helperText, id, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
-
+  ({ className, type, ...props }, ref) => {
     return (
-      <div className="w-full">
-        {label && (
-          <label
-            htmlFor={inputId}
-            className="mb-2 block text-sm font-medium text-dark"
-          >
-            {label}
-            {props.required && <span className="ml-1 text-error">*</span>}
-          </label>
+      <input
+        type={type}
+        className={cn(
+          // Base
+          'w-full h-14 px-4 rounded-md',
+          'text-[15px] font-medium text-gray-900',
+
+          // Placeholder
+          'placeholder:text-gray-500 placeholder:font-normal',
+
+          // Background y border
+          'bg-white',
+          'border border-gray-300',
+
+          // Focus state (minimalista)
+          'focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900',
+
+          // Hover
+          'hover:border-gray-400',
+
+          // Transition
+          'transition-all duration-150',
+
+          // Disabled
+          'disabled:bg-gray-50 disabled:cursor-not-allowed',
+
+          className
         )}
-        <input
-          id={inputId}
-          type={type}
-          className={cn(
-            'flex h-12 w-full rounded-xl border-2 bg-white px-4 py-3 text-base transition-colors',
-            'placeholder:text-dark-100',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-light-50',
-            error
-              ? 'border-error focus:ring-error'
-              : 'border-light-100 hover:border-light-100/80',
-            className
-          )}
-          ref={ref}
-          aria-invalid={error ? 'true' : 'false'}
-          aria-describedby={
-            error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
-          }
-          {...props}
-        />
-        {error && (
-          <p
-            id={`${inputId}-error`}
-            className="mt-2 text-sm text-error"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
-        {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-2 text-sm text-dark-100">
-            {helperText}
-          </p>
-        )}
-      </div>
+        ref={ref}
+        {...props}
+      />
     )
   }
 )

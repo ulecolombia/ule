@@ -10,15 +10,26 @@ import { NextResponse } from 'next/server'
  * Middleware de autenticación para Ule
  * Protege rutas que requieren autenticación
  */
-export default auth((req) => {
+export default auth(async (req) => {
   const session = req.auth
   const path = req.nextUrl.pathname
 
   // Permitir acceso a rutas de auth sin autenticación
   if (path.startsWith('/login') || path.startsWith('/registro')) {
-    // Si ya está autenticado, redirigir al dashboard
+    // Si ya está autenticado, redirigir al dashboard con mensaje
     if (session) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+      const redirectUrl = new URL('/dashboard', req.url)
+      redirectUrl.searchParams.set('message', 'already-authenticated')
+      return NextResponse.redirect(redirectUrl)
+    }
+    return NextResponse.next()
+  }
+
+  // Permitir acceso a onboarding siempre que esté autenticado
+  if (path.startsWith('/onboarding')) {
+    // Solo verificar autenticación, no perfil completo
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
     }
     return NextResponse.next()
   }
@@ -26,6 +37,16 @@ export default auth((req) => {
   // Verificar autenticación para rutas protegidas
   if (!session) {
     return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  // Verificar perfil completo para rutas críticas
+  const rutasCriticas = ['/pila', '/facturacion', '/asesoria', '/archivo']
+  const esRutaCritica = rutasCriticas.some((ruta) => path.startsWith(ruta))
+
+  if (esRutaCritica && session.user?.perfilCompleto === false) {
+    const redirectUrl = new URL('/dashboard', req.url)
+    redirectUrl.searchParams.set('message', 'incomplete-profile')
+    return NextResponse.redirect(redirectUrl)
   }
 
   // Verificar roles para rutas administrativas
@@ -41,14 +62,14 @@ export default auth((req) => {
  */
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (auth endpoints)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public assets
-     */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|assets).*)',
+    '/dashboard/:path*',
+    '/pila/:path*',
+    '/facturacion/:path*',
+    '/asesoria/:path*',
+    '/archivo/:path*',
+    '/perfil/:path*',
+    '/login',
+    '/registro',
+    '/onboarding/:path*',
   ],
 }

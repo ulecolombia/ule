@@ -37,3 +37,10 @@ next-env.d.ts
 
 # prisma
 prisma/migrations/
+
+# Uploads de usuarios
+/public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/.gitignore
+public/exports/*
+!public/exports/.gitkeep

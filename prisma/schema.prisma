@@ -17,19 +17,98 @@ model User {
   id            String    @id @default(cuid())
   email         String    @unique
   emailVerified DateTime? @map("email_verified")
-  password      String    // Hash bcrypt
-  name          String
-  image         String?   // Para futura implementación de avatares
+  password      String // Hash bcrypt
+  name          String // Mantener compatibilidad con NextAuth
+  nombre        String? // Nombre completo del usuario
+  image         String? // Para futura implementación de avatares
   role          Role      @default(USER)
 
+  // Información personal
+  tipoDocumento   TipoDocumento?
+  numeroDocumento String?        @map("numero_documento")
+  telefono        String?
+  direccion       String?
+  ciudad          String?
+  departamento    String?
+
+  // Información laboral
+  tipoContrato           TipoContrato? @map("tipo_contrato")
+  profesion              String?
+  actividadEconomica     String?       @map("actividad_economica") // Código CIIU
+  ingresoMensualPromedio Decimal?      @map("ingreso_mensual_promedio") @db.Decimal(12, 2)
+  numeroContratos        Int?          @default(1) @map("numero_contratos")
+
+  // Seguridad social
+  entidadSalud           String?   @map("entidad_salud")
+  entidadPension         String?   @map("entidad_pension")
+  arl                    String?
+  fechaAfiliacionSalud   DateTime? @map("fecha_afiliacion_salud")
+  fechaAfiliacionPension DateTime? @map("fecha_afiliacion_pension")
+  fechaAfiliacionARL     DateTime? @map("fecha_afiliacion_arl")
+  nivelRiesgoARL         Int?      @map("nivel_riesgo_arl") // 1-5
+
+  // Información adicional
+  estadoCivil    EstadoCivil? @map("estado_civil")
+  personasACargo Int?         @default(0) @map("personas_a_cargo")
+
+  // Control
+  perfilCompleto Boolean @default(false) @map("perfil_completo")
+
+  // Campos de auditoría y seguridad
+  deletedAt         DateTime? @map("deleted_at")
+  lastLoginAt       DateTime? @map("last_login_at")
+  phoneVerified     Boolean   @default(false) @map("phone_verified")
+  profilePictureUrl String?   @map("profile_picture_url")
+
+  // Seguridad 2FA (preparado para futuro)
+  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String? @map("two_factor_secret")
+
   // Relaciones NextAuth
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
+
+  // Preferencias de notificaciones
+  notificacionesEmail Boolean @default(true) @map("notificaciones_email")
+  notificacionesPush  Boolean @default(true) @map("notificaciones_push")
+  notificacionesInApp Boolean @default(true) @map("notificaciones_in_app")
+
+  // Relaciones (para futuras fases)
+  aportes             Aporte[]
+  configuracionPila   ConfiguracionPila?
+  facturas            Factura[]
+  conversaciones      Conversacion[]
+  passwordResetTokens PasswordResetToken[]
+  documentos          Documento[]
+  recordatorios       Recordatorio[]
+  clientes            Cliente[]
+  usoIA               UsoIA[]
+  analisisTributarios AnalisisTributario[]
+  consultasFAQ              ConsultaFAQ[]
+  terminosAceptados         TerminosAceptados[]
+  exportaciones             Exportacion[]
+  exportacionesProgramadas  ExportacionProgramada[]
+  eventosCalendario         EventoCalendario[]
+  recordatoriosEventos      RecordatorioEvento[]
+  calculosGuardados         CalculoGuardado[]
+  onboardingProgreso        OnboardingProgreso?
+  interaccionesAyuda        InteraccionAyuda[]
+  analyticsEventos          AnalyticsEvento[]
+  errorLogs                 ErrorLog[]
 
   // Timestamps
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Constraint único compuesto para evitar duplicados
+  @@unique([tipoDocumento, numeroDocumento])
+  // Índices para optimización de búsquedas
+  @@index([email])
+  @@index([numeroDocumento])
+  @@index([tipoDocumento, numeroDocumento])
+  @@index([role])
+  @@index([deletedAt])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -51,6 +130,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -62,6 +142,8 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expires])
   @@map("sessions")
 }
 
@@ -77,7 +159,954 @@ model VerificationToken {
 
 // Enum de roles
 enum Role {
-  USER      // Usuario regular
-  EMPLOYEE  // Empleado de la empresa
-  ADMIN     // Administrador
+  USER // Usuario regular
+  EMPLOYEE // Empleado de la empresa
+  ADMIN // Administrador
+}
+
+// Enum de tipos de documento
+enum TipoDocumento {
+  CC // Cédula de Ciudadanía
+  CE // Cédula de Extranjería
+  PEP // Permiso Especial de Permanencia
+  PASAPORTE // Pasaporte
+  NIT // Número de Identificación Tributaria (empresas)
+}
+
+// Enum de tipos de contrato
+enum TipoContrato {
+  OPS // Orden de Prestación de Servicios
+  INDEPENDIENTE // Trabajador Independiente
+}
+
+// Enum de estado civil
+enum EstadoCivil {
+  SOLTERO
+  CASADO
+  UNION_LIBRE
+  DIVORCIADO
+  VIUDO
+}
+
+// ============================================
+// MODELOS PARA FASE 2: LIQUIDACIÓN DE PILA
+// ============================================
+
+/// Modelo principal de aportes a seguridad social (PILA)
+/// Registra cada periodo de liquidación con sus valores calculados
+model Aporte {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Periodo de liquidación
+  periodo String // formato "MM/YYYY" (ej: "01/2025")
+
+  // Valores base
+  ingresoBase Decimal @map("ingreso_base") @db.Decimal(12, 2) // Ingreso mensual del usuario
+  ibc         Decimal @db.Decimal(12, 2) // Ingreso Base de Cotización calculado
+
+  // Aportes calculados por tipo
+  salud   Decimal @db.Decimal(12, 2) // Aporte a EPS (12.5% del IBC)
+  pension Decimal @db.Decimal(12, 2) // Aporte a Fondo de Pensión (16% del IBC)
+  arl     Decimal @db.Decimal(12, 2) // Aporte a ARL (varía según nivel de riesgo)
+
+  // Total y estado
+  total  Decimal      @db.Decimal(12, 2) // Suma total de aportes
+  estado AporteEstado @default(PENDIENTE)
+
+  // Fechas
+  fechaLimite DateTime  @map("fecha_limite") // Fecha límite para pago
+  fechaPago   DateTime? @map("fecha_pago") // Fecha real de pago (null si no pagado)
+
+  // Comprobante
+  comprobantePDF String? @map("comprobante_pdf") // Ruta del PDF del comprobante
+
+  // Relaciones
+  recordatorios Recordatorio[]
+
+  // Auditoría
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, periodo]) // Un solo aporte por periodo por usuario
+  // Índices para optimización
+  @@index([userId, periodo]) // Búsqueda por usuario y periodo
+  @@index([userId, estado]) // Búsqueda por usuario y estado
+  @@index([fechaLimite]) // Para alertas de vencimiento
+  @@index([createdAt])
+  @@map("aportes")
+}
+
+/// Configuración personalizada de PILA por usuario
+/// Almacena los porcentajes y valores base para cálculos
+model ConfiguracionPila {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Valores base
+  salarioMinimo Decimal @default(1423500) @map("salario_minimo") @db.Decimal(12, 2) // SMMLV 2025
+
+  // Porcentajes de cotización
+  porcentajeSalud   Decimal @default(12.5) @map("porcentaje_salud") @db.Decimal(5, 2) // 12.5%
+  porcentajePension Decimal @default(16) @map("porcentaje_pension") @db.Decimal(5, 2) // 16%
+  porcentajeARL     Decimal @map("porcentaje_arl") @db.Decimal(5, 4) // Varía según nivel de riesgo
+
+  // Nivel de riesgo ARL (I-V)
+  nivelRiesgoARL Int @default(1) @map("nivel_riesgo_arl") // 1=I, 2=II, 3=III, 4=IV, 5=V
+
+  // Control de actualizaciones
+  ultimaActualizacion DateTime @default(now()) @map("ultima_actualizacion")
+
+  // Auditoría
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("configuracion_pila")
+}
+
+/// Estados posibles de un aporte
+enum AporteEstado {
+  PENDIENTE // Aporte liquidado pero no pagado
+  PAGADO // Aporte pagado exitosamente
+  VENCIDO // Aporte no pagado después de fecha límite
+}
+
+// ============================================
+// MODELOS PARA FACTURACIÓN ELECTRÓNICA
+// Normativa DIAN Colombia
+// ============================================
+
+/// Modelo de Clientes para Facturación
+model Cliente {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  // Información básica
+  nombre          String
+  tipoDocumento   TipoDocumentoCliente @map("tipo_documento")
+  numeroDocumento String               @map("numero_documento")
+  email           String?
+  telefono        String?
+  direccion       String?
+  ciudad          String?
+  departamento    String?
+
+  // Información fiscal (opcional, para empresas)
+  razonSocial           String?            @map("razon_social") // Si es empresa
+  nombreComercial       String?            @map("nombre_comercial")
+  regimenTributario     RegimenTributario? @map("regimen_tributario")
+  responsabilidadFiscal String?            @map("responsabilidad_fiscal") // Ej: "IVA", "Retefuente", etc.
+
+  // Metadata
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facturas Factura[]
+
+  @@unique([userId, numeroDocumento]) // Un usuario no puede tener clientes con mismo documento
+  @@index([userId])
+  @@index([numeroDocumento])
+  @@map("clientes")
+}
+
+/// Modelo principal de Facturas Electrónicas
+model Factura {
+  id        String @id @default(cuid())
+  userId    String @map("user_id")
+  clienteId String @map("cliente_id")
+
+  // Información de la factura
+  numeroFactura    String    @map("numero_factura") // Número consecutivo (ej: "FACT-001")
+  prefijo          String? // Prefijo autorizado por DIAN (ej: "SETT")
+  fecha            DateTime  @default(now())
+  fechaVencimiento DateTime? @map("fecha_vencimiento") // Fecha de vencimiento del pago
+
+  // Información del cliente (desnormalizada para histórico)
+  clienteNombre    String  @map("cliente_nombre")
+  clienteDocumento String  @map("cliente_documento")
+  clienteEmail     String? @map("cliente_email")
+  clienteTelefono  String? @map("cliente_telefono")
+  clienteDireccion String? @map("cliente_direccion")
+  clienteCiudad    String? @map("cliente_ciudad")
+
+  // Items de la factura (JSON)
+  conceptos Json // Array de objetos: [{ descripcion, cantidad, valorUnitario, iva, descuento, total }]
+
+  // Totales
+  subtotal        Decimal @db.Decimal(12, 2) // Suma de items sin IVA
+  totalDescuentos Decimal @default(0) @map("total_descuentos") @db.Decimal(12, 2)
+  totalIva        Decimal @map("total_iva") @db.Decimal(12, 2) // Total IVA
+  totalImpuestos  Decimal @default(0) @map("total_impuestos") @db.Decimal(12, 2) // Otros impuestos (si aplica)
+  total           Decimal @db.Decimal(12, 2) // Total a pagar
+
+  // Estado de la factura
+  estado EstadoFactura @default(BORRADOR)
+
+  // Información DIAN (factura electrónica)
+  cufe   String? @unique // Código Único de Factura Electrónica
+  cude   String? // Código Único de Documento Electrónico (si aplica)
+  qrCode String? @map("qr_code") // URL o data del código QR
+
+  // Archivos generados
+  pdfUrl String? @map("pdf_url") // URL del PDF generado
+  xmlUrl String? @map("xml_url") // URL del XML para DIAN
+
+  // Notas y observaciones
+  notas        String? @db.Text
+  terminosPago String? @map("terminos_pago") // Ej: "Pago inmediato", "30 días", etc.
+
+  // Metadata
+  fechaEmision    DateTime? @map("fecha_emision") // Fecha en que se emitió (pasó de borrador a emitida)
+  fechaAnulacion  DateTime? @map("fecha_anulacion") // Fecha en que se anuló (si aplica)
+  motivoAnulacion String?   @map("motivo_anulacion") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cliente Cliente        @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  envios  EnvioFactura[]
+
+  @@unique([userId, numeroFactura]) // Número de factura único por usuario
+  @@index([userId])
+  @@index([clienteId])
+  @@index([estado])
+  @@index([fecha])
+  @@index([cufe])
+  @@map("facturas")
+}
+
+/// Modelo para tracking de envíos de facturas por email
+model EnvioFactura {
+  id        String @id @default(cuid())
+  facturaId String @map("factura_id")
+
+  // Información del envío
+  destinatario String // Email destinatario
+  cc           String? // Emails en copia (separados por coma)
+  asunto       String
+  mensaje      String? @db.Text
+
+  // Adjuntos enviados
+  adjuntoPdf Boolean @default(true) @map("adjunto_pdf")
+  adjuntoXml Boolean @default(true) @map("adjunto_xml")
+
+  // Estado del envío
+  exitoso Boolean @default(false)
+  error   String? @db.Text
+
+  // Metadata
+  fechaEnvio DateTime @default(now()) @map("fecha_envio")
+
+  // Relaciones
+  factura Factura @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+
+  @@index([facturaId])
+  @@index([fechaEnvio])
+  @@map("envios_facturas")
+}
+
+/// Tipos de documento para clientes (DIAN Colombia)
+enum TipoDocumentoCliente {
+  CC        // Cédula de Ciudadanía
+  CE        // Cédula de Extranjería
+  NIT       // Número de Identificación Tributaria (empresas)
+  PASAPORTE // Pasaporte
+  TI        // Tarjeta de Identidad
+  RC        // Registro Civil
+  DIE       // Documento de Identificación Extranjero
+}
+
+/// Regímenes tributarios Colombia
+enum RegimenTributario {
+  SIMPLIFICADO   // Régimen Simplificado
+  COMUN          // Régimen Común
+  SIMPLE         // Régimen Simple de Tributación
+  ORDINARIO      // Régimen Ordinario
+  ESPECIAL       // Régimen Especial
+  NO_RESPONSABLE // No Responsable de IVA
+}
+
+/// Estados de factura electrónica
+enum EstadoFactura {
+  BORRADOR  // Guardada pero no emitida
+  EMITIDA   // Emitida y enviada a DIAN
+  PAGADA    // Factura pagada por el cliente
+  VENCIDA   // Factura vencida sin pago
+  ANULADA   // Factura anulada
+  RECHAZADA // Rechazada por DIAN
+}
+
+// ============================================
+// MODELOS PARA FASE 4: ASESORAMIENTO CON IA
+// ============================================
+
+/// Modelo para conversaciones con el asistente de IA
+model Conversacion {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titulo    String    @default("Nueva conversación")
+  mensajes  Mensaje[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("conversaciones")
+}
+
+/// Modelo para mensajes individuales en conversaciones de IA
+model Mensaje {
+  id              String       @id @default(cuid())
+  conversacionId  String       @map("conversacion_id")
+  conversacion    Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  rol             RolMensaje
+  contenido       String       @db.Text
+  timestamp       DateTime     @default(now())
+
+  // Metadata de la respuesta IA (opcional)
+  tokensUsados    Int?         @map("tokens_usados")
+  modelo          String?
+
+  @@index([conversacionId])
+  @@index([timestamp])
+  @@map("mensajes")
+}
+
+/// Enum para roles de mensajes en conversaciones de IA
+enum RolMensaje {
+  USER      // Mensaje del usuario
+  ASSISTANT // Respuesta de la IA
+  SYSTEM    // Mensaje del sistema (opcional)
+}
+
+// Modelo para tokens de recuperación de contraseña
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Modelo para Biblioteca de Archivos
+model Documento {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Información del archivo
+  nombre           String // nombre original del archivo
+  nombreAlmacenado String               @map("nombre_almacenado") // nombre único en storage
+  tipo             TipoDocumentoArchivo // FACTURA, RECIBO_PAGO, COMPROBANTE_PILA, OTRO
+  categoria        String? // categoría adicional (opcional)
+
+  // Metadata
+  tipoArchivo String @map("tipo_archivo") // mime type: application/pdf, image/jpeg, etc.
+  tamanoBytes Int    @map("tamano_bytes") // tamaño en bytes
+  url         String // URL del archivo (Vercel Blob o local)
+
+  // Organización temporal
+  mes   Int // 1-12
+  anio  Int // 2024, 2025, etc.
+  fecha DateTime @default(now())
+
+  // Metadata adicional
+  descripcion String? // descripción opcional del usuario
+  etiquetas   String[] // array de etiquetas para búsqueda
+
+  // Auditoría
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at") // soft delete
+
+  @@index([userId, mes, anio])
+  @@index([userId, tipo])
+  @@index([userId, fecha])
+  @@map("documentos")
+}
+
+enum TipoDocumentoArchivo {
+  FACTURA
+  RECIBO_PAGO
+  COMPROBANTE_PILA
+  CERTIFICADO
+  CONTRATO
+  OTRO
+}
+
+// ============================================
+// MODELO PARA SISTEMA DE RECORDATORIOS
+// ============================================
+
+/// Modelo de Recordatorios y Notificaciones
+/// Almacena notificaciones in-app y tracking de emails
+model Recordatorio {
+  id           String              @id @default(cuid())
+  userId       String              @map("user_id")
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aporteId     String?             @map("aporte_id")
+  aporte       Aporte?             @relation(fields: [aporteId], references: [id], onDelete: Cascade)
+  tipo         TipoRecordatorio
+  titulo       String
+  mensaje      String              @db.Text
+  fechaEnvio   DateTime            @map("fecha_envio")
+  enviado      Boolean             @default(false)
+  leido        Boolean             @default(false)
+  emailEnviado Boolean             @default(false) @map("email_enviado")
+  metadata     Json?
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  @@index([userId, leido])
+  @@index([fechaEnvio, enviado])
+  @@index([tipo])
+  @@map("recordatorios")
+}
+
+enum TipoRecordatorio {
+  EMAIL
+  PUSH
+  IN_APP
+}
+
+// ============================================
+// MODELO PARA TRACKING DE USO DE IA
+// ============================================
+
+/// Modelo para tracking de uso y límites de IA
+/// Registra estadísticas diarias de uso por usuario
+model UsoIA {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  fecha           DateTime @default(now())
+
+  // Métricas
+  consultasRealizadas    Int      @default(0) @map("consultas_realizadas")
+  tokensUsados           Int      @default(0) @map("tokens_usados")
+  conversacionesActivas  Int      @default(0) @map("conversaciones_activas")
+
+  // Relación
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fecha])
+  @@index([userId])
+  @@index([fecha])
+  @@map("uso_ia")
+}
+
+// ============================================
+// MODELO PARA ANÁLISIS TRIBUTARIO
+// ============================================
+
+/// Modelo para historial de análisis tributario
+/// Almacena recomendaciones de régimen tributario generadas por IA
+model AnalisisTributario {
+  id                  String   @id @default(cuid())
+  userId              String   @map("user_id")
+  regimenRecomendado  String   @map("regimen_recomendado") // SIMPLE, ORDINARIO, INDETERMINADO
+  confianza           String   // ALTA, MEDIA, BAJA
+  reporteCompleto     Json     @map("reporte_completo") // Reporte completo en JSON
+  ingresoAnalizado    Decimal  @map("ingreso_analizado") @db.Decimal(12, 2)
+
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  // Relación
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("analisis_tributarios")
+}
+
+// ============================================
+// MODELO PARA FAQs (PREGUNTAS FRECUENTES)
+// ============================================
+
+/// Modelo de FAQs con categorización y tracking de popularidad
+model FAQ {
+  id               String          @id @default(cuid())
+  categoria        CategoriaFAQ
+  pregunta         String
+  descripcionCorta String?         @map("descripcion_corta") // Descripción opcional de 1-2 líneas
+  tags             String[]        // Tags para búsqueda
+  vecesConsultada  Int             @default(0) @map("veces_consultada")
+  activa           Boolean         @default(true)
+  orden            Int             @default(0) // Orden manual dentro de categoría
+
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  // Relación con consultas realizadas
+  consultas        ConsultaFAQ[]
+
+  @@index([categoria])
+  @@index([vecesConsultada])
+  @@map("faqs")
+}
+
+/// Registro de cuando un usuario consulta una FAQ
+model ConsultaFAQ {
+  id              String   @id @default(cuid())
+  faqId           String   @map("faq_id")
+  userId          String   @map("user_id")
+  conversacionId  String?  @map("conversacion_id") // Si se creó una conversación
+  timestamp       DateTime @default(now())
+
+  // Relaciones
+  faq             FAQ      @relation(fields: [faqId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([faqId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("consultas_faq")
+}
+
+/// Categorías de FAQs
+enum CategoriaFAQ {
+  SEGURIDAD_SOCIAL
+  FACTURACION_ELECTRONICA
+  REGIMEN_TRIBUTARIO
+  OBLIGACIONES_CONTABLES
+  CONSTITUCION_EMPRESA
+  GENERAL
+}
+
+// ============================================
+// MODELO PARA TÉRMINOS Y CONDICIONES
+// ============================================
+
+/// Modelo para registro de aceptación de términos
+model TerminosAceptados {
+  id              String      @id @default(cuid())
+  userId          String      @map("user_id")
+  tipoTermino     TipoTermino @map("tipo_termino")
+  version         String      // Versión de los términos (ej: "1.0", "2024-11")
+  aceptado        Boolean     @default(true)
+  ipAddress       String?     @map("ip_address")
+  userAgent       String?     @map("user_agent") @db.Text
+  fechaAceptacion DateTime    @default(now()) @map("fecha_aceptacion")
+
+  // Relación
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tipoTermino])
+  @@index([fechaAceptacion])
+  @@map("terminos_aceptados")
+}
+
+/// Enum de tipos de términos
+enum TipoTermino {
+  ASESORIA_IA              // Términos del servicio de IA
+  USO_PLATAFORMA           // Términos generales de uso
+  PRIVACIDAD               // Política de privacidad
+  LIMITACION_RESPONSABILIDAD // Disclaimer de responsabilidad
+}
+
+// ============================================
+// SISTEMA DE EXPORTACIÓN DE DATOS
+// ============================================
+
+/// Modelo para tracking de exportaciones
+model Exportacion {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  tipo        TipoExportacion
+  formato     String   // excel, csv, pdf, zip
+  fileUrl     String   @map("file_url")
+  expiraEn    DateTime @map("expira_en")
+  descargado  Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiraEn])
+  @@map("exportaciones")
+}
+
+/// Enum de tipos de exportación
+enum TipoExportacion {
+  PILA
+  FACTURACION
+  GENERAL
+}
+
+/// Enum de frecuencia de exportación programada
+enum FrecuenciaExportacion {
+  DIARIA
+  SEMANAL
+  MENSUAL
+}
+
+/// Modelo de exportación programada
+model ExportacionProgramada {
+  id       String @id @default(cuid())
+  userId   String @map("user_id")
+  nombre   String
+  tipo     TipoExportacion
+  formato  String // excel, csv, pdf, zip
+  frecuencia FrecuenciaExportacion
+  filtros  Json   @default("{}")
+  activa   Boolean @default(true)
+
+  // Control de ejecución
+  ultimaEjecucion  DateTime? @map("ultima_ejecucion")
+  proximaEjecucion DateTime  @map("proxima_ejecucion")
+
+  // Opciones
+  enviarEmail Boolean @default(true) @map("enviar_email")
+
+  // Relaciones
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([proximaEjecucion])
+  @@index([activa])
+  @@map("exportaciones_programadas")
+}
+
+// ============================================
+// SISTEMA DE CALENDARIO TRIBUTARIO
+// ============================================
+
+/// Modelo para eventos del calendario tributario
+model EventoCalendario {
+  id               String            @id @default(cuid())
+  userId           String?           @map("user_id") // null = evento predefinido del sistema
+  titulo           String
+  descripcion      String?           @db.Text
+  tipo             TipoEvento
+  categoria        CategoriaEvento
+  fechaInicio      DateTime          @map("fecha_inicio")
+  fechaFin         DateTime?         @map("fecha_fin")
+  diaCompleto      Boolean           @default(true) @map("dia_completo")
+
+  // Recurrencia
+  esRecurrente     Boolean           @default(false) @map("es_recurrente")
+  frecuencia       FrecuenciaEvento?
+  intervalo        Int?              @default(1) // cada X días/semanas/meses
+  fechaFinRecurrencia DateTime?      @map("fecha_fin_recurrencia")
+
+  // Metadata
+  color            String?           @default("#0D9488") // Color Teal por defecto
+  ubicacion        String?
+  url              String?
+  notas            String?           @db.Text
+
+  // Control
+  activo           Boolean           @default(true)
+  regimenAplicable String?           @map("regimen_aplicable") // SIMPLE, ORDINARIO, TODOS
+
+  // Relaciones
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recordatorios    RecordatorioEvento[]
+
+  // Timestamps
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([tipo])
+  @@index([categoria])
+  @@index([fechaInicio])
+  @@index([activo])
+  @@map("eventos_calendario")
+}
+
+/// Modelo para recordatorios de eventos
+model RecordatorioEvento {
+  id               String           @id @default(cuid())
+  eventoId         String           @map("evento_id")
+  userId           String           @map("user_id")
+
+  // Configuración del recordatorio
+  diasAntes        Int              @map("dias_antes") // 7, 3, 1
+  horaEnvio        String           @default("09:00") @map("hora_envio") // HH:mm
+
+  // Control de envío
+  enviado          Boolean          @default(false)
+  fechaEnvio       DateTime?        @map("fecha_envio")
+  emailEnviado     Boolean          @default(false) @map("email_enviado")
+  notifInApp       Boolean          @default(false) @map("notif_in_app")
+
+  // Relaciones
+  evento           EventoCalendario @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  @@index([eventoId])
+  @@index([userId])
+  @@index([enviado])
+  @@index([fechaEnvio])
+  @@map("recordatorios_eventos")
+}
+
+/// Enum de tipos de evento
+enum TipoEvento {
+  PREDEFINIDO       // Evento del sistema (PILA, declaraciones, etc.)
+  PERSONALIZADO     // Evento creado por el usuario
+  SISTEMA           // Evento generado automáticamente
+}
+
+/// Enum de categorías de evento
+enum CategoriaEvento {
+  PILA_INDEPENDIENTES
+  PILA_DEPENDIENTES
+  DECLARACION_RENTA
+  DECLARACION_IVA
+  RETENCION_FUENTE
+  ICA
+  OTRO
+}
+
+/// Enum de frecuencia de eventos recurrentes
+enum FrecuenciaEvento {
+  DIARIA
+  SEMANAL
+  MENSUAL
+  ANUAL
+}
+
+// ============================================
+// SISTEMA DE CALCULADORAS TRIBUTARIAS
+// ============================================
+
+/// Modelo para historial de cálculos guardados
+model CalculoGuardado {
+  id              String          @id @default(cuid())
+  userId          String          @map("user_id")
+  tipoCalculadora TipoCalculadora @map("tipo_calculadora")
+  inputs          Json            // Valores ingresados por el usuario
+  resultados      Json            // Resultados calculados
+  notas           String?         // Notas opcionales del usuario
+
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  // Relación
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tipoCalculadora])
+  @@index([createdAt])
+  @@map("calculos_guardados")
+}
+
+/// Enum de tipos de calculadora
+enum TipoCalculadora {
+  RETENCION_FUENTE
+  IVA
+  PROYECCION_PILA
+  SIMULADOR_REGIMEN
+  CONVERSOR_UVT
+}
+
+// ============================================
+// SISTEMA DE AYUDA Y ONBOARDING
+// ============================================
+
+/// Modelo para tracking de progreso de onboarding
+model OnboardingProgreso {
+  id                    String   @id @default(cuid())
+  userId                String   @unique @map("user_id")
+
+  // Tours guiados completados
+  tourDashboardVisto    Boolean  @default(false) @map("tour_dashboard_visto")
+  tourPILAVisto         Boolean  @default(false) @map("tour_pila_visto")
+  tourFacturacionVisto  Boolean  @default(false) @map("tour_facturacion_visto")
+  tourAsesoriaVisto     Boolean  @default(false) @map("tour_asesoria_visto")
+
+  // Hitos de onboarding
+  perfilCompletado      Boolean  @default(false) @map("perfil_completado")
+  entidadesConfiguradas Boolean  @default(false) @map("entidades_configuradas")
+  primeraPILA           Boolean  @default(false) @map("primera_pila")
+  primeraFactura        Boolean  @default(false) @map("primera_factura")
+  primeraConsultaIA     Boolean  @default(false) @map("primera_consulta_ia")
+
+  // Control
+  ultimoTourVisto       DateTime? @map("ultimo_tour_visto")
+
+  // Timestamps
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relación
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("onboarding_progreso")
+}
+
+/// Modelo para tracking de interacciones con el sistema de ayuda
+model InteraccionAyuda {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  tipo            TipoInteraccionAyuda
+  contenido       String   @db.Text // Descripción de la interacción
+  util            Boolean? // Feedback del usuario (¿fue útil?)
+
+  // Timestamp
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relación
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tipo])
+  @@index([createdAt])
+  @@map("interacciones_ayuda")
+}
+
+/// Enum de tipos de interacción con ayuda
+enum TipoInteraccionAyuda {
+  TOUR_COMPLETADO
+  ARTICULO_LEIDO
+  VIDEO_VISTO
+  FAQ_CONSULTADA
+  BUSQUEDA
+  WIDGET_USADO
+}
+
+// ============================================
+// SISTEMA DE ANALYTICS Y MONITOREO
+// ============================================
+
+/// Modelo de evento analítico
+model AnalyticsEvento {
+  id              String           @id @default(cuid())
+  userId          String?          @map("user_id") // Opcional para eventos anónimos
+  sessionId       String?          @map("session_id") // ID de sesión
+  evento          String           // Nombre del evento
+  categoria       CategoriaEventoAnalytics
+  metadata        Json?            // Datos adicionales del evento
+
+  // Contexto técnico
+  userAgent       String?          @map("user_agent") @db.Text
+  ip              String?
+  pais            String?
+  ciudad          String?
+  dispositivo     String?          // mobile, desktop, tablet
+  navegador       String?
+
+  timestamp       DateTime         @default(now())
+
+  // Relación
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([evento])
+  @@index([categoria])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@map("analytics_eventos")
+}
+
+/// Categorías de eventos
+enum CategoriaEventoAnalytics {
+  ONBOARDING      // registro, perfil completado
+  PILA            // liquidación, pago
+  FACTURACION     // nueva factura, emisión
+  ASESORIA        // consulta IA
+  EXPORTACION     // descarga de datos
+  NAVEGACION      // pageviews
+  SISTEMA         // errores, performance
+}
+
+/// Modelo de métricas agregadas (para dashboard rápido)
+model MetricaDiaria {
+  id                      String   @id @default(cuid())
+  fecha                   DateTime @unique
+
+  // Usuarios
+  usuariosActivos         Int      @default(0) @map("usuarios_activos")
+  nuevosUsuarios          Int      @default(0) @map("nuevos_usuarios")
+  usuariosRetenidos       Int      @default(0) @map("usuarios_retenidos")
+
+  // Features
+  usosPILA                Int      @default(0) @map("usos_pila")
+  usosFacturacion         Int      @default(0) @map("usos_facturacion")
+  usosAsesoria            Int      @default(0) @map("usos_asesoria")
+
+  // Conversión
+  registrosCompletados    Int      @default(0) @map("registros_completados")
+  perfilesCompletados     Int      @default(0) @map("perfiles_completados")
+  primerasPILA            Int      @default(0) @map("primeras_pila")
+  primerasFacturas        Int      @default(0) @map("primeras_facturas")
+
+  // Engagement
+  sesionesPromedio        Float    @default(0) @map("sesiones_promedio")
+  duracionPromedioMinutos Float    @default(0) @map("duracion_promedio_minutos")
+
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  @@index([fecha])
+  @@map("metricas_diarias")
+}
+
+/// Modelo de error capturado
+model ErrorLog {
+  id              String         @id @default(cuid())
+  userId          String?        @map("user_id")
+  sessionId       String?        @map("session_id")
+
+  // Detalles del error
+  mensaje         String         @db.Text
+  stack           String?        @db.Text
+  tipo            String         // Error, TypeError, etc.
+  severidad       SeveridadError
+
+  // Contexto
+  url             String?
+  componente      String?
+  accion          String?
+  metadata        Json?
+
+  // Técnico
+  navegador       String?
+  dispositivo     String?
+  userAgent       String?        @db.Text
+
+  // Resolución
+  resuelto        Boolean        @default(false)
+  fechaResolucion DateTime?      @map("fecha_resolucion")
+
+  timestamp       DateTime       @default(now())
+
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([severidad])
+  @@index([timestamp])
+  @@index([resuelto])
+  @@map("error_logs")
+}
+
+enum SeveridadError {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
 }

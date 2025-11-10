@@ -6,8 +6,10 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/password'
-import { registerSchema } from '@/lib/auth-validations'
+import { registerSchema } from '@/lib/validations/auth'
 import { Prisma } from '@prisma/client'
+import { rateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { isCommonPassword, isSimilarToUserInfo } from '@/lib/password-security'
 
 /**
  * API Route: Registro de usuarios
@@ -15,6 +17,27 @@ import { Prisma } from '@prisma/client'
  */
 export async function POST(request: Request) {
   try {
+    // Rate limiting: 3 registros por IP cada hora
+    const ip = getClientIp(request)
+    const rateLimitResult = await rateLimit(`register:${ip}`, RATE_LIMITS.REGISTER)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          message: 'Demasiados intentos de registro. Por favor intenta más tarde.',
+          retryAfter: new Date(rateLimitResult.reset).toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+          },
+        }
+      )
+    }
+
     const body = await request.json()
 
     // Validar datos con Zod
@@ -28,6 +51,21 @@ export async function POST(request: Request) {
     }
 
     const { name, email, password } = validatedFields.data
+
+    // Validación avanzada de contraseña
+    if (isCommonPassword(password)) {
+      return NextResponse.json(
+        { message: 'Esta contraseña es muy común. Por favor elige una más segura.' },
+        { status: 400 }
+      )
+    }
+
+    if (isSimilarToUserInfo(password, email, name)) {
+      return NextResponse.json(
+        { message: 'La contraseña no debe contener tu email o nombre.' },
+        { status: 400 }
+      )
+    }
 
     // Verificar si el usuario ya existe
     const existingUser = await db.user.findUnique({

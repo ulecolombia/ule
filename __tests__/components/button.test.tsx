@@ -12,32 +12,44 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument()
   })
 
-  it('applies primary variant by default', () => {
-    render(<Button>Primary</Button>)
+  it('applies default variant by default', () => {
+    render(<Button>Default</Button>)
     const button = screen.getByRole('button')
+    // Verificar que tiene las clases del variant primary
     expect(button).toHaveClass('bg-primary')
+    expect(button).toHaveClass('text-white')
   })
 
   it('applies different variants', () => {
-    const { rerender } = render(<Button variant="secondary">Secondary</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-dark')
+    const { rerender } = render(<Button variant="outline">Outline</Button>)
+    const button = screen.getByRole('button')
+    expect(button).toHaveClass('border-2')
+    expect(button).toHaveClass('border-primary')
 
-    rerender(<Button variant="outline">Outline</Button>)
-    expect(screen.getByRole('button')).toHaveClass('border-2')
+    rerender(<Button variant="ghost">Ghost</Button>)
+    expect(screen.getByRole('button')).toHaveClass('text-primary')
   })
 
-  it('shows loading state', () => {
-    render(<Button isLoading>Loading</Button>)
-    expect(screen.getByText(/cargando/i)).toBeInTheDocument()
-  })
+  it('applies different sizes', () => {
+    const { rerender } = render(<Button size="sm">Small</Button>)
+    const button = screen.getByRole('button')
+    expect(button).toHaveClass('text-sm')
 
-  it('is disabled when loading', () => {
-    render(<Button isLoading>Loading</Button>)
-    expect(screen.getByRole('button')).toBeDisabled()
+    rerender(<Button size="lg">Large</Button>)
+    expect(screen.getByRole('button')).toHaveClass('text-lg')
   })
 
   it('is disabled when disabled prop is true', () => {
     render(<Button disabled>Disabled</Button>)
     expect(screen.getByRole('button')).toBeDisabled()
+  })
+
+  it('shows loading spinner when loading', () => {
+    render(<Button loading>Loading</Button>)
+    const button = screen.getByRole('button')
+    expect(button).toBeDisabled()
+    // El spinner tiene la clase animate-spin
+    const spinner = button.querySelector('.animate-spin')
+    expect(spinner).toBeInTheDocument()
   })
 })
