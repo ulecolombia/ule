@@ -6,7 +6,12 @@
       "Bash(npm run lint)",
       "Bash(npm run build:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(pkill:*)",
+      "Bash(tree:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git stash show:*)"
     ],
     "deny": [],
     "ask": []
