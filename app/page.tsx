@@ -16,19 +16,35 @@ import { Badge } from '@/components/ui/badge'
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-light-50">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
+      {/* Hero Section - Mejorado e impactante */}
+      <section className="container mx-auto px-4 py-24 md:py-32">
         <div className="mx-auto max-w-4xl text-center">
-          <Badge className="mb-4">Fase 0.1 - Setup Completo</Badge>
-          <h1 className="mb-6 text-4xl font-bold text-dark md:text-6xl">
+          {/* Logo visual grande */}
+          <div className="mb-8 flex justify-center">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-light shadow-lg flex items-center justify-center">
+              <span className="text-5xl font-extrabold text-white">U</span>
+            </div>
+          </div>
+
+          {/* Badge más grande */}
+          <Badge className="mb-8 px-6 py-2 text-base">
+            Fase 0.1 - Setup Completo
+          </Badge>
+
+          {/* Título más grande y con más peso */}
+          <h1 className="mb-8 text-5xl font-extrabold text-dark md:text-7xl">
             Bienvenido a <span className="text-primary">Ule</span>
           </h1>
-          <p className="mb-8 text-xl text-dark-100">
+
+          {/* Descripción más legible */}
+          <p className="mb-12 text-2xl leading-relaxed text-dark-100">
             Sistema integral de gestión de seguridad social para Colombia
           </p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg">Comenzar</Button>
-            <Button variant="outline" size="lg">
+
+          {/* Botones más grandes */}
+          <div className="flex justify-center gap-6">
+            <Button className="px-8 py-4 text-lg">Comenzar</Button>
+            <Button variant="outline" className="px-8 py-4 text-lg">
               Documentación
             </Button>
           </div>
@@ -38,7 +54,7 @@ export default function HomePage() {
       {/* Features Grid */}
       <section className="container mx-auto px-4 py-16">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          <Card variant="elevated">
+          <Card variant="metric">
             <CardHeader>
               <CardTitle>🎨 Diseño Moderno</CardTitle>
             </CardHeader>
@@ -49,7 +65,7 @@ export default function HomePage() {
             </CardBody>
           </Card>
 
-          <Card variant="elevated">
+          <Card variant="metric">
             <CardHeader>
               <CardTitle>🔐 Seguro</CardTitle>
             </CardHeader>
@@ -60,7 +76,7 @@ export default function HomePage() {
             </CardBody>
           </Card>
 
-          <Card variant="elevated">
+          <Card variant="metric">
             <CardHeader>
               <CardTitle>♿ Accesible</CardTitle>
             </CardHeader>
@@ -75,7 +91,7 @@ export default function HomePage() {
 
       {/* Design System Preview */}
       <section className="container mx-auto px-4 py-16">
-        <Card className="mx-auto max-w-4xl" variant="elevated">
+        <Card className="mx-auto max-w-4xl" variant="metric">
           <CardHeader>
             <h2 className="text-2xl font-bold">Sistema de Diseño</h2>
           </CardHeader>
@@ -112,11 +128,10 @@ export default function HomePage() {
               <div>
                 <h3 className="mb-3 font-semibold">Botones</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Button>Primary</Button>
-                  <Button variant="secondary">Secondary</Button>
+                  <Button>Default</Button>
                   <Button variant="outline">Outline</Button>
                   <Button variant="ghost">Ghost</Button>
-                  <Button variant="danger">Danger</Button>
+                  <Button variant="secondary">Secondary</Button>
                 </div>
               </div>
 
@@ -127,7 +142,7 @@ export default function HomePage() {
                   <Badge>Default</Badge>
                   <Badge variant="success">Success</Badge>
                   <Badge variant="warning">Warning</Badge>
-                  <Badge variant="error">Error</Badge>
+                  <Badge variant="danger">Danger</Badge>
                   <Badge variant="neutral">Neutral</Badge>
                 </div>
               </div>
