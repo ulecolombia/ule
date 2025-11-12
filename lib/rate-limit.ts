@@ -16,20 +16,49 @@ import {
 const store = new Map<string, RateLimitStore>()
 
 /**
+ * Configuraciones de rate limit por tipo de operación
+ */
+export const RATE_LIMITS = {
+  PILA: { max: 10, window: 60000 }, // 10 req/min para PILA
+  AUTH: { max: 5, window: 60000 }, // 5 req/min para auth
+  API: { max: 100, window: 60000 }, // 100 req/min para API general
+  NOTIFICACIONES: { max: 30, window: 60000 }, // 30 req/min para notificaciones
+}
+
+/**
+ * Extrae la IP del cliente desde los headers de la request
+ */
+export function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
+  )
+}
+
+/**
  * Rate limiter simple basado en IP
  * Retorna success: false si se excede el límite
  */
 export async function rateLimit(
-  req: NextRequest,
+  reqOrKey: NextRequest | string,
   config: RateLimitConfig = { max: 100, window: 60000 }
 ): Promise<RateLimitResult> {
-  // Identificar cliente por IP
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
+  // Determinar la key según el tipo de parámetro
+  let key: string
 
-  const key = `rate-limit:${ip}`
+  if (typeof reqOrKey === 'string') {
+    // Si es un string, usarlo directamente como key
+    key = reqOrKey
+  } else {
+    // Si es NextRequest, extraer IP
+    const ip =
+      reqOrKey.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      reqOrKey.headers.get('x-real-ip') ||
+      'unknown'
+    key = `rate-limit:${ip}`
+  }
+
   const now = Date.now()
 
   let rateLimitData = store.get(key)
