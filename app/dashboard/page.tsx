@@ -271,7 +271,7 @@ export default function DashboardPage() {
                 {/* Acción 1: Liquidar PILA */}
                 <Link
                   href="/pila"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                 {/* Acción 2: Facturación Electrónica */}
                 <Link
                   href="/facturacion"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                 {/* Acción 3: Calendario Tributario */}
                 <Link
                   href="/calendario"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                 {/* Acción 4: Calculadoras */}
                 <Link
                   href="/herramientas/calculadoras"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -355,7 +355,7 @@ export default function DashboardPage() {
                 {/* Acción 5: Simuladores */}
                 <Link
                   href="/herramientas/simuladores"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -376,7 +376,7 @@ export default function DashboardPage() {
                 {/* Acción 6: Biblioteca */}
                 <Link
                   href="/biblioteca"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                 {/* Acción 7: Consulta Educativa con IA */}
                 <Link
                   href="/asesoria"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
