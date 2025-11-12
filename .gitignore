@@ -44,3 +44,6 @@ prisma/migrations/
 !public/uploads/.gitignore
 public/exports/*
 !public/exports/.gitkeep
+
+# Logs de backup automático
+/logs/*.log
