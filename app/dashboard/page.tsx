@@ -419,21 +419,27 @@ export default function DashboardPage() {
           </Card>
 
           {/* Timeline de Actividad Reciente */}
-          <Card>
-            <CardBody>
-              <h2 className="mb-6 text-xl font-semibold text-dark">
-                Actividad Reciente
-              </h2>
+          <Card className="border-2 border-light-200">
+            <CardBody className="p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-dark mb-1">
+                  Actividad Reciente
+                </h2>
+                <p className="text-sm text-dark-100">
+                  Tus últimas operaciones y movimientos
+                </p>
+              </div>
               {actividadReciente.length > 0 ? (
                 <>
                   <div className="space-y-4">
                     {actividadReciente.map((actividad) => (
                       <div
                         key={actividad.id}
-                        className="flex items-start gap-4 rounded-lg border border-light-200 p-4 transition-all hover:border-primary/30 hover:bg-primary/5"
+                        className="flex items-start gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary/30"
+                        style={{ backgroundColor: '#F8F9FA' }}
                       >
                         {/* Ícono */}
-                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-light-50">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white">
                           <span className={`material-symbols-outlined ${actividad.color}`}>
                             {actividad.icono}
                           </span>
