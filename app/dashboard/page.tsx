@@ -109,8 +109,11 @@ export default function DashboardPage() {
   if (status === 'loading' || loading) {
     return (
       <>
-        <Header userName={session?.user?.name} userEmail={session?.user?.email} />
-        <div className="min-h-screen bg-light-50 p-6">
+        <Header
+          userName={session?.user?.name}
+          userEmail={session?.user?.email}
+        />
+        <div className="bg-light-50 min-h-screen p-6">
           <div className="mx-auto max-w-7xl">
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -144,7 +147,7 @@ export default function DashboardPage() {
 
           {/* Header Personalizado */}
           <div className="mb-10">
-            <h1 className="mb-3 text-4xl font-bold text-dark tracking-tight">
+            <h1 className="text-dark mb-3 text-4xl font-bold tracking-tight">
               Hola, {session.user.name} 👋
             </h1>
             <p className="text-lg font-medium text-gray-400">
@@ -158,34 +161,35 @@ export default function DashboardPage() {
           {/* 3 Cards de Resumen - Métricas Clave */}
           <div className="mb-10 grid gap-5 md:grid-cols-3">
             {/* Card 1: Próximo Pago PILA */}
-            <Card className="border-2 border-light-200">
+            <Card className="border-light-200 border-2">
               <CardBody className="p-5">
-                <div className="flex items-start justify-between mb-4">
+                <div className="mb-4 flex items-start justify-between">
                   <div className="rounded-xl bg-primary/10 p-3.5">
-                    <span className="material-symbols-outlined text-primary text-2xl">
+                    <span className="material-symbols-outlined text-2xl text-primary">
                       account_balance
                     </span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-dark-100 mb-2 uppercase tracking-wide">
+                  <p className="text-dark-100 mb-2 text-sm font-semibold uppercase tracking-wide">
                     Próximo Pago PILA
                   </p>
                   {proximoPagoPILA ? (
                     <>
-                      <p className="text-3xl font-bold text-dark mb-1.5">
+                      <p className="text-dark mb-1.5 text-3xl font-bold">
                         {formatearMoneda(proximoPagoPILA.monto)}
                       </p>
-                      <p className="text-sm text-dark-100 font-medium">
-                        Vence en {proximoPagoPILA.diasRestantes} día{proximoPagoPILA.diasRestantes !== 1 ? 's' : ''}
+                      <p className="text-dark-100 text-sm font-medium">
+                        Vence en {proximoPagoPILA.diasRestantes} día
+                        {proximoPagoPILA.diasRestantes !== 1 ? 's' : ''}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="text-3xl font-bold text-dark mb-1.5">
+                      <p className="text-dark mb-1.5 text-3xl font-bold">
                         Sin pagos
                       </p>
-                      <p className="text-sm text-dark-100 font-medium">
+                      <p className="text-dark-100 text-sm font-medium">
                         No hay pagos pendientes
                       </p>
                     </>
@@ -195,23 +199,23 @@ export default function DashboardPage() {
             </Card>
 
             {/* Card 2: Facturas del Mes */}
-            <Card className="border-2 border-light-200">
+            <Card className="border-light-200 border-2">
               <CardBody className="p-5">
-                <div className="flex items-start justify-between mb-4">
+                <div className="mb-4 flex items-start justify-between">
                   <div className="rounded-xl bg-green-50 p-3.5">
-                    <span className="material-symbols-outlined text-green-600 text-2xl">
+                    <span className="material-symbols-outlined text-2xl text-green-600">
                       receipt_long
                     </span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-dark-100 mb-2 uppercase tracking-wide">
+                  <p className="text-dark-100 mb-2 text-sm font-semibold uppercase tracking-wide">
                     Facturas Electrónicas del Mes
                   </p>
-                  <p className="text-3xl font-bold text-dark mb-1.5">
+                  <p className="text-dark mb-1.5 text-3xl font-bold">
                     {facturasDelMes.cantidad}
                   </p>
-                  <p className="text-sm text-dark-100 font-medium">
+                  <p className="text-dark-100 text-sm font-medium">
                     Total: {formatearMoneda(facturasDelMes.total)}
                   </p>
                 </div>
@@ -219,34 +223,32 @@ export default function DashboardPage() {
             </Card>
 
             {/* Card 3: Próxima Fecha Tributaria */}
-            <Card className="border-2 border-light-200">
+            <Card className="border-light-200 border-2">
               <CardBody className="p-5">
-                <div className="flex items-start justify-between mb-4">
+                <div className="mb-4 flex items-start justify-between">
                   <div className="rounded-xl bg-amber-50 p-3.5">
-                    <span className="material-symbols-outlined text-amber-600 text-2xl">
+                    <span className="material-symbols-outlined text-2xl text-amber-600">
                       event_note
                     </span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-dark-100 mb-2 uppercase tracking-wide">
+                  <p className="text-dark-100 mb-2 text-sm font-semibold uppercase tracking-wide">
                     Próxima Fecha Tributaria
                   </p>
                   {proximaFechaTributaria ? (
                     <>
-                      <p className="text-3xl font-bold text-dark mb-1.5">
+                      <p className="text-dark mb-1.5 text-3xl font-bold">
                         {proximaFechaTributaria.fechaFormateada}
                       </p>
-                      <p className="text-sm text-dark-100 font-medium">
+                      <p className="text-dark-100 text-sm font-medium">
                         {proximaFechaTributaria.descripcion}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="text-3xl font-bold text-dark mb-1.5">
-                        --
-                      </p>
-                      <p className="text-sm text-dark-100 font-medium">
+                      <p className="text-dark mb-1.5 text-3xl font-bold">--</p>
+                      <p className="text-dark-100 text-sm font-medium">
                         Completa tu perfil
                       </p>
                     </>
@@ -257,13 +259,13 @@ export default function DashboardPage() {
           </div>
 
           {/* 7 Acciones Rápidas */}
-          <Card className="mb-8 border-2 border-light-200">
+          <Card className="border-light-200 mb-8 border-2">
             <CardBody className="p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-dark mb-1">
+                <h2 className="text-dark mb-1 text-2xl font-bold">
                   Acciones Rápidas
                 </h2>
-                <p className="text-sm text-dark-100">
+                <p className="text-dark-100 text-sm">
                   Accede a nuestras funciones principales
                 </p>
               </div>
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                 {/* Acción 1: Liquidar PILA */}
                 <Link
                   href="/pila"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -279,12 +281,12 @@ export default function DashboardPage() {
                       calculate
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
                       Liquidar PILA
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -292,7 +294,7 @@ export default function DashboardPage() {
                 {/* Acción 2: Facturación Electrónica */}
                 <Link
                   href="/facturacion"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -300,12 +302,12 @@ export default function DashboardPage() {
                       receipt_long
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
-                      Facturación
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Facturación Electrónica
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -313,7 +315,7 @@ export default function DashboardPage() {
                 {/* Acción 3: Calendario Tributario */}
                 <Link
                   href="/calendario"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -321,12 +323,12 @@ export default function DashboardPage() {
                       event
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
-                      Calendario
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Calendario Tributario
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -334,7 +336,7 @@ export default function DashboardPage() {
                 {/* Acción 4: Calculadoras */}
                 <Link
                   href="/herramientas/calculadoras"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -342,12 +344,12 @@ export default function DashboardPage() {
                       dialpad
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
-                      Calculadoras
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Calculadora Tributaria
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -355,7 +357,7 @@ export default function DashboardPage() {
                 {/* Acción 5: Simuladores */}
                 <Link
                   href="/herramientas/simuladores"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -363,12 +365,12 @@ export default function DashboardPage() {
                       science
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
-                      Simuladores
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Simulador Tributario
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -376,7 +378,7 @@ export default function DashboardPage() {
                 {/* Acción 6: Biblioteca */}
                 <Link
                   href="/biblioteca"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -384,12 +386,12 @@ export default function DashboardPage() {
                       folder_open
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
-                      Biblioteca
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Biblioteca de Archivos
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -397,7 +399,7 @@ export default function DashboardPage() {
                 {/* Acción 7: Consulta Educativa con IA */}
                 <Link
                   href="/asesoria"
-                  className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
@@ -405,12 +407,12 @@ export default function DashboardPage() {
                       school
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-dark group-hover:text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
                       Asesoría con IA
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
                     arrow_forward
                   </span>
                 </Link>
@@ -419,13 +421,13 @@ export default function DashboardPage() {
           </Card>
 
           {/* Timeline de Actividad Reciente */}
-          <Card className="border-2 border-light-200">
+          <Card className="border-light-200 border-2">
             <CardBody className="p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-dark mb-1">
+                <h2 className="text-dark mb-1 text-2xl font-bold">
                   Actividad Reciente
                 </h2>
-                <p className="text-sm text-dark-100">
+                <p className="text-dark-100 text-sm">
                   Tus últimas operaciones y movimientos
                 </p>
               </div>
@@ -435,28 +437,32 @@ export default function DashboardPage() {
                     {actividadReciente.map((actividad) => (
                       <div
                         key={actividad.id}
-                        className="flex items-start gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary/30"
+                        className="border-light-200 flex items-start gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary/30"
                         style={{ backgroundColor: '#F8F9FA' }}
                       >
                         {/* Ícono */}
                         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white">
-                          <span className={`material-symbols-outlined ${actividad.color}`}>
+                          <span
+                            className={`material-symbols-outlined ${actividad.color}`}
+                          >
                             {actividad.icono}
                           </span>
                         </div>
 
                         {/* Contenido */}
                         <div className="flex-1">
-                          <p className="font-semibold text-dark">
+                          <p className="text-dark font-semibold">
                             {actividad.titulo}
                           </p>
-                          <p className="text-sm text-dark-100">
+                          <p className="text-dark-100 text-sm">
                             {actividad.descripcion}
                           </p>
                         </div>
 
                         {/* Fecha */}
-                        <p className="text-xs text-dark-100">{actividad.fecha}</p>
+                        <p className="text-dark-100 text-xs">
+                          {actividad.fecha}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -474,11 +480,11 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <div className="py-8 text-center">
-                  <span className="material-symbols-outlined text-6xl text-dark-100 mb-3">
+                  <span className="material-symbols-outlined text-dark-100 mb-3 text-6xl">
                     inbox
                   </span>
                   <p className="text-dark-100">No hay actividad reciente</p>
-                  <p className="text-sm text-dark-100 mt-1">
+                  <p className="text-dark-100 mt-1 text-sm">
                     Empieza generando facturas o liquidando PILA
                   </p>
                 </div>
