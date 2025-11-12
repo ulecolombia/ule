@@ -293,7 +293,7 @@ export default function DashboardPage() {
 
                 {/* Acción 2: Facturación Electrónica */}
                 <Link
-                  href="/facturacion"
+                  href="/facturacion/nueva"
                   className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
