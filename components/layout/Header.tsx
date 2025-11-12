@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Logo } from '@/components/ui/logo'
 import { SidebarMenu } from './SidebarMenu'
 import { QuickActions } from './QuickActions'
@@ -19,6 +20,10 @@ interface HeaderProps {
 
 export function Header({ userName, userEmail }: HeaderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Detectar si estamos en el dashboard
+  const isOnDashboard = pathname === '/dashboard'
 
   return (
     <>
@@ -34,7 +39,7 @@ export function Header({ userName, userEmail }: HeaderProps) {
         role="banner"
       >
         <div className="mx-auto flex h-16 max-w-[1920px] items-center justify-between gap-6 px-6">
-          {/* Left Section: Hamburger + Logo */}
+          {/* Left Section: Hamburger + Logo + Home Button */}
           <div className="flex items-center gap-4">
             {/* Hamburger Menu Button */}
             <button
@@ -51,10 +56,21 @@ export function Header({ userName, userEmail }: HeaderProps) {
             {/* Logo */}
             <Link
               href="/dashboard"
-              className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
+              className="rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <Logo size="sm" />
             </Link>
+
+            {/* Página Principal Button - Solo visible fuera del dashboard */}
+            {!isOnDashboard && (
+              <Link
+                href="/dashboard"
+                className="hidden items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-100 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 md:flex"
+              >
+                <span className="material-symbols-outlined text-xl">home</span>
+                <span>Página Principal</span>
+              </Link>
+            )}
           </div>
 
           {/* Center Section: Quick Actions */}
