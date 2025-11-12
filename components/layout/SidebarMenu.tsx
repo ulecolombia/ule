@@ -22,7 +22,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    label: 'Dashboard',
+    label: 'Página Principal',
     icon: 'dashboard',
     href: '/dashboard',
   },
@@ -36,7 +36,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: 'Facturación Electrónica',
+    label: 'Facturación',
     icon: 'receipt_long',
     subItems: [
       { label: 'Nueva Factura', href: '/facturacion/nueva' },
@@ -45,7 +45,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: 'Calendario Tributario',
+    label: 'Calendario',
     icon: 'event',
     href: '/calendario',
   },
@@ -58,7 +58,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: 'Consulta Educativa con IA',
+    label: 'Asesoría con IA',
     icon: 'school',
     subItems: [
       { label: 'Chat Educativo', href: '/asesoria/chat' },
@@ -67,7 +67,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: 'Biblioteca de Archivos',
+    label: 'Biblioteca',
     icon: 'folder_open',
     href: '/biblioteca',
   },

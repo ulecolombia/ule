@@ -302,7 +302,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Facturación Electrónica
+                      Facturación
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
@@ -323,7 +323,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Calendario Tributario
+                      Calendario
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 4: Calculadora Tributaria */}
+                {/* Acción 4: Calculadoras */}
                 <Link
                   href="/herramientas/calculadoras"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Calculadora Tributaria
+                      Calculadoras
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
@@ -352,7 +352,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 5: Simulador Tributario */}
+                {/* Acción 5: Simuladores */}
                 <Link
                   href="/herramientas/simuladores"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
@@ -365,7 +365,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Simulador Tributario
+                      Simuladores
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 6: Biblioteca de Archivos */}
+                {/* Acción 6: Biblioteca */}
                 <Link
                   href="/biblioteca"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
@@ -386,7 +386,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Biblioteca de Archivos
+                      Biblioteca
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">
@@ -407,7 +407,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-dark group-hover:text-white">
-                      Consulta con IA
+                      Asesoría con IA
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 group-hover:text-white flex-shrink-0">

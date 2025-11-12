@@ -34,7 +34,7 @@ export function MainNav() {
   }
 
   const menuItems: Array<{ href: string; label: string; icon: string; disabled?: boolean }> = [
-    { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { href: '/dashboard', label: 'Página Principal', icon: 'dashboard' },
     { href: '/pila', label: 'PILA', icon: 'account_balance' },
     { href: '/facturacion', label: 'Facturación', icon: 'receipt_long' },
     { href: '/calendario', label: 'Calendario', icon: 'event' },
