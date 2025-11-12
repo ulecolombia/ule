@@ -1,103 +1,72 @@
 /**
- * ULE - RATE LIMITING
- * Simple rate limiting for API routes
+ * RATE LIMITING
+ * Simple in-memory rate limiter
+ * En producción, usar Redis o Upstash
  */
 
-interface RateLimitOptions {
-  interval: number // milliseconds
-  uniqueTokenPerInterval: number
-}
+import { NextRequest } from 'next/server'
+import {
+  RateLimitConfig,
+  RateLimitResult,
+  RateLimitStore,
+} from '@/lib/types/analytics'
 
-const rateLimitMap = new Map<string, number[]>()
-
-export class RateLimitError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'RateLimitError'
-  }
-}
+// Simple in-memory store
+// NOTA: En producción con múltiples instancias, usar Redis
+const store = new Map<string, RateLimitStore>()
 
 /**
- * Constantes de rate limiting
- */
-export const RATE_LIMITS = {
-  REGISTER: { limit: 5, interval: 60 * 1000 },
-  LOGIN: { limit: 10, interval: 60 * 1000 },
-  API: { limit: 100, interval: 60 * 1000 },
-}
-
-/**
- * Obtiene IP del cliente desde request
- */
-export function getClientIp(request: Request): string {
-  // Intentar obtener IP real del cliente
-  const forwarded = request.headers.get('x-forwarded-for')
-  const realIp = request.headers.get('x-real-ip')
-
-  if (forwarded) {
-    return forwarded.split(',')[0]?.trim() || 'unknown'
-  }
-
-  if (realIp) {
-    return realIp
-  }
-
-  // Fallback a IP genérica
-  return 'unknown'
-}
-
-/**
- * Wrapper async para verificar rate limit
+ * Rate limiter simple basado en IP
+ * Retorna success: false si se excede el límite
  */
 export async function rateLimit(
-  token: string,
-  config: { limit: number; interval: number }
-): Promise<{ success: boolean }> {
-  const limiter = createRateLimiter({
-    ...config,
-    uniqueTokenPerInterval: 500,
-  })
+  req: NextRequest,
+  config: RateLimitConfig = { max: 100, window: 60000 }
+): Promise<RateLimitResult> {
+  // Identificar cliente por IP
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
 
-  try {
-    await limiter.check(config.limit, token)
-    return { success: true }
-  } catch (error) {
-    if (error instanceof RateLimitError) {
-      return { success: false }
+  const key = `rate-limit:${ip}`
+  const now = Date.now()
+
+  let rateLimitData = store.get(key)
+
+  // Si no existe o expiró, crear nuevo
+  if (!rateLimitData || now > rateLimitData.resetTime) {
+    rateLimitData = {
+      count: 0,
+      resetTime: now + config.window,
     }
-    throw error
+    store.set(key, rateLimitData)
+  }
+
+  // Incrementar contador
+  rateLimitData.count++
+
+  // Verificar límite
+  const remaining = Math.max(0, config.max - rateLimitData.count)
+  const success = rateLimitData.count <= config.max
+
+  return {
+    success,
+    remaining,
+    reset: rateLimitData.resetTime,
   }
 }
 
 /**
- * Crea un rate limiter con configuración personalizada
+ * Limpiar store periódicamente para evitar memory leaks
  */
-function createRateLimiter(options: RateLimitOptions) {
-  const { interval, uniqueTokenPerInterval } = options
-
-  return {
-    check: async (limit: number, token: string): Promise<void> => {
-      const now = Date.now()
-      const tokenKey = `${token}`
-
-      const timestamps = rateLimitMap.get(tokenKey) || []
-      const validTimestamps = timestamps.filter(
-        (timestamp) => now - timestamp < interval
-      )
-
-      if (validTimestamps.length >= limit) {
-        throw new RateLimitError('Rate limit exceeded')
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now()
+    for (const [key, value] of store.entries()) {
+      if (now > value.resetTime) {
+        store.delete(key)
       }
-
-      validTimestamps.push(now)
-      rateLimitMap.set(tokenKey, validTimestamps)
-
-      if (rateLimitMap.size > uniqueTokenPerInterval) {
-        const oldestKey = rateLimitMap.keys().next().value
-        if (oldestKey) {
-          rateLimitMap.delete(oldestKey)
-        }
-      }
-    },
-  }
+    }
+  }, 60000) // Cada minuto
 }

@@ -15,12 +15,16 @@ declare module 'next-auth' {
       id: string
       role: Role
       perfilCompleto: boolean
+      isAdmin: boolean
+      isSuperAdmin: boolean
     } & DefaultSession['user']
   }
 
   interface User {
     role: Role
     perfilCompleto: boolean
+    isAdmin?: boolean
+    isSuperAdmin?: boolean
   }
 }
 
@@ -29,5 +33,7 @@ declare module 'next-auth/jwt' {
     id: string
     role: Role
     perfilCompleto: boolean
+    isAdmin: boolean
+    isSuperAdmin: boolean
   }
 }

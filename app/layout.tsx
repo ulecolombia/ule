@@ -9,13 +9,24 @@ import { Toaster } from 'sonner'
 import Script from 'next/script'
 import './globals.css'
 import { SessionProvider } from '@/components/providers/session-provider'
-import { MainNav } from '@/components/layout/MainNav'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
+import { SWRProvider } from '@/lib/cache/swr-config'
 import { initSentry } from '@/lib/sentry'
 
-// Inicializar Sentry en el servidor
+// Validación de seguridad en el servidor
 if (typeof window === 'undefined') {
+  // Inicializar Sentry
   initSentry()
+
+  // Validar variables de entorno (env-validator ya valida automáticamente al importarse)
+  // Validar clave de encriptación
+  try {
+    const { validateEncryptionKey } = require('@/lib/security/field-encryption')
+    validateEncryptionKey()
+  } catch (error) {
+    console.error('Error validando clave de encriptación:', error)
+  }
 }
 
 const inter = Inter({
@@ -73,6 +84,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
           rel="stylesheet"
         />
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#14B8A6" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Ule" />
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -90,12 +109,34 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        {/* Script para limpiar service worker cache corrupto */}
+        <Script id="cleanup-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  registration.unregister();
+                }
+              });
+              // Limpiar todos los caches
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  for (let name of names) {
+                    caches.delete(name);
+                  }
+                });
+              }
+            }
+          `}
+        </Script>
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
           <SessionProvider>
-            <MainNav />
-            {children}
+            <SWRProvider>
+              {children}
+              {/* <CommandPaletteProvider /> */}
+            </SWRProvider>
           </SessionProvider>
         </ErrorBoundary>
         <Toaster position="top-right" richColors closeButton />

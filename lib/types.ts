@@ -9,7 +9,7 @@ export {
   TipoDocumento,
   TipoContrato,
   EstadoCivil,
-  AporteEstado,
+  EstadoAporte,
   TipoDocumentoCliente,
   RegimenTributario,
   EstadoFactura,

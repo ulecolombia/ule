@@ -17,7 +17,7 @@ model User {
   id            String    @id @default(cuid())
   email         String    @unique
   emailVerified DateTime? @map("email_verified")
-  password      String // Hash bcrypt
+  password      String? // Hash bcrypt (opcional para OAuth)
   name          String // Mantener compatibilidad con NextAuth
   nombre        String? // Nombre completo del usuario
   image         String? // Para futura implementación de avatares
@@ -48,8 +48,19 @@ model User {
   nivelRiesgoARL         Int?      @map("nivel_riesgo_arl") // 1-5
 
   // Información adicional
-  estadoCivil    EstadoCivil? @map("estado_civil")
-  personasACargo Int?         @default(0) @map("personas_a_cargo")
+  estadoCivil       EstadoCivil? @map("estado_civil")
+  personasACargo    Int?         @default(0) @map("personas_a_cargo")
+  suscribirNewsletter Boolean    @default(false) @map("suscribir_newsletter")
+
+  // ============================================
+  // CUMPLIMIENTO LEGAL - LEY 1581 DE 2012
+  // ============================================
+  aceptoTerminos          Boolean   @default(false) @map("acepto_terminos")
+  fechaAceptoTerminos     DateTime? @map("fecha_acepto_terminos")
+  versionTerminos         String?   @map("version_terminos")
+  aceptoPolitica          Boolean   @default(false) @map("acepto_politica")
+  fechaAceptoPolitica     DateTime? @map("fecha_acepto_politica")
+  versionPolitica         String?   @map("version_politica")
 
   // Control
   perfilCompleto Boolean @default(false) @map("perfil_completo")
@@ -60,13 +71,34 @@ model User {
   phoneVerified     Boolean   @default(false) @map("phone_verified")
   profilePictureUrl String?   @map("profile_picture_url")
 
-  // Seguridad 2FA (preparado para futuro)
-  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
-  twoFactorSecret  String? @map("two_factor_secret")
+  // ============================================
+  // SEGURIDAD DE AUTENTICACIÓN
+  // ============================================
+  passwordHash            String? // Hash bcrypt de la contraseña
+  passwordChangedAt       DateTime? @map("password_changed_at")
+  failedLoginAttempts     Int       @default(0) @map("failed_login_attempts")
+  accountLockedUntil      DateTime? @map("account_locked_until")
+  requirePasswordChange   Boolean   @default(false) @map("require_password_change")
+
+  // Autenticación de dos factores (2FA)
+  twoFactorEnabled        Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret         String?   @map("two_factor_secret") // Encriptado
+  twoFactorBackupCodes    Json?     @map("two_factor_backup_codes") // Array de códigos encriptados
+  twoFactorEnabledAt      DateTime? @map("two_factor_enabled_at")
+
+  // Recuperación de contraseña
+  passwordResetToken      String?   @unique @map("password_reset_token")
+  passwordResetExpires    DateTime? @map("password_reset_expires")
+  passwordResetAttempts   Int       @default(0) @map("password_reset_attempts")
 
   // Relaciones NextAuth
   accounts Account[]
   sessions Session[]
+
+  // Relaciones de seguridad
+  sesionesSeguridad       Sesion[]
+  intentosLogin           IntentoLogin[]
+  eventosSeguridad        EventoSeguridad[]
 
   // Preferencias de notificaciones
   notificacionesEmail Boolean @default(true) @map("notificaciones_email")
@@ -95,6 +127,21 @@ model User {
   interaccionesAyuda        InteraccionAyuda[]
   analyticsEventos          AnalyticsEvento[]
   errorLogs                 ErrorLog[]
+
+  // Relaciones de cumplimiento legal y privacidad
+  consentimientos           ConsentimientoDatos[]
+  solicitudesEliminacion    SolicitudEliminacion[]
+  solicitudesPortabilidad   SolicitudPortabilidad[]
+  configuracionCookies      ConfiguracionCookies?
+  logsPrivacidad            LogPrivacidad[]
+
+  // Relaciones de auditoría y seguridad
+  logsAuditoria             LogAuditoria[]
+  alertasSeguridad          AlertaSeguridad[]
+
+  // Flags de administración
+  isAdmin                   Boolean @default(false) @map("is_admin")
+  isSuperAdmin              Boolean @default(false) @map("is_super_admin")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -177,6 +224,9 @@ enum TipoDocumento {
 enum TipoContrato {
   OPS // Orden de Prestación de Servicios
   INDEPENDIENTE // Trabajador Independiente
+  DIRECTO // Contrato Directo
+  TERMINO_FIJO // Contrato a Término Fijo
+  TERMINO_INDEFINIDO // Contrato a Término Indefinido
 }
 
 // Enum de estado civil
@@ -186,6 +236,20 @@ enum EstadoCivil {
   UNION_LIBRE
   DIVORCIADO
   VIUDO
+}
+
+// ============================================
+// SISTEMA DE LOCKS DISTRIBUIDOS
+// Para prevenir ejecuciones concurrentes de cron jobs
+// ============================================
+
+model CronLock {
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("cron_locks")
 }
 
 // ============================================
@@ -199,28 +263,31 @@ model Aporte {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Periodo de liquidación
-  periodo String // formato "MM/YYYY" (ej: "01/2025")
+  // Período de cotización
+  mes     Int    // 1-12
+  anio    Int    // 2025, 2026, etc.
+  periodo String // "Enero 2025" para display
 
-  // Valores base
-  ingresoBase Decimal @map("ingreso_base") @db.Decimal(12, 2) // Ingreso mensual del usuario
+  // Valores de cálculo
+  ingresoBase Decimal @map("ingreso_base") @db.Decimal(12, 2) // Ingreso mensual reportado
   ibc         Decimal @db.Decimal(12, 2) // Ingreso Base de Cotización calculado
 
-  // Aportes calculados por tipo
-  salud   Decimal @db.Decimal(12, 2) // Aporte a EPS (12.5% del IBC)
-  pension Decimal @db.Decimal(12, 2) // Aporte a Fondo de Pensión (16% del IBC)
-  arl     Decimal @db.Decimal(12, 2) // Aporte a ARL (varía según nivel de riesgo)
+  // Aportes individuales
+  salud   Decimal @db.Decimal(12, 2) // 12.5% del IBC
+  pension Decimal @db.Decimal(12, 2) // 16% del IBC
+  arl     Decimal @db.Decimal(12, 2) // Según nivel de riesgo
 
   // Total y estado
-  total  Decimal      @db.Decimal(12, 2) // Suma total de aportes
-  estado AporteEstado @default(PENDIENTE)
+  total  Decimal       @db.Decimal(12, 2) // Suma de salud + pensión + ARL
+  estado EstadoAporte @default(PENDIENTE)
 
-  // Fechas
-  fechaLimite DateTime  @map("fecha_limite") // Fecha límite para pago
-  fechaPago   DateTime? @map("fecha_pago") // Fecha real de pago (null si no pagado)
+  // Fechas importantes
+  fechaLimite DateTime  @map("fecha_limite") // Generalmente día 10 del mes siguiente
+  fechaPago   DateTime? @map("fecha_pago")
 
   // Comprobante
-  comprobantePDF String? @map("comprobante_pdf") // Ruta del PDF del comprobante
+  comprobantePDF    String? @map("comprobante_pdf") // Ruta al archivo PDF del comprobante
+  numeroComprobante String? @map("numero_comprobante") // Número de comprobante de pago
 
   // Relaciones
   recordatorios Recordatorio[]
@@ -229,12 +296,12 @@ model Aporte {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([userId, periodo]) // Un solo aporte por periodo por usuario
-  // Índices para optimización
-  @@index([userId, periodo]) // Búsqueda por usuario y periodo
-  @@index([userId, estado]) // Búsqueda por usuario y estado
-  @@index([fechaLimite]) // Para alertas de vencimiento
-  @@index([createdAt])
+  @@unique([userId, mes, anio]) // Un aporte por usuario por período
+  @@index([userId, estado])
+  @@index([fechaLimite])
+  @@index([userId, estado, fechaLimite]) // Para queries de recordatorios (aportes pendientes próximos a vencer)
+  @@index([userId, anio, mes]) // Para histórico ordenado por año/mes
+  @@index([estado, fechaLimite]) // Para cron jobs (buscar todos los pendientes por vencer globalmente)
   @@map("aportes")
 }
 
@@ -245,33 +312,44 @@ model ConfiguracionPila {
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Valores base
+  // Valores de referencia
   salarioMinimo Decimal @default(1423500) @map("salario_minimo") @db.Decimal(12, 2) // SMMLV 2025
 
-  // Porcentajes de cotización
-  porcentajeSalud   Decimal @default(12.5) @map("porcentaje_salud") @db.Decimal(5, 2) // 12.5%
-  porcentajePension Decimal @default(16) @map("porcentaje_pension") @db.Decimal(5, 2) // 16%
-  porcentajeARL     Decimal @map("porcentaje_arl") @db.Decimal(5, 4) // Varía según nivel de riesgo
+  // Porcentajes de cotización (pueden variar según normativa)
+  porcentajeSalud   Decimal @default(12.5) @map("porcentaje_salud") @db.Decimal(5, 3) // 12.5%
+  porcentajePension Decimal @default(16.0) @map("porcentaje_pension") @db.Decimal(5, 3) // 16%
 
-  // Nivel de riesgo ARL (I-V)
-  nivelRiesgoARL Int @default(1) @map("nivel_riesgo_arl") // 1=I, 2=II, 3=III, 4=IV, 5=V
+  // ARL según nivel de riesgo
+  nivelRiesgoARL NivelRiesgoARL @default(I) @map("nivel_riesgo_arl")
+  porcentajeARL  Decimal        @default(0.522) @map("porcentaje_arl") @db.Decimal(5, 3) // Nivel I por defecto
 
-  // Control de actualizaciones
-  ultimaActualizacion DateTime @default(now()) @map("ultima_actualizacion")
+  // Recordatorios
+  diasAnticipacionRecordatorio Int     @default(5) @map("dias_anticipacion_recordatorio") // Recordar 5 días antes
+  recordatoriosActivos         Boolean @default(true) @map("recordatorios_activos")
 
   // Auditoría
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  ultimaActualizacion DateTime @default(now()) @map("ultima_actualizacion")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
-  @@index([userId])
   @@map("configuracion_pila")
 }
 
 /// Estados posibles de un aporte
-enum AporteEstado {
+enum EstadoAporte {
   PENDIENTE // Aporte liquidado pero no pagado
-  PAGADO // Aporte pagado exitosamente
-  VENCIDO // Aporte no pagado después de fecha límite
+  PAGADO    // Aporte pagado exitosamente
+  VENCIDO   // Aporte no pagado después de fecha límite
+  CANCELADO // Aporte cancelado
+}
+
+/// Niveles de riesgo ARL (Administradora de Riesgos Laborales)
+enum NivelRiesgoARL {
+  I  // 0.522% - Riesgo mínimo
+  II // 1.044% - Riesgo bajo
+  III // 2.436% - Riesgo medio
+  IV // 4.350% - Riesgo alto
+  V  // 6.960% - Riesgo máximo
 }
 
 // ============================================
@@ -325,6 +403,7 @@ model Factura {
   prefijo          String? // Prefijo autorizado por DIAN (ej: "SETT")
   fecha            DateTime  @default(now())
   fechaVencimiento DateTime? @map("fecha_vencimiento") // Fecha de vencimiento del pago
+  metodoPago       String? @map("metodo_pago") // Método de pago (EFECTIVO, TRANSFERENCIA, etc.)
 
   // Información del cliente (desnormalizada para histórico)
   clienteNombre    String  @map("cliente_nombre")
@@ -556,25 +635,29 @@ enum TipoDocumentoArchivo {
 /// Modelo de Recordatorios y Notificaciones
 /// Almacena notificaciones in-app y tracking de emails
 model Recordatorio {
-  id           String              @id @default(cuid())
-  userId       String              @map("user_id")
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  aporteId     String?             @map("aporte_id")
-  aporte       Aporte?             @relation(fields: [aporteId], references: [id], onDelete: Cascade)
-  tipo         TipoRecordatorio
-  titulo       String
-  mensaje      String              @db.Text
-  fechaEnvio   DateTime            @map("fecha_envio")
-  enviado      Boolean             @default(false)
-  leido        Boolean             @default(false)
-  emailEnviado Boolean             @default(false) @map("email_enviado")
-  metadata     Json?
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
+  id            String              @id @default(cuid())
+  userId        String              @map("user_id")
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aporteId      String?             @map("aporte_id")
+  aporte        Aporte?             @relation(fields: [aporteId], references: [id], onDelete: Cascade)
+  tipo          TipoRecordatorio
+  titulo        String
+  mensaje       String              @db.Text
+  fechaEnvio    DateTime            @map("fecha_envio")
+  enviado       Boolean             @default(false)
+  fechaEnviado  DateTime?           @map("fecha_enviado")
+  leido         Boolean             @default(false)
+  emailEnviado  Boolean             @default(false) @map("email_enviado")
+  metadata      Json?
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
 
   @@index([userId, leido])
   @@index([fechaEnvio, enviado])
   @@index([tipo])
+  @@index([userId, tipo, leido, fechaEnvio]) // Para NotificacionesBell (IN_APP ordenadas por fecha)
+  @@index([tipo, enviado, fechaEnvio]) // Para cron de emails (recordatorios pendientes de enviar)
+  @@index([aporteId, tipo]) // Para evitar duplicados al crear recordatorios
   @@map("recordatorios")
 }
 
@@ -725,16 +808,18 @@ enum TipoTermino {
 
 /// Modelo para tracking de exportaciones
 model Exportacion {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  tipo        TipoExportacion
-  formato     String   // excel, csv, pdf, zip
-  fileUrl     String   @map("file_url")
-  expiraEn    DateTime @map("expira_en")
-  descargado  Boolean  @default(false)
-  createdAt   DateTime @default(now()) @map("created_at")
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  tipo           TipoExportacion
+  formato        String   // excel, csv, pdf, zip
+  nombreArchivo  String   @map("nombre_archivo") // Nombre del archivo generado
+  urlArchivo     String   @map("url_archivo") // URL pública del archivo
+  tamanoBytes    Int      @default(0) @map("tamano_bytes") // Tamaño en bytes
+  expiraEn       DateTime @map("expira_en")
+  descargado     Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiraEn])
@@ -792,45 +877,40 @@ model ExportacionProgramada {
 
 /// Modelo para eventos del calendario tributario
 model EventoCalendario {
-  id               String            @id @default(cuid())
-  userId           String?           @map("user_id") // null = evento predefinido del sistema
-  titulo           String
-  descripcion      String?           @db.Text
-  tipo             TipoEvento
-  categoria        CategoriaEvento
-  fechaInicio      DateTime          @map("fecha_inicio")
-  fechaFin         DateTime?         @map("fecha_fin")
-  diaCompleto      Boolean           @default(true) @map("dia_completo")
+  id            String                  @id @default(cuid())
+  userId        String                  @map("user_id")
+  titulo        String
+  descripcion   String?                 @db.Text
+  fecha         DateTime                // Fecha principal del evento
+  fechaFin      DateTime?               @map("fecha_fin") // Para eventos de varios días
+  tipo          TipoEventoCalendario
+  categoria     CategoriaEventoTributario?
+
+  // Sistema de notificaciones
+  notificar     Boolean                 @default(true)
+  notificado7   Boolean                 @default(false) // Notificado 7 días antes
+  notificado3   Boolean                 @default(false) // Notificado 3 días antes
+  notificado1   Boolean                 @default(false) // Notificado 1 día antes
 
   // Recurrencia
-  esRecurrente     Boolean           @default(false) @map("es_recurrente")
-  frecuencia       FrecuenciaEvento?
-  intervalo        Int?              @default(1) // cada X días/semanas/meses
-  fechaFinRecurrencia DateTime?      @map("fecha_fin_recurrencia")
+  recurrente    Boolean                 @default(false)
+  frecuencia    FrecuenciaRecurrencia?
 
   // Metadata
-  color            String?           @default("#0D9488") // Color Teal por defecto
-  ubicacion        String?
-  url              String?
-  notas            String?           @db.Text
+  color         String?                 @default("#4472C4")
+  urlExterno    String?                 @map("url_externo") // Link a recurso relacionado
+  completado    Boolean                 @default(false)
 
-  // Control
-  activo           Boolean           @default(true)
-  regimenAplicable String?           @map("regimen_aplicable") // SIMPLE, ORDINARIO, TODOS
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
 
   // Relaciones
-  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recordatorios    RecordatorioEvento[]
-
-  // Timestamps
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recordatorios RecordatorioEvento[]
 
   @@index([userId])
+  @@index([fecha])
   @@index([tipo])
-  @@index([categoria])
-  @@index([fechaInicio])
-  @@index([activo])
   @@map("eventos_calendario")
 }
 
@@ -865,28 +945,34 @@ model RecordatorioEvento {
 }
 
 /// Enum de tipos de evento
-enum TipoEvento {
-  PREDEFINIDO       // Evento del sistema (PILA, declaraciones, etc.)
-  PERSONALIZADO     // Evento creado por el usuario
-  SISTEMA           // Evento generado automáticamente
+enum TipoEventoCalendario {
+  VENCIMIENTO_PILA        // Pago de seguridad social
+  DECLARACION_RENTA       // Declaración de renta
+  DECLARACION_IVA         // Declaración de IVA
+  DECLARACION_RETEFUENTE  // Retención en la fuente
+  ACTUALIZACION_SMMLV     // Actualización salario mínimo
+  PAGO_IMPUESTOS          // Pago de impuestos
+  RENOVACION_RUT          // Renovación RUT
+  EVENTO_PERSONAL         // Evento personalizado del usuario
+  OTRO                    // Otros eventos
 }
 
 /// Enum de categorías de evento
-enum CategoriaEvento {
-  PILA_INDEPENDIENTES
-  PILA_DEPENDIENTES
-  DECLARACION_RENTA
-  DECLARACION_IVA
-  RETENCION_FUENTE
-  ICA
-  OTRO
+enum CategoriaEventoTributario {
+  TRIBUTARIO
+  CONTABLE
+  LABORAL
+  ADMINISTRATIVO
+  PERSONAL
 }
 
-/// Enum de frecuencia de eventos recurrentes
-enum FrecuenciaEvento {
-  DIARIA
-  SEMANAL
+/// Enum de frecuencia de recurrencia
+enum FrecuenciaRecurrencia {
   MENSUAL
+  BIMESTRAL
+  TRIMESTRAL
+  CUATRIMESTRAL
+  SEMESTRAL
   ANUAL
 }
 
@@ -1109,4 +1195,628 @@ enum SeveridadError {
   WARNING
   ERROR
   CRITICAL
+}
+
+// ============================================
+// SISTEMA DE SEGURIDAD DE AUTENTICACIÓN
+// ============================================
+
+/// Modelo para sesiones de usuario con seguimiento de seguridad
+/// Rastrea dispositivos, ubicaciones y actividad de sesión
+model Sesion {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+
+  // Identificación de sesión
+  token           String   @unique // Token de sesión único
+  activa          Boolean  @default(true)
+  esActual        Boolean  @default(false) @map("es_actual") // Marca la sesión actual del usuario
+
+  // Información del dispositivo
+  dispositivo     String?  // mobile, desktop, tablet
+  navegador       String?  // Chrome, Firefox, Safari, etc.
+  sistemaOperativo String? @map("sistema_operativo") // Windows, macOS, iOS, Android, etc.
+  userAgent       String   @db.Text @map("user_agent")
+
+  // Geolocalización
+  ip              String
+  pais            String?
+  ciudad          String?
+
+  // Control de actividad
+  ultimaActividad DateTime @default(now()) @map("ultima_actividad")
+  expiraEn        DateTime @map("expira_en")
+
+  // Auditoría
+  createdAt       DateTime @default(now()) @map("created_at")
+  cerradaEn       DateTime? @map("cerrada_en")
+  revokedAt       DateTime? @map("revoked_at") // Fecha en que se revocó la sesión
+
+  // Relación
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, activa])
+  @@index([token])
+  @@index([expiraEn])
+  @@index([ultimaActividad])
+  @@map("sesiones")
+}
+
+/// Modelo para tracking de intentos de login
+/// Permite detectar ataques de fuerza bruta y credential stuffing
+model IntentoLogin {
+  id                String   @id @default(cuid())
+  userId            String?  @map("user_id") // Null si el usuario no existe
+  email             String   // Email usado en el intento
+
+  // Resultado del intento
+  exitoso           Boolean
+  razonFallo        String?  @map("razon_fallo") // PASSWORD_INCORRECTO, CUENTA_BLOQUEADA, 2FA_FALLIDO, etc.
+
+  // Información del intento
+  ip                String
+  pais              String?
+  ciudad            String?
+  userAgent         String   @db.Text @map("user_agent")
+
+  // Detección de amenazas
+  bloqueadoPorRateLimit Boolean @default(false) @map("bloqueado_por_rate_limit")
+  ipSospechosa          Boolean @default(false) @map("ip_sospechosa")
+
+  // Timestamp
+  timestamp         DateTime @default(now())
+
+  // Relación (opcional, puede ser null si el usuario no existe)
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, timestamp])
+  @@index([userId, timestamp])
+  @@index([ip, timestamp])
+  @@index([exitoso, timestamp])
+  @@map("intentos_login")
+}
+
+/// Modelo para auditoría de eventos de seguridad
+/// Registra todas las acciones sensibles para cumplimiento legal
+model EventoSeguridad {
+  id              String                @id @default(cuid())
+  userId          String                @map("user_id")
+
+  // Tipo y severidad del evento
+  tipo            TipoEventoSeguridad
+  severidad       SeveridadEvento
+
+  // Descripción del evento
+  descripcion     String                @db.Text
+  metadata        Json?                 // Datos adicionales del evento (sin PII sensible)
+
+  // Contexto técnico
+  ip              String?
+  userAgent       String?               @db.Text @map("user_agent")
+  sesionId        String?               @map("sesion_id")
+
+  // Auditoría
+  timestamp       DateTime              @default(now())
+
+  // Relación
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@index([tipo, timestamp])
+  @@index([severidad, timestamp])
+  @@map("eventos_seguridad")
+}
+
+/// Tipos de eventos de seguridad
+enum TipoEventoSeguridad {
+  // Autenticación
+  LOGIN_EXITOSO
+  LOGIN_FALLIDO
+  LOGIN_BLOQUEADO
+  LOGOUT
+
+  // Gestión de cuenta
+  REGISTRO_CUENTA
+  CAMBIO_PASSWORD
+  RECUPERACION_PASSWORD
+  PASSWORD_RESET_SOLICITADO
+  PASSWORD_RESET_COMPLETADO
+  CUENTA_BLOQUEADA
+  CUENTA_DESBLOQUEADA
+
+  // 2FA
+  ACTIVACION_2FA
+  DESACTIVACION_2FA
+  TWO_FACTOR_HABILITADO
+  TWO_FACTOR_CODIGO_USADO
+  LOGIN_2FA_EXITOSO
+  LOGIN_2FA_FALLIDO
+
+  // Sesiones
+  SESION_INICIADA
+  SESION_CERRADA
+  SESION_EXPIRADA
+  SESION_REVOCADA
+
+  // Datos sensibles
+  ACCESO_DATOS_SENSIBLES
+  MODIFICACION_DATOS_SENSIBLES
+  EXPORTACION_DATOS
+
+  // Amenazas detectadas
+  INTENTO_FUERZA_BRUTA
+  CREDENTIAL_STUFFING_DETECTADO
+  IP_SOSPECHOSA
+  ACTIVIDAD_ANOMALA
+
+  // Administrativo
+  CAMBIO_PERMISOS
+  CAMBIO_CONFIGURACION_SEGURIDAD
+}
+
+/// Niveles de severidad para eventos de seguridad
+enum SeveridadEvento {
+  BAJA      // Eventos informativos normales
+  MEDIA     // Eventos que requieren atención
+  ALTA      // Eventos de riesgo alto
+  CRITICA   // Eventos críticos que requieren acción inmediata
+}
+
+// ============================================================================
+// ENUMS - CUMPLIMIENTO LEGAL Y PROTECCIÓN DE DATOS (LEY 1581 DE 2012)
+// ============================================================================
+
+/// Tipos de consentimiento según Ley 1581 de 2012
+enum TipoConsentimiento {
+  TERMINOS_CONDICIONES
+  POLITICA_PRIVACIDAD
+  TRATAMIENTO_DATOS_PERSONALES
+  COOKIES_ESENCIALES
+  COOKIES_ANALITICAS
+  COOKIES_MARKETING
+  COOKIES_PERSONALIZACION
+  NOTIFICACIONES_EMAIL
+  NOTIFICACIONES_PUSH
+  COMPARTIR_DATOS_TERCEROS
+  MARKETING_DIRECTO
+  TRANSFERENCIA_INTERNACIONAL
+}
+
+/// Estados de solicitud de eliminación de cuenta
+enum EstadoSolicitudEliminacion {
+  PENDIENTE            // Solicitud creada, esperando confirmación
+  CONFIRMADA           // Usuario confirmó con token
+  EN_PERIODO_GRACIA    // 30 días de espera antes de ejecutar
+  CANCELADA            // Usuario canceló la solicitud
+  EJECUTADA            // Cuenta eliminada exitosamente
+  ERROR                // Error durante el proceso
+}
+
+/// Estados de solicitud de portabilidad
+enum EstadoSolicitudPortabilidad {
+  PENDIENTE     // Solicitud en cola
+  PROCESANDO    // Generando archivo de exportación
+  COMPLETADA    // Exportación lista para descarga
+  ERROR         // Error durante la exportación
+}
+
+/// Tipos de acciones de privacidad para auditoría
+enum AccionPrivacidad {
+  CONSENTIMIENTO_OTORGADO
+  CONSENTIMIENTO_REVOCADO
+  SOLICITUD_EXPORTACION
+  EXPORTACION_COMPLETADA
+  SOLICITUD_ELIMINACION
+  ELIMINACION_CONFIRMADA
+  ELIMINACION_CANCELADA
+  ELIMINACION_EJECUTADA
+  DATOS_ACTUALIZADOS
+  DATOS_RECTIFICADOS
+  ACCESO_DATOS_PERSONALES
+  CONFIGURACION_COOKIES_ACTUALIZADA
+}
+
+// ============================================================================
+// MODELOS DE CUMPLIMIENTO LEGAL Y PROTECCIÓN DE DATOS
+// ============================================================================
+
+/// Registro de consentimientos del usuario
+/// Cumple con Art. 9 Ley 1581: "Consentimiento previo, expreso e informado"
+model ConsentimientoDatos {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tipo        TipoConsentimiento
+  otorgado    Boolean
+  version     String   // Versión del documento aceptado
+
+  // Metadata de auditoría
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent") @db.Text
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([tipo])
+  @@index([createdAt])
+  @@map("consentimientos_datos")
+}
+
+/// Solicitudes de eliminación de cuenta
+/// Derecho al Olvido - Art. 15 Ley 1581
+model SolicitudEliminacion {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  estado            EstadoSolicitudEliminacion @default(PENDIENTE)
+
+  // Control de proceso
+  tokenConfirmacion String?  @unique @map("token_confirmacion")
+  fechaSolicitud    DateTime @default(now()) @map("fecha_solicitud")
+  fechaConfirmacion DateTime? @map("fecha_confirmacion")
+  fechaEjecucion    DateTime? @map("fecha_ejecucion")
+  fechaCancelacion  DateTime? @map("fecha_cancelacion")
+
+  // Metadata
+  motivoEliminacion String?  @db.Text @map("motivo_eliminacion")
+  ipSolicitud       String?  @map("ip_solicitud")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([estado])
+  @@index([fechaSolicitud])
+  @@map("solicitudes_eliminacion")
+}
+
+/// Solicitudes de exportación de datos
+/// Derecho a la Portabilidad
+model SolicitudPortabilidad {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  estado         EstadoSolicitudPortabilidad @default(PENDIENTE)
+
+  // Archivo generado
+  archivoUrl     String?  @map("archivo_url")
+  archivoExpira  DateTime? @map("archivo_expira") // 7 días desde generación
+
+  // Metadata
+  ipSolicitud    String?  @map("ip_solicitud")
+  tamanoBytes    Int?     @map("tamano_bytes")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([estado])
+  @@index([createdAt])
+  @@map("solicitudes_portabilidad")
+}
+
+/// Configuración de cookies del usuario
+/// Cumplimiento con normativa de cookies
+model ConfiguracionCookies {
+  id                    String   @id @default(cuid())
+  userId                String   @unique @map("user_id")
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Preferencias
+  cookiesEsenciales     Boolean  @default(true) @map("cookies_esenciales")
+  cookiesAnaliticas     Boolean  @default(false) @map("cookies_analiticas")
+  cookiesMarketing      Boolean  @default(false) @map("cookies_marketing")
+  cookiesPersonalizacion Boolean @default(false) @map("cookies_personalizacion")
+
+  // Metadata
+  ipAceptacion          String?  @map("ip_aceptacion")
+  fechaAceptacion       DateTime? @map("fecha_aceptacion")
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("configuracion_cookies")
+}
+
+/// Log de acciones de privacidad
+/// Auditoría completa para demostrar cumplimiento
+model LogPrivacidad {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accion      AccionPrivacidad
+  descripcion String?  @db.Text
+
+  // Metadata
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent") @db.Text
+  metadata    Json?    // Datos adicionales contextuales
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([accion])
+  @@index([createdAt])
+  @@map("logs_privacidad")
+}
+
+// ============================================================================
+// SISTEMA DE AUDITORÍA Y TRAZABILIDAD COMPLETO
+// ============================================================================
+
+/// Log de auditoría - Registro inmutable de todas las acciones críticas
+model LogAuditoria {
+  id              String              @id @default(cuid())
+
+  // Usuario que realiza la acción
+  userId          String?             @map("user_id") // Null para acciones del sistema
+  userEmail       String?             @map("user_email") // Duplicado para búsquedas rápidas
+  userName        String?             @map("user_name") // Duplicado para reportes
+
+  // Acción realizada
+  accion          AccionAuditoria
+  recurso         String?             // Recurso afectado (ej: "factura:123")
+
+  // Resultado
+  exitoso         Boolean             @default(true)
+  codigoError     String?             @map("codigo_error")
+  mensajeError    String?             @db.Text @map("mensaje_error")
+
+  // Detalles técnicos (JSON para flexibilidad)
+  detalles        Json?               // Datos específicos de la acción
+  detallesAntes   Json?               @map("detalles_antes") // Estado anterior (para cambios)
+  detallesDespues Json?               @map("detalles_despues") // Estado posterior (para cambios)
+
+  // Contexto técnico
+  ip              String              // IPv4 o IPv6
+  ipGeo           Json?               @map("ip_geo") // {country, city, lat, lon}
+  userAgent       String              @db.Text @map("user_agent")
+  dispositivo     String?             // mobile, desktop, tablet
+  navegador       String?             // Chrome, Firefox, Safari
+  sistemaOperativo String?            @map("sistema_operativo") // Windows, macOS, Linux, iOS, Android
+
+  // Contexto de la petición
+  metodoHttp      String?             @map("metodo_http") // GET, POST, PUT, DELETE
+  ruta            String?             // /api/facturas/create
+  duracionMs      Int?                @map("duracion_ms") // Tiempo de ejecución
+
+  // Seguridad
+  nivelRiesgo     NivelRiesgo         @default(BAJO) @map("nivel_riesgo")
+  requiereRevision Boolean            @default(false) @map("requiere_revision")
+  revisadoPor     String?             @map("revisado_por")
+  fechaRevision   DateTime?           @map("fecha_revision")
+
+  // Metadata
+  timestamp       DateTime            @default(now())
+  sessionId       String?             @map("session_id") // ID de sesión
+  requestId       String?             @map("request_id") // ID único de request (para correlación)
+
+  // Contexto de auditoría
+  categoria       CategoriaAuditoria  @default(GENERAL)
+  tags            String[]            // Para búsquedas y agrupación
+
+  // Relación
+  user            User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Índices optimizados para búsquedas comunes
+  @@index([userId])
+  @@index([userEmail])
+  @@index([accion])
+  @@index([timestamp])
+  @@index([nivelRiesgo])
+  @@index([categoria])
+  @@index([exitoso])
+  @@index([ip])
+  @@index([sessionId])
+  @@index([requestId])
+  @@index([timestamp, userId]) // Búsquedas por usuario y fecha
+  @@index([timestamp, accion]) // Búsquedas por acción y fecha
+  @@map("logs_auditoria")
+}
+
+/// Alertas de seguridad generadas automáticamente
+model AlertaSeguridad {
+  id              String              @id @default(cuid())
+
+  // Clasificación
+  tipo            TipoAlerta
+  severidad       SeveridadAlerta
+
+  // Descripción
+  titulo          String
+  descripcion     String              @db.Text
+
+  // Usuario afectado
+  userId          String?             @map("user_id")
+  userEmail       String?             @map("user_email")
+
+  // Contexto
+  logIds          String[]            @map("log_ids") // IDs de logs relacionados
+  metadata        Json                // Datos adicionales
+
+  // Geolocalización
+  ip              String?
+  ubicacion       String?
+
+  // Estado
+  estado          EstadoAlerta        @default(PENDIENTE)
+
+  // Gestión
+  asignadoA       String?             @map("asignado_a") // Admin que la gestiona
+  fechaAsignacion DateTime?           @map("fecha_asignacion")
+  fechaResolucion DateTime?           @map("fecha_resolucion")
+  notas           String?             @db.Text
+  accionTomada    String?             @db.Text @map("accion_tomada")
+
+  // Notificaciones
+  notificado      Boolean             @default(false)
+  fechaNotificacion DateTime?         @map("fecha_notificacion")
+
+  // Metadata
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  // Relación
+  user            User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tipo])
+  @@index([severidad])
+  @@index([estado])
+  @@index([createdAt])
+  @@map("alertas_seguridad")
+}
+
+/// Políticas de retención de logs para cumplimiento legal
+model PoliticaRetencion {
+  id                String              @id @default(cuid())
+
+  // Política
+  categoria         CategoriaAuditoria  @unique
+  diasRetencion     Int                 @map("dias_retencion") // Días de retención
+  descripcion       String              @db.Text
+
+  // Legal
+  requisitoLegal    String?             @db.Text @map("requisito_legal") // Ley que lo requiere
+
+  // Metadata
+  activa            Boolean             @default(true)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@map("politicas_retencion")
+}
+
+// ============================================================================
+// ENUMS DE AUDITORÍA
+// ============================================================================
+
+enum AccionAuditoria {
+  // Autenticación
+  LOGIN
+  LOGOUT
+  LOGIN_FALLIDO
+  PASSWORD_CAMBIADO
+  PASSWORD_RESET_SOLICITADO
+  PASSWORD_RESET_COMPLETADO
+  TWO_FACTOR_HABILITADO
+  TWO_FACTOR_DESHABILITADO
+  SESION_REVOCADA
+
+  // Perfil de usuario
+  REGISTRO
+  PERFIL_ACTUALIZADO
+  EMAIL_CAMBIADO
+  TELEFONO_CAMBIADO
+  DOCUMENTO_CAMBIADO
+
+  // PILA
+  PILA_LIQUIDADA
+  PILA_PAGADA
+  COMPROBANTE_DESCARGADO
+  CONFIGURACION_PILA_ACTUALIZADA
+
+  // Facturación
+  FACTURA_CREADA
+  FACTURA_EMITIDA
+  FACTURA_ANULADA
+  FACTURA_DESCARGADA
+  FACTURA_ENVIADA_EMAIL
+  CLIENTE_CREADO
+  CLIENTE_ACTUALIZADO
+  CLIENTE_ELIMINADO
+
+  // IA y Asesoría
+  CONSULTA_IA
+  CONVERSACION_CREADA
+  CONVERSACION_ELIMINADA
+
+  // Exportación y Privacidad
+  DATOS_EXPORTADOS
+  SOLICITUD_ELIMINACION
+  CUENTA_ELIMINADA
+  CONSENTIMIENTO_OTORGADO
+  CONSENTIMIENTO_REVOCADO
+
+  // Administración
+  USUARIO_BLOQUEADO
+  USUARIO_DESBLOQUEADO
+  ROL_ASIGNADO
+  CONFIGURACION_SISTEMA_CAMBIADA
+  LOG_REVISADO
+  ALERTA_GESTIONADA
+
+  // Archivos
+  ARCHIVO_SUBIDO
+  ARCHIVO_DESCARGADO
+  ARCHIVO_ELIMINADO
+
+  // Seguridad
+  INTENTO_ACCESO_NO_AUTORIZADO
+  ACCESO_RECURSO_DENEGADO
+  ACTIVIDAD_SOSPECHOSA_DETECTADA
+  IP_BLOQUEADA
+
+  // Sistema
+  ERROR_SISTEMA
+  BACKUP_REALIZADO
+  MIGRACION_EJECUTADA
+}
+
+enum CategoriaAuditoria {
+  AUTENTICACION
+  AUTORIZACION
+  DATOS_PERSONALES
+  DATOS_FINANCIEROS
+  FACTURACION
+  SEGURIDAD_SOCIAL
+  INTELIGENCIA_ARTIFICIAL
+  ARCHIVOS
+  ADMINISTRACION
+  SEGURIDAD
+  SISTEMA
+  GENERAL
+}
+
+enum NivelRiesgo {
+  BAJO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+enum TipoAlerta {
+  MULTIPLES_INTENTOS_FALLIDOS
+  ACCESO_UBICACION_INUSUAL
+  ACCESO_DISPOSITIVO_NUEVO
+  CAMBIOS_MULTIPLES_RAPIDOS
+  ACCESO_HORARIO_INUSUAL
+  DESCARGA_MASIVA_DATOS
+  INTENTOS_ACCESO_NO_AUTORIZADO
+  PATRON_ACTIVIDAD_SOSPECHOSA
+  POSIBLE_CUENTA_COMPROMETIDA
+  ACTIVIDAD_ADMINISTRATIVA_INUSUAL
+}
+
+enum SeveridadAlerta {
+  INFO
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum EstadoAlerta {
+  PENDIENTE
+  EN_REVISION
+  FALSO_POSITIVO
+  CONFIRMADA
+  RESUELTA
+  ARCHIVADA
 }

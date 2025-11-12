@@ -1,0 +1,341 @@
+/**
+ * ULE - PÁGINA DE BIBLIOTECA DE FACTURAS
+ * Lista completa de facturas con dashboard, filtros y acciones
+ */
+
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { EstadisticasDashboard } from '@/components/facturacion/estadisticas-dashboard'
+import { GraficoFacturacion } from '@/components/facturacion/grafico-facturacion'
+import { TopClientes } from '@/components/facturacion/top-clientes'
+import { FiltrosFacturasComponent } from '@/components/facturacion/filtros-facturas'
+import { CarpetaMes } from '@/components/facturacion/carpeta-mes'
+import { AnularFacturaModal } from '@/components/facturacion/anular-factura-modal'
+import { EnviarEmailModal } from '@/components/facturacion/enviar-email-modal'
+import { useFacturas, useEstadisticas, FiltrosFacturas } from '@/hooks/use-facturas'
+
+export default function FacturasPage() {
+  const router = useRouter()
+
+  // ==============================================
+  // ESTADO
+  // ==============================================
+
+  const [filtros, setFiltros] = useState<FiltrosFacturas>({
+    estado: null,
+    fechaDesde: null,
+    fechaHasta: null,
+    clienteId: null,
+    montoMin: null,
+    montoMax: null,
+    busqueda: null,
+    page: 1,
+    limit: 50,
+  })
+
+  const [facturaSeleccionadaAnular, setFacturaSeleccionadaAnular] = useState<any>(null)
+  const [facturaSeleccionadaEmail, setFacturaSeleccionadaEmail] = useState<any>(null)
+
+  // ==============================================
+  // HOOKS
+  // ==============================================
+
+  const {
+    facturasPorMes,
+    pagination,
+    isLoading: isLoadingFacturas,
+    isError: isErrorFacturas,
+    error: errorFacturas,
+    mutate: mutateFacturas,
+  } = useFacturas(filtros)
+
+  const {
+    estadisticas,
+    isLoading: isLoadingEstadisticas,
+    isError: isErrorEstadisticas,
+    mutate: mutateEstadisticas,
+  } = useEstadisticas()
+
+  // ==============================================
+  // HANDLERS
+  // ==============================================
+
+  const handleVerFactura = (facturaId: string) => {
+    // En una versión completa, abrir modal de detalle o navegar a página de detalle
+    router.push(`/facturacion/facturas/${facturaId}`)
+  }
+
+  const handleAnularFactura = async (facturaId: string, motivo: string) => {
+    try {
+      const res = await fetch('/api/facturacion/anular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ facturaId, motivo }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al anular factura')
+      }
+
+      // Refrescar datos
+      await mutateFacturas()
+      await mutateEstadisticas()
+
+      // Mostrar notificación de éxito
+      alert('Factura anulada exitosamente')
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const handleEnviarEmail = async (
+    facturaId: string,
+    destinatario: string,
+    asunto: string,
+    mensaje: string,
+    copiaUsuario: boolean
+  ) => {
+    try {
+      const res = await fetch('/api/facturacion/enviar-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          facturaId,
+          destinatario,
+          asunto,
+          mensaje,
+          copiaUsuario,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al enviar email')
+      }
+
+      // Mostrar notificación de éxito
+      // En producción, usar toast notification
+      alert(`Factura enviada exitosamente a ${destinatario}`)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const handleDescargarPDF = (pdfUrl: string, numeroFactura: string) => {
+    // Abrir PDF en nueva pestaña
+    window.open(pdfUrl, '_blank')
+  }
+
+  const handleDescargarXML = (xmlUrl: string, numeroFactura: string) => {
+    // Descargar XML
+    const link = document.createElement('a')
+    link.href = xmlUrl
+    link.download = `factura-${numeroFactura}.xml`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handlePaginaChange = (nuevaPagina: number) => {
+    setFiltros({ ...filtros, page: nuevaPagina })
+    // Scroll al inicio
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ==============================================
+  // RENDER
+  // ==============================================
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold text-dark tracking-tight flex items-center gap-3">
+              <span className="material-symbols-outlined text-4xl text-primary">
+                receipt_long
+              </span>
+              Biblioteca de Facturas
+            </h1>
+            <p className="text-dark-100 font-medium">
+              Administra y consulta todas tus facturas electrónicas
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push('/facturacion/nueva')}
+            className="bg-primary hover:bg-primary/90 text-white transition-colors"
+          >
+            <span className="material-symbols-outlined mr-2">add</span>
+            Nueva Factura
+          </Button>
+        </div>
+
+        {/* Dashboard de estadísticas */}
+        <EstadisticasDashboard
+          totalFacturadoMes={estadisticas?.totalFacturadoMes || 0}
+          totalFacturadoAño={estadisticas?.totalFacturadoAño || 0}
+          facturasPendientes={estadisticas?.facturasPendientes || 0}
+          promedioFactura={estadisticas?.promedioFactura || 0}
+          isLoading={isLoadingEstadisticas}
+        />
+
+        {/* Gráficos */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Gráfico de facturación (2/3) */}
+          <div className="lg:col-span-2">
+            <GraficoFacturacion
+              datos={estadisticas?.facturacionMensual || []}
+              isLoading={isLoadingEstadisticas}
+            />
+          </div>
+
+          {/* Top 5 clientes (1/3) */}
+          <div className="lg:col-span-1">
+            <TopClientes
+              clientes={estadisticas?.topClientes || []}
+              isLoading={isLoadingEstadisticas}
+            />
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <FiltrosFacturasComponent
+          filtros={filtros}
+          onFiltrosChange={setFiltros}
+          clientes={[]} // En producción, cargar lista de clientes
+        />
+
+        {/* Error */}
+        {isErrorFacturas && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+            <span className="material-symbols-outlined text-red-600 text-2xl">
+              error
+            </span>
+            <div>
+              <p className="font-semibold text-red-900">Error al cargar facturas</p>
+              <p className="text-sm text-red-700">{errorFacturas}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading */}
+        {isLoadingFacturas && (
+          <div className="text-center py-12">
+            <span className="material-symbols-outlined text-5xl text-teal-600 animate-spin">
+              progress_activity
+            </span>
+            <p className="text-slate-600 mt-4">Cargando facturas...</p>
+          </div>
+        )}
+
+        {/* Facturas por mes */}
+        {!isLoadingFacturas && !isErrorFacturas && (
+          <>
+            {facturasPorMes.length === 0 ? (
+              <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
+                <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">
+                  description
+                </span>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  No hay facturas
+                </h3>
+                <p className="text-slate-600 mb-6">
+                  {filtros.estado || filtros.busqueda || filtros.clienteId
+                    ? 'No se encontraron facturas con los filtros aplicados'
+                    : 'Comienza creando tu primera factura electrónica'}
+                </p>
+                <Button
+                  onClick={() => router.push('/facturacion/nueva')}
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                >
+                  <span className="material-symbols-outlined mr-2">add</span>
+                  Crear Primera Factura
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {facturasPorMes.map((carpeta) => (
+                  <CarpetaMes
+                    key={`${carpeta.año}-${carpeta.mesNumero}`}
+                    mes={carpeta.mes}
+                    mesNumero={carpeta.mesNumero}
+                    año={carpeta.año}
+                    facturas={carpeta.facturas}
+                    totalMes={carpeta.totalMes}
+                    cantidadFacturas={carpeta.cantidadFacturas}
+                    onVerFactura={handleVerFactura}
+                    onAnularFactura={(facturaId) => {
+                      const factura = carpeta.facturas.find((f) => f.id === facturaId)
+                      if (factura) {
+                        setFacturaSeleccionadaAnular(factura)
+                      }
+                    }}
+                    onEnviarEmail={(facturaId) => {
+                      const factura = carpeta.facturas.find((f) => f.id === facturaId)
+                      if (factura) {
+                        setFacturaSeleccionadaEmail(factura)
+                      }
+                    }}
+                    onDescargarPDF={handleDescargarPDF}
+                    onDescargarXML={handleDescargarXML}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Paginación */}
+        {!isLoadingFacturas && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-4">
+            <div className="text-sm text-slate-600">
+              Mostrando página {pagination.page} de {pagination.totalPages} (
+              {pagination.total} facturas en total)
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePaginaChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+              >
+                <span className="material-symbols-outlined">chevron_left</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePaginaChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.totalPages}
+              >
+                <span className="material-symbols-outlined">chevron_right</span>
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal Anular Factura */}
+      <AnularFacturaModal
+        isOpen={!!facturaSeleccionadaAnular}
+        onClose={() => setFacturaSeleccionadaAnular(null)}
+        factura={facturaSeleccionadaAnular}
+        onConfirmar={handleAnularFactura}
+      />
+
+      {/* Modal Enviar Email */}
+      <EnviarEmailModal
+        isOpen={!!facturaSeleccionadaEmail}
+        onClose={() => setFacturaSeleccionadaEmail(null)}
+        factura={facturaSeleccionadaEmail}
+        onEnviar={handleEnviarEmail}
+      />
+    </div>
+  )
+}

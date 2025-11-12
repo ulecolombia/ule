@@ -27,6 +27,24 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: [
+          // Content Security Policy - Protección contra XSS
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.sentry.io",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data: https://fonts.gstatic.com",
+              "connect-src 'self' https://api.anthropic.com https://*.upstash.io https://*.sentry.io https://ipapi.co",
+              "frame-src 'self' https://www.youtube.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              "upgrade-insecure-requests",
+            ].join('; '),
+          },
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
@@ -53,7 +71,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
           }
         ]
       },
@@ -130,12 +148,9 @@ const nextConfig = {
 
   // Experimental features
   experimental: {
-    // Optimizar CSS
-    optimizeCss: true,
     // Optimizar paquetes
     optimizePackageImports: [
       'lucide-react',
-      'framer-motion',
       '@radix-ui/react-dialog',
       '@radix-ui/react-select',
       '@radix-ui/react-popover',

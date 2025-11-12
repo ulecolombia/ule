@@ -1,0 +1,6 @@
+# Ignorar todos los archivos exportados
+*
+
+# Excepto este archivo y .gitkeep
+!.gitignore
+!.gitkeep

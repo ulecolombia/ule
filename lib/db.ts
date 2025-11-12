@@ -2,13 +2,12 @@
  * ULE - CLIENTE PRISMA
  * Instancia única de PrismaClient para la aplicación
  *
- * NOTA: No podemos usar middleware de Prisma ($use) porque Next.js Middleware
- * corre en Edge Runtime, donde Prisma Client no soporta middleware.
- *
- * Para soft deletes, usar las funciones helper en lib/soft-delete.ts
+ * Incluye middleware de encriptación automática para campos sensibles
+ * Cumple con Ley 1581 de 2012 (Colombia) - Protección de datos personales
  */
 
 import { PrismaClient } from '@prisma/client'
+import { createEncryptionMiddleware } from '@/lib/security/field-encryption'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -16,10 +15,34 @@ declare global {
 }
 
 /**
- * Crea una instancia de PrismaClient sin middleware
- * (El middleware no es compatible con Edge Runtime)
+ * Crea una instancia de PrismaClient con middleware de encriptación
  */
-export const prisma = global.prisma || new PrismaClient()
+const createPrismaClient = () => {
+  const client = new PrismaClient()
+
+  // Campos sensibles del modelo User
+  const userSensitiveFields = [
+    'numeroDocumento',
+    'telefono',
+    'twoFactorSecret',
+  ]
+
+  // Campos sensibles del modelo Cliente
+  const clienteSensitiveFields = [
+    'numeroDocumento',
+    'telefono',
+  ]
+
+  // Agregar middleware de encriptación para User
+  client.$use(createEncryptionMiddleware(userSensitiveFields))
+
+  // TODO: Agregar middleware para Cliente cuando sea necesario
+  // client.$use(createEncryptionMiddleware(clienteSensitiveFields))
+
+  return client
+}
+
+export const prisma = global.prisma || createPrismaClient()
 export const db = prisma // Alias para compatibilidad
 
 if (process.env.NODE_ENV !== 'production') {

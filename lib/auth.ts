@@ -5,6 +5,8 @@
 
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import AppleProvider from 'next-auth/providers/apple'
 import { loginSchema } from '@/lib/validations/auth'
 import { validateNextAuthSecret } from '@/lib/env-validation'
 import type { User } from '@prisma/client'
@@ -48,6 +50,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     verifyRequest: '/login', // Para verificación de email (futuro)
   },
   providers: [
+    // Google OAuth
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
+    }),
+
+    // Apple OAuth
+    AppleProvider({
+      clientId: process.env.APPLE_CLIENT_ID || '',
+      clientSecret: process.env.APPLE_CLIENT_SECRET || '',
+    }),
+
+    // Credentials (Email/Password)
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -88,6 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error('Contraseña incorrecta')
         }
 
+        // ✅ ALTO #10: Incluir permisos de admin para evitar queries repetidas
         // Retornar usuario sin password
         return {
           id: user.id,
@@ -96,6 +119,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           image: user.image,
           perfilCompleto: user.perfilCompleto,
+          isAdmin: user.isAdmin,
+          isSuperAdmin: user.isSuperAdmin,
         }
       },
     }),
@@ -103,6 +128,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     /**
      * Callback JWT: Agregar campos custom al token
+     * ✅ ALTO #10: Cachear permisos de admin para evitar queries en cada request
      */
     async jwt({ token, user, trigger, session }) {
       // En el primer login, agregar datos del usuario al token
@@ -110,6 +136,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id
         token.role = (user as User).role
         token.perfilCompleto = (user as User).perfilCompleto
+        token.isAdmin = (user as User).isAdmin || false
+        token.isSuperAdmin = (user as User).isSuperAdmin || false
       }
 
       // Actualizar token si hay cambios en la sesión
@@ -117,6 +145,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.name = session.name
         token.email = session.email
         token.perfilCompleto = session.perfilCompleto
+        if (session.isAdmin !== undefined) token.isAdmin = session.isAdmin
+        if (session.isSuperAdmin !== undefined) token.isSuperAdmin = session.isSuperAdmin
       }
 
       return token
@@ -124,12 +154,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     /**
      * Callback Session: Agregar campos custom a la sesión
+     * ✅ ALTO #10: Incluir permisos de admin desde JWT (sin query a DB)
      */
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as User['role']
         session.user.perfilCompleto = token.perfilCompleto as boolean
+        session.user.isAdmin = token.isAdmin as boolean
+        session.user.isSuperAdmin = token.isSuperAdmin as boolean
       }
 
       return session
@@ -159,9 +192,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     /**
      * Evento: Usuario inició sesión
      */
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       console.log(`[Ule Auth] Usuario ${user.email} inició sesión`)
-      // Aquí puedes agregar lógica de auditoría, analytics, etc.
+
+      // Si es OAuth (Google/Apple), crear o actualizar usuario en BD
+      if (account?.provider && account.provider !== 'credentials') {
+        const { db } = await import('@/lib/db')
+
+        try {
+          // Verificar si el usuario ya existe
+          const existingUser = await db.user.findUnique({
+            where: { email: user.email! },
+          })
+
+          if (!existingUser && user.email) {
+            // Crear nuevo usuario desde OAuth
+            const email = user.email
+            const defaultName = email.split('@')[0] || 'Usuario'
+            const userName: string = user.name || defaultName
+
+            await db.user.create({
+              data: {
+                email: email,
+                name: userName,
+                image: user.image ?? null,
+                role: 'USER',
+                perfilCompleto: false,
+                // No password para usuarios OAuth
+                emailVerified: new Date(), // Confiar en el proveedor OAuth
+              },
+            })
+            console.log(`[Ule Auth] Nuevo usuario creado desde ${account.provider}`)
+          } else if (existingUser && user.email) {
+            // Actualizar información del usuario existente
+            await db.user.update({
+              where: { email: user.email },
+              data: {
+                name: user.name ?? existingUser.name,
+                image: user.image ?? existingUser.image,
+                emailVerified: new Date(),
+              },
+            })
+            console.log(`[Ule Auth] Usuario actualizado desde ${account.provider}`)
+          }
+        } catch (error) {
+          console.error('[Ule Auth] Error al crear/actualizar usuario OAuth:', error)
+        }
+      }
     },
 
     /**

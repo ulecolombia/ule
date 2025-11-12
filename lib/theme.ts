@@ -72,16 +72,16 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export const getButtonStyles = (variant: ButtonVariant = 'primary', size: ButtonSize = 'md') => {
-  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
+  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2'
 
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg',
-    secondary: 'bg-card-light dark:bg-card-dark text-text-light dark:text-text-dark border border-subtext-light/20 hover:border-primary',
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white',
-    ghost: 'text-primary hover:bg-primary-light/20',
-    danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md',
-    default: 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg',
-    destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-md',
+    primary: 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg focus:ring-primary',
+    secondary: 'bg-card-light dark:bg-card-dark text-text-light dark:text-text-dark border border-subtext-light/20 hover:border-primary focus:ring-primary',
+    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary',
+    ghost: 'text-primary hover:bg-primary-light/20 focus:ring-primary',
+    danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md focus:ring-red-500',
+    default: 'bg-primary text-white hover:bg-primary-dark shadow-md hover:shadow-lg focus:ring-primary',
+    destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-md focus:ring-red-500',
   }
 
   const sizeStyles: Record<ButtonSize, string> = {

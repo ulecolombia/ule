@@ -3,6 +3,7 @@
  * Landing page con showcase del sistema de diseño
  */
 
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -28,7 +29,7 @@ export default function HomePage() {
 
           {/* Badge más grande */}
           <Badge className="mb-8 px-6 py-2 text-base">
-            Fase 0.1 - Setup Completo
+            Sistema de Autenticación Moderno ✨
           </Badge>
 
           {/* Título más grande y con más peso */}
@@ -43,10 +44,14 @@ export default function HomePage() {
 
           {/* Botones más grandes */}
           <div className="flex justify-center gap-6">
-            <Button className="px-8 py-4 text-lg">Comenzar</Button>
-            <Button variant="outline" className="px-8 py-4 text-lg">
-              Documentación
-            </Button>
+            <Link href="/registro">
+              <Button className="px-8 py-4 text-lg">Comenzar Gratis</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="outline" className="px-8 py-4 text-lg">
+                Iniciar Sesión
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
