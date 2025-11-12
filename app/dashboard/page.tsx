@@ -137,7 +137,7 @@ export default function DashboardPage() {
   return (
     <>
       <Header userName={session.user.name} userEmail={session.user.email} />
-      <div className="min-h-screen p-6 bg-gray-50">
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#F8F9FA' }}>
         <div className="mx-auto max-w-7xl">
           {/* Breadcrumbs */}
           {/* <Breadcrumbs /> */}
@@ -272,6 +272,7 @@ export default function DashboardPage() {
                 <Link
                   href="/pila"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -292,6 +293,7 @@ export default function DashboardPage() {
                 <Link
                   href="/facturacion"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -312,6 +314,7 @@ export default function DashboardPage() {
                 <Link
                   href="/calendario"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -332,6 +335,7 @@ export default function DashboardPage() {
                 <Link
                   href="/herramientas/calculadoras"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -352,6 +356,7 @@ export default function DashboardPage() {
                 <Link
                   href="/herramientas/simuladores"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -372,6 +377,7 @@ export default function DashboardPage() {
                 <Link
                   href="/biblioteca"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
@@ -392,6 +398,7 @@ export default function DashboardPage() {
                 <Link
                   href="/asesoria"
                   className="group flex items-center gap-4 rounded-lg border-2 border-light-200 p-4 transition-all hover:border-primary hover:bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">

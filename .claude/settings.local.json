@@ -58,7 +58,8 @@
       "Bash(CI=1 npx prisma migrate dev --name add_privacy_compliance_models --skip-generate)",
       "Bash(npm run audit:init:*)",
       "Bash(npm uninstall:*)",
-      "Bash(timeout 60 npm run dev:*)"
+      "Bash(timeout 60 npm run dev:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
