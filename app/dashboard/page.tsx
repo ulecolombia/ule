@@ -147,7 +147,7 @@ export default function DashboardPage() {
             <h1 className="mb-3 text-4xl font-bold text-dark tracking-tight">
               Hola, {session.user.name} 👋
             </h1>
-            <p className="text-lg font-medium" style={{ color: '#9CA3AF' }}>
+            <p className="text-lg font-medium text-gray-400">
               Gestiona tus aportes y obligaciones de forma inteligente
             </p>
           </div>
