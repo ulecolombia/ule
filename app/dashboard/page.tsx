@@ -272,7 +272,7 @@ export default function DashboardPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {/* Acción 1: Liquidar PILA */}
                 <Link
-                  href="/pila"
+                  href="/pila/liquidar"
                   className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >

@@ -6,62 +6,60 @@
  * para trabajadores independientes y por prestación de servicios (OPS).
  */
 
-import { Decimal } from '@prisma/client/runtime/library';
-
 // ============================================
 // CONSTANTES OFICIALES 2025
 // ============================================
 
 /** Salario Mínimo Legal Mensual Vigente 2025 */
-export const SMMLV_2025 = 1423500;
+export const SMMLV_2025 = 1423500
 
 /** Ingreso Base de Cotización Mínimo (1 SMMLV) */
-export const IBC_MINIMO = SMMLV_2025;
+export const IBC_MINIMO = SMMLV_2025
 
 /** Ingreso Base de Cotización Máximo (25 SMMLV) */
-export const IBC_MAXIMO = SMMLV_2025 * 25;
+export const IBC_MAXIMO = SMMLV_2025 * 25
 
 // ============================================
 // PORCENTAJES DE COTIZACIÓN
 // ============================================
 
 /** Porcentaje de cotización a salud (EPS) */
-export const PORCENTAJE_SALUD = 12.5;
+export const PORCENTAJE_SALUD = 12.5
 
 /** Porcentaje de cotización a pensión */
-export const PORCENTAJE_PENSION = 16.0;
+export const PORCENTAJE_PENSION = 16.0
 
 /**
  * Tabla de porcentajes ARL según nivel de riesgo
  * Resolución 2388 de 2016 - Ministerio de Trabajo
  */
 export const PORCENTAJES_ARL = {
-  I: 0.522,   // Riesgo mínimo - Actividades administrativas, oficina
-  II: 1.044,  // Riesgo bajo - Comercio, servicios
+  I: 0.522, // Riesgo mínimo - Actividades administrativas, oficina
+  II: 1.044, // Riesgo bajo - Comercio, servicios
   III: 2.436, // Riesgo medio - Manufactura, transporte
-  IV: 4.350,  // Riesgo alto - Procesos industriales, mecánicos
-  V: 6.960,   // Riesgo máximo - Minería, construcción, alturas
-} as const;
+  IV: 4.35, // Riesgo alto - Procesos industriales, mecánicos
+  V: 6.96, // Riesgo máximo - Minería, construcción, alturas
+} as const
 
 // ============================================
 // TIPOS
 // ============================================
 
 /** Niveles de riesgo ARL según clasificación colombiana */
-export type NivelRiesgoARL = keyof typeof PORCENTAJES_ARL;
+export type NivelRiesgoARL = keyof typeof PORCENTAJES_ARL
 
 /**
  * Resultado del cálculo de IBC
  */
 export interface CalculoIBC {
   /** Ingreso reportado por el usuario */
-  ingresoReportado: number;
+  ingresoReportado: number
   /** IBC calculado (puede estar ajustado a límites) */
-  ibc: number;
+  ibc: number
   /** Indica si se aplicó ajuste al mínimo o máximo */
-  ajustado: boolean;
+  ajustado: boolean
   /** Motivo del ajuste si aplica */
-  motivoAjuste?: 'MINIMO' | 'MAXIMO';
+  motivoAjuste?: 'MINIMO' | 'MAXIMO'
 }
 
 /**
@@ -69,34 +67,34 @@ export interface CalculoIBC {
  */
 export interface CalculoAportes {
   /** Ingreso Base de Cotización */
-  ibc: number;
+  ibc: number
   /** Aporte a salud (12.5%) */
-  salud: number;
+  salud: number
   /** Aporte a pensión (16%) */
-  pension: number;
+  pension: number
   /** Aporte a ARL (según nivel de riesgo) */
-  arl: number;
+  arl: number
   /** Total a pagar */
-  total: number;
+  total: number
   /** Desglose detallado de cada componente */
   desglose: {
     salud: {
-      base: number;
-      porcentaje: number;
-      valor: number;
-    };
+      base: number
+      porcentaje: number
+      valor: number
+    }
     pension: {
-      base: number;
-      porcentaje: number;
-      valor: number;
-    };
+      base: number
+      porcentaje: number
+      valor: number
+    }
     arl: {
-      base: number;
-      porcentaje: number;
-      valor: number;
-      nivelRiesgo: NivelRiesgoARL;
-    };
-  };
+      base: number
+      porcentaje: number
+      valor: number
+      nivelRiesgo: NivelRiesgoARL
+    }
+  }
 }
 
 // ============================================
@@ -122,27 +120,27 @@ export interface CalculoAportes {
  * ```
  */
 export function calcularIBC(ingresoMensual: number): CalculoIBC {
-  let ibc = ingresoMensual;
-  let ajustado = false;
-  let motivoAjuste: 'MINIMO' | 'MAXIMO' | undefined;
+  let ibc = ingresoMensual
+  let ajustado = false
+  let motivoAjuste: 'MINIMO' | 'MAXIMO' | undefined
 
   // Validación de ingreso
   if (ingresoMensual <= 0) {
-    throw new Error('El ingreso mensual debe ser mayor a cero');
+    throw new Error('El ingreso mensual debe ser mayor a cero')
   }
 
   // Aplicar límite mínimo (1 SMMLV)
   if (ibc < IBC_MINIMO) {
-    ibc = IBC_MINIMO;
-    ajustado = true;
-    motivoAjuste = 'MINIMO';
+    ibc = IBC_MINIMO
+    ajustado = true
+    motivoAjuste = 'MINIMO'
   }
 
   // Aplicar límite máximo (25 SMMLV)
   if (ibc > IBC_MAXIMO) {
-    ibc = IBC_MAXIMO;
-    ajustado = true;
-    motivoAjuste = 'MAXIMO';
+    ibc = IBC_MAXIMO
+    ajustado = true
+    motivoAjuste = 'MAXIMO'
   }
 
   return {
@@ -150,7 +148,7 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
     ibc: Math.round(ibc),
     ajustado,
     motivoAjuste,
-  };
+  }
 }
 
 /**
@@ -171,17 +169,14 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
  */
 export function calcularSalud(ibc: number): number {
   if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero');
+    throw new Error('IBC debe ser mayor a cero')
   }
 
-  // Usar Decimal para precisión exacta (sin pérdida de centavos)
-  const ibcDecimal = new Decimal(ibc);
-  const porcentaje = new Decimal(PORCENTAJE_SALUD).div(100);
-  const resultado = ibcDecimal.mul(porcentaje);
+  // Calcular porcentaje y redondear
+  const resultado = ibc * (PORCENTAJE_SALUD / 100)
 
-  // Redondear usando estrategia bancaria (round half to even)
-  // Esto minimiza el sesgo acumulativo en múltiples cálculos
-  return resultado.toDecimalPlaces(0, Decimal.ROUND_HALF_EVEN).toNumber();
+  // Redondear al entero más cercano
+  return Math.round(resultado)
 }
 
 /**
@@ -202,16 +197,14 @@ export function calcularSalud(ibc: number): number {
  */
 export function calcularPension(ibc: number): number {
   if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero');
+    throw new Error('IBC debe ser mayor a cero')
   }
 
-  // Usar Decimal para precisión exacta (sin pérdida de centavos)
-  const ibcDecimal = new Decimal(ibc);
-  const porcentaje = new Decimal(PORCENTAJE_PENSION).div(100);
-  const resultado = ibcDecimal.mul(porcentaje);
+  // Calcular porcentaje y redondear
+  const resultado = ibc * (PORCENTAJE_PENSION / 100)
 
-  // Redondear usando estrategia bancaria (round half to even)
-  return resultado.toDecimalPlaces(0, Decimal.ROUND_HALF_EVEN).toNumber();
+  // Redondear al entero más cercano
+  return Math.round(resultado)
 }
 
 /**
@@ -233,21 +226,19 @@ export function calcularPension(ibc: number): number {
  */
 export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
   if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero');
+    throw new Error('IBC debe ser mayor a cero')
   }
 
-  const porcentaje = PORCENTAJES_ARL[nivelRiesgo];
+  const porcentaje = PORCENTAJES_ARL[nivelRiesgo]
   if (!porcentaje) {
-    throw new Error(`Nivel de riesgo inválido: ${nivelRiesgo}`);
+    throw new Error(`Nivel de riesgo inválido: ${nivelRiesgo}`)
   }
 
-  // Usar Decimal para precisión exacta (sin pérdida de centavos)
-  const ibcDecimal = new Decimal(ibc);
-  const porcentajeDecimal = new Decimal(porcentaje).div(100);
-  const resultado = ibcDecimal.mul(porcentajeDecimal);
+  // Calcular porcentaje y redondear
+  const resultado = ibc * (porcentaje / 100)
 
-  // Redondear usando estrategia bancaria (round half to even)
-  return resultado.toDecimalPlaces(0, Decimal.ROUND_HALF_EVEN).toNumber();
+  // Redondear al entero más cercano
+  return Math.round(resultado)
 }
 
 /**
@@ -276,13 +267,13 @@ export function calcularTotalAportes(
   nivelRiesgo: NivelRiesgoARL = 'I'
 ): CalculoAportes {
   // Calcular IBC
-  const { ibc } = calcularIBC(ingresoMensual);
+  const { ibc } = calcularIBC(ingresoMensual)
 
   // Calcular cada componente
-  const salud = calcularSalud(ibc);
-  const pension = calcularPension(ibc);
-  const arl = calcularARL(ibc, nivelRiesgo);
-  const total = salud + pension + arl;
+  const salud = calcularSalud(ibc)
+  const pension = calcularPension(ibc)
+  const arl = calcularARL(ibc, nivelRiesgo)
+  const total = salud + pension + arl
 
   return {
     ibc,
@@ -308,7 +299,7 @@ export function calcularTotalAportes(
         nivelRiesgo,
       },
     },
-  };
+  }
 }
 
 /**
@@ -331,23 +322,23 @@ export function calcularTotalAportes(
 export function calcularFechaLimite(mes: number, anio: number): Date {
   // Validaciones
   if (mes < 1 || mes > 12) {
-    throw new Error('El mes debe estar entre 1 y 12');
+    throw new Error('El mes debe estar entre 1 y 12')
   }
   if (anio < 2020) {
-    throw new Error('Año inválido');
+    throw new Error('Año inválido')
   }
 
   // Calcular mes y año siguiente
-  let mesLimite = mes + 1;
-  let anioLimite = anio;
+  let mesLimite = mes + 1
+  let anioLimite = anio
 
   if (mesLimite > 12) {
-    mesLimite = 1;
-    anioLimite += 1;
+    mesLimite = 1
+    anioLimite += 1
   }
 
   // Día 10 del mes siguiente a las 23:59:59
-  return new Date(anioLimite, mesLimite - 1, 10, 23, 59, 59);
+  return new Date(anioLimite, mesLimite - 1, 10, 23, 59, 59)
 }
 
 /**
@@ -377,13 +368,13 @@ export function formatearPeriodo(mes: number, anio: number): string {
     'Octubre',
     'Noviembre',
     'Diciembre',
-  ];
+  ]
 
   if (mes < 1 || mes > 12) {
-    throw new Error('El mes debe estar entre 1 y 12');
+    throw new Error('El mes debe estar entre 1 y 12')
   }
 
-  return `${meses[mes - 1]} ${anio}`;
+  return `${meses[mes - 1]} ${anio}`
 }
 
 /**
@@ -404,7 +395,7 @@ export function formatearMoneda(valor: number): string {
     currency: 'COP',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(valor);
+  }).format(valor)
 }
 
 /**
@@ -420,7 +411,7 @@ export function formatearMoneda(valor: number): string {
  * ```
  */
 export function validarIBC(ibc: number): boolean {
-  return ibc >= IBC_MINIMO && ibc <= IBC_MAXIMO;
+  return ibc >= IBC_MINIMO && ibc <= IBC_MAXIMO
 }
 
 /**
@@ -436,5 +427,5 @@ export function validarIBC(ibc: number): boolean {
  * ```
  */
 export function obtenerPorcentajeARL(nivelRiesgo: NivelRiesgoARL): number {
-  return PORCENTAJES_ARL[nivelRiesgo];
+  return PORCENTAJES_ARL[nivelRiesgo]
 }
