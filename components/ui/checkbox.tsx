@@ -29,9 +29,17 @@ export function Checkbox({
   className,
   name,
 }: CheckboxProps) {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!disabled) {
+      onChange(!checked)
+    }
+  }
+
   return (
     <div className={cn('w-full', className)}>
-      <label className="flex items-start gap-3 cursor-pointer">
+      <label className="flex items-start gap-3">
         {/* Hidden native checkbox for accessibility */}
         <input
           type="checkbox"
@@ -45,12 +53,13 @@ export function Checkbox({
 
         {/* Custom checkbox visual */}
         <div
+          onClick={handleToggle}
           className={cn(
             'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition-all',
             checked
               ? 'border-primary bg-primary'
               : 'border-light-300 bg-white hover:border-primary/50',
-            disabled && 'cursor-not-allowed opacity-50'
+            disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           )}
         >
           {checked && (
@@ -69,13 +78,13 @@ export function Checkbox({
           )}
         >
           {label}
-          {required && <span className="ml-1 text-error">*</span>}
+          {required && <span className="text-error ml-1">*</span>}
         </span>
       </label>
 
       {/* Error message */}
       {error && (
-        <p className="mt-1.5 flex items-center gap-1 text-sm text-error">
+        <p className="text-error mt-1.5 flex items-center gap-1 text-sm">
           <span className="material-symbols-outlined text-base">error</span>
           {error}
         </p>

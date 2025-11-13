@@ -17,13 +17,23 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SummaryCard, SummaryField } from '@/components/onboarding/summary-card'
 import { TermsModal } from '@/components/onboarding/terms-modal'
-import { formatCurrency, formatPhone, formatDocument, formatTipoContrato, formatEstadoCivil, formatTipoDocumento } from '@/lib/utils/format'
+import {
+  formatCurrency,
+  formatPhone,
+  formatDocument,
+  formatTipoContrato,
+  formatEstadoCivil,
+  formatTipoDocumento,
+} from '@/lib/utils/format'
 
 // Zod Schema
 const paso4Schema = z.object({
-  estadoCivil: z.enum(['SOLTERO', 'CASADO', 'UNION_LIBRE', 'DIVORCIADO', 'VIUDO'], {
-    required_error: 'Selecciona tu estado civil',
-  }),
+  estadoCivil: z.enum(
+    ['SOLTERO', 'CASADO', 'UNION_LIBRE', 'DIVORCIADO', 'VIUDO'],
+    {
+      required_error: 'Selecciona tu estado civil',
+    }
+  ),
   personasACargo: z.number().min(0, 'No puede ser negativo'),
   aceptaTerminos: z.boolean().refine((val) => val === true, {
     message: 'Debes aceptar los términos y condiciones',
@@ -40,7 +50,9 @@ export default function OnboardingPaso4() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [termsModalOpen, setTermsModalOpen] = useState(false)
-  const [termsModalType, setTermsModalType] = useState<'terms' | 'privacy'>('terms')
+  const [termsModalType, setTermsModalType] = useState<'terms' | 'privacy'>(
+    'terms'
+  )
 
   // Form data from previous steps
   const [paso1Data, setPaso1Data] = useState<any>(null)
@@ -85,8 +97,10 @@ export default function OnboardingPaso4() {
       if (paso4) {
         const data = JSON.parse(paso4)
         if (data.estadoCivil) setValue('estadoCivil', data.estadoCivil)
-        if (data.personasACargo !== undefined) setValue('personasACargo', data.personasACargo)
-        if (data.suscribirNewsletter !== undefined) setValue('suscribirNewsletter', data.suscribirNewsletter)
+        if (data.personasACargo !== undefined)
+          setValue('personasACargo', data.personasACargo)
+        if (data.suscribirNewsletter !== undefined)
+          setValue('suscribirNewsletter', data.suscribirNewsletter)
       }
     }
 
@@ -114,6 +128,29 @@ export default function OnboardingPaso4() {
     try {
       setIsSubmitting(true)
 
+      // Validate that all previous steps data exists
+      if (!paso1Data) {
+        toast.error(
+          'Faltan datos del Paso 1. Por favor completa todos los pasos.'
+        )
+        router.push('/onboarding/paso-1')
+        return
+      }
+      if (!paso2Data) {
+        toast.error(
+          'Faltan datos del Paso 2. Por favor completa todos los pasos.'
+        )
+        router.push('/onboarding/paso-2')
+        return
+      }
+      if (!paso3Data) {
+        toast.error(
+          'Faltan datos del Paso 3. Por favor completa todos los pasos.'
+        )
+        router.push('/onboarding/paso-3')
+        return
+      }
+
       // Combine all data from 4 steps
       const completeData = {
         // Paso 1
@@ -138,7 +175,9 @@ export default function OnboardingPaso4() {
         entidadPension: paso3Data?.entidadPension,
         fechaAfiliacionPension: paso3Data?.fechaAfiliacionPension || undefined,
         arl: paso3Data?.arl || undefined,
-        nivelRiesgoARL: paso3Data?.nivelRiesgoARL ? parseInt(paso3Data.nivelRiesgoARL) : undefined,
+        nivelRiesgoARL: paso3Data?.nivelRiesgoARL
+          ? parseInt(paso3Data.nivelRiesgoARL)
+          : undefined,
         fechaAfiliacionARL: paso3Data?.fechaAfiliacionARL || undefined,
 
         // Paso 4
@@ -146,6 +185,11 @@ export default function OnboardingPaso4() {
         personasACargo: data.personasACargo,
         suscribirNewsletter: data.suscribirNewsletter || false,
       }
+
+      console.log(
+        '[Paso 4] Data being sent:',
+        JSON.stringify(completeData, null, 2)
+      )
 
       // POST to API
       const response = await fetch('/api/user/profile', {
@@ -159,6 +203,20 @@ export default function OnboardingPaso4() {
       const result = await response.json()
 
       if (!response.ok) {
+        console.error('[Paso 4] API Error:', result)
+        console.error(
+          '[Paso 4] Validation details:',
+          JSON.stringify(result.details, null, 2)
+        )
+        // Show each validation error
+        result.details?.forEach((err: any, index: number) => {
+          console.error(
+            `Validation Error ${index + 1}:`,
+            err.path.join('.'),
+            '-',
+            err.message
+          )
+        })
         throw new Error(result.error || 'Error al guardar perfil')
       }
 
@@ -177,7 +235,9 @@ export default function OnboardingPaso4() {
       }, 1000)
     } catch (error) {
       console.error('[Paso 4] Error:', error)
-      toast.error(error instanceof Error ? error.message : 'Error al guardar perfil')
+      toast.error(
+        error instanceof Error ? error.message : 'Error al guardar perfil'
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -189,12 +249,13 @@ export default function OnboardingPaso4() {
     {
       key: 'tipoDocumento',
       label: 'Documento',
-      format: (value) => formatDocument(formatTipoDocumento(value), paso1Data?.numeroDocumento)
+      format: (value) =>
+        formatDocument(formatTipoDocumento(value), paso1Data?.numeroDocumento),
     },
     {
       key: 'telefono',
       label: 'Teléfono',
-      format: formatPhone
+      format: formatPhone,
     },
     { key: 'direccion', label: 'Dirección' },
     { key: 'ciudad', label: 'Ciudad' },
@@ -205,19 +266,19 @@ export default function OnboardingPaso4() {
     {
       key: 'tipoContrato',
       label: 'Tipo de contrato',
-      format: formatTipoContrato
+      format: formatTipoContrato,
     },
     { key: 'profesion', label: 'Profesión' },
     { key: 'actividadEconomica', label: 'Actividad económica' },
     {
       key: 'numeroContratos',
       label: 'Número de contratos',
-      format: (value) => `${value} contrato${value !== 1 ? 's' : ''}`
+      format: (value) => `${value} contrato${value !== 1 ? 's' : ''}`,
     },
     {
       key: 'ingresoMensualPromedio',
       label: 'Ingreso mensual promedio',
-      format: formatCurrency
+      format: formatCurrency,
     },
   ]
 
@@ -226,28 +287,30 @@ export default function OnboardingPaso4() {
     {
       key: 'fechaAfiliacionSalud',
       label: 'Fecha afiliación salud',
-      format: (value) => value ? new Date(value).toLocaleDateString('es-CO') : 'No especificada'
+      format: (value) =>
+        value ? new Date(value).toLocaleDateString('es-CO') : 'No especificada',
     },
     { key: 'entidadPension', label: 'Fondo de pensión' },
     {
       key: 'fechaAfiliacionPension',
       label: 'Fecha afiliación pensión',
-      format: (value) => value ? new Date(value).toLocaleDateString('es-CO') : 'No especificada'
+      format: (value) =>
+        value ? new Date(value).toLocaleDateString('es-CO') : 'No especificada',
     },
     { key: 'arl', label: 'ARL' },
     {
       key: 'nivelRiesgoARL',
       label: 'Nivel de riesgo',
-      format: (value) => value ? `Nivel ${value}` : 'No especificado'
+      format: (value) => (value ? `Nivel ${value}` : 'No especificado'),
     },
   ]
 
   return (
-    <div className="min-h-screen bg-light-50 py-8">
+    <div className="bg-light-50 min-h-screen py-8">
       <div className="container mx-auto max-w-5xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-dark mb-2">
+          <h1 className="text-dark mb-2 text-3xl font-bold">
             Paso 4 de 4: Confirmación Final
           </h1>
           <p className="text-dark-100">
@@ -257,12 +320,15 @@ export default function OnboardingPaso4() {
 
         {/* Progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-dark">Progreso</span>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-dark text-sm font-medium">Progreso</span>
             <span className="text-sm font-medium text-primary">100%</span>
           </div>
-          <div className="h-2 bg-light-200 rounded-full overflow-hidden">
-            <div className="h-full bg-primary transition-all duration-300" style={{ width: '100%' }} />
+          <div className="bg-light-200 h-2 overflow-hidden rounded-full">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: '100%' }}
+            />
           </div>
         </div>
 
@@ -276,7 +342,7 @@ export default function OnboardingPaso4() {
                     family_restroom
                   </span>
                 </div>
-                <h2 className="text-xl font-semibold text-dark">
+                <h2 className="text-dark text-xl font-semibold">
                   Información Adicional
                 </h2>
               </div>
@@ -286,13 +352,16 @@ export default function OnboardingPaso4() {
               <div className="grid gap-6 sm:grid-cols-2">
                 {/* Estado Civil */}
                 <div className="space-y-2">
-                  <label htmlFor="estadoCivil" className="block text-sm font-medium text-dark">
+                  <label
+                    htmlFor="estadoCivil"
+                    className="text-dark block text-sm font-medium"
+                  >
                     Estado civil <span className="text-error">*</span>
                   </label>
                   <select
                     {...register('estadoCivil')}
                     id="estadoCivil"
-                    className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">Selecciona...</option>
                     <option value="SOLTERO">Soltero/a</option>
@@ -302,8 +371,10 @@ export default function OnboardingPaso4() {
                     <option value="VIUDO">Viudo/a</option>
                   </select>
                   {errors.estadoCivil && (
-                    <p className="flex items-center gap-1 text-sm text-error">
-                      <span className="material-symbols-outlined text-base">error</span>
+                    <p className="text-error flex items-center gap-1 text-sm">
+                      <span className="material-symbols-outlined text-base">
+                        error
+                      </span>
                       {errors.estadoCivil.message}
                     </p>
                   )}
@@ -332,7 +403,7 @@ export default function OnboardingPaso4() {
                     gavel
                   </span>
                 </div>
-                <h2 className="text-xl font-semibold text-dark">
+                <h2 className="text-dark text-xl font-semibold">
                   Términos y Condiciones
                 </h2>
               </div>
@@ -348,14 +419,16 @@ export default function OnboardingPaso4() {
                       <button
                         type="button"
                         onClick={() => openTermsModal('terms')}
-                        className="text-primary hover:underline font-medium"
+                        className="font-medium text-primary hover:underline"
                       >
                         Términos y Condiciones
                       </button>
                     </span>
                   }
                   checked={aceptaTerminos || false}
-                  onChange={(checked) => setValue('aceptaTerminos', checked as true)}
+                  onChange={(checked) =>
+                    setValue('aceptaTerminos', checked as true)
+                  }
                   error={errors.aceptaTerminos?.message}
                   required
                   name="aceptaTerminos"
@@ -369,15 +442,17 @@ export default function OnboardingPaso4() {
                       <button
                         type="button"
                         onClick={() => openTermsModal('privacy')}
-                        className="text-primary hover:underline font-medium"
+                        className="font-medium text-primary hover:underline"
                       >
                         Política de Privacidad
-                      </button>
-                      {' '}según Ley 1581 de 2012
+                      </button>{' '}
+                      según Ley 1581 de 2012
                     </span>
                   }
                   checked={aceptaPoliticaPrivacidad || false}
-                  onChange={(checked) => setValue('aceptaPoliticaPrivacidad', checked as true)}
+                  onChange={(checked) =>
+                    setValue('aceptaPoliticaPrivacidad', checked as true)
+                  }
                   error={errors.aceptaPoliticaPrivacidad?.message}
                   required
                   name="aceptaPoliticaPrivacidad"
@@ -387,7 +462,9 @@ export default function OnboardingPaso4() {
                 <Checkbox
                   label="Quiero recibir tips, actualizaciones y novedades de Ule (opcional)"
                   checked={suscribirNewsletter || false}
-                  onChange={(checked) => setValue('suscribirNewsletter', checked)}
+                  onChange={(checked) =>
+                    setValue('suscribirNewsletter', checked)
+                  }
                   name="suscribirNewsletter"
                 />
               </div>
@@ -396,7 +473,7 @@ export default function OnboardingPaso4() {
 
           {/* Summary Section */}
           <div>
-            <h2 className="text-2xl font-bold text-dark mb-6">
+            <h2 className="text-dark mb-6 text-2xl font-bold">
               Resumen de tu Información
             </h2>
 
@@ -445,12 +522,13 @@ export default function OnboardingPaso4() {
                     {
                       key: 'estadoCivil',
                       label: 'Estado civil',
-                      format: formatEstadoCivil
+                      format: formatEstadoCivil,
                     },
                     {
                       key: 'personasACargo',
                       label: 'Personas a cargo',
-                      format: (value) => `${value} persona${value !== 1 ? 's' : ''}`
+                      format: (value) =>
+                        `${value} persona${value !== 1 ? 's' : ''}`,
                     },
                   ]}
                 />
@@ -471,11 +549,7 @@ export default function OnboardingPaso4() {
               Anterior
             </Button>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? (
                 <>
                   <span className="material-symbols-outlined mr-2 animate-spin">
@@ -485,7 +559,9 @@ export default function OnboardingPaso4() {
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined mr-2">check_circle</span>
+                  <span className="material-symbols-outlined mr-2">
+                    check_circle
+                  </span>
                   Completar Perfil
                 </>
               )}

@@ -27,7 +27,11 @@ import { FacturaPreview } from '@/components/facturacion/factura-preview'
 import { ClienteModal } from '@/components/facturacion/cliente-modal'
 
 import { useClientes } from '@/hooks/use-clientes'
-import { crearFacturaSchema, METODOS_PAGO, CrearFacturaInput } from '@/lib/validations/factura'
+import {
+  crearFacturaSchema,
+  METODOS_PAGO,
+  CrearFacturaInput,
+} from '@/lib/validations/factura'
 import { calcularTotalesFactura } from '@/lib/utils/facturacion-utils'
 
 const STORAGE_KEY = 'ule_factura_borrador'
@@ -61,7 +65,7 @@ export default function NuevaFacturaPage() {
         {
           descripcion: '',
           cantidad: 1,
-          valorUnitario: 0,
+          valorUnitario: '',
           iva: 19,
         },
       ],
@@ -296,20 +300,26 @@ export default function NuevaFacturaPage() {
     <>
       <Header userName={session?.user?.name} userEmail={session?.user?.email} />
 
-      <div className="min-h-screen bg-light-50 p-6">
+      <div className="bg-light-50 min-h-screen p-6">
         <div className="mx-auto max-w-7xl">
           {/* Breadcrumb */}
-          <div className="mb-4 flex items-center gap-2 text-sm text-dark-100">
+          <div className="text-dark-100 mb-4 flex items-center gap-2 text-sm">
             <span>Inicio</span>
-            <span className="material-symbols-outlined text-base">chevron_right</span>
+            <span className="material-symbols-outlined text-base">
+              chevron_right
+            </span>
             <span>Facturación</span>
-            <span className="material-symbols-outlined text-base">chevron_right</span>
+            <span className="material-symbols-outlined text-base">
+              chevron_right
+            </span>
             <span className="font-medium text-primary">Nueva Factura</span>
           </div>
 
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-dark">Nueva Factura Electrónica</h1>
+            <h1 className="text-dark text-3xl font-bold">
+              Nueva Factura Electrónica
+            </h1>
             <p className="text-dark-100">
               Completa el formulario para crear una nueva factura
             </p>
@@ -322,14 +332,14 @@ export default function NuevaFacturaPage() {
               {/* Información del cliente */}
               <Card>
                 <CardBody>
-                  <h2 className="mb-4 text-xl font-semibold text-dark">
+                  <h2 className="text-dark mb-4 text-xl font-semibold">
                     Información del Cliente
                   </h2>
 
                   <div className="space-y-4">
                     {/* Selector de cliente */}
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-dark">
+                      <label className="text-dark mb-2 block text-sm font-medium">
                         Cliente *
                       </label>
                       <div className="flex gap-2">
@@ -343,11 +353,13 @@ export default function NuevaFacturaPage() {
                             onChange={(value) => setValue('clienteId', value)}
                             placeholder="Buscar cliente..."
                             icon={
-                              <span className="material-symbols-outlined">person</span>
+                              <span className="material-symbols-outlined">
+                                person
+                              </span>
                             }
                           />
                           {errors.clienteId && (
-                            <p className="mt-1.5 text-sm text-error">
+                            <p className="text-error mt-1.5 text-sm">
                               {errors.clienteId.message}
                             </p>
                           )}
@@ -372,7 +384,11 @@ export default function NuevaFacturaPage() {
                         valueAsDate: true,
                       })}
                       error={errors.fecha?.message}
-                      icon={<span className="material-symbols-outlined">calendar_today</span>}
+                      icon={
+                        <span className="material-symbols-outlined">
+                          calendar_today
+                        </span>
+                      }
                     />
 
                     {/* Método de pago */}
@@ -380,7 +396,11 @@ export default function NuevaFacturaPage() {
                       label="Método de Pago *"
                       {...register('metodoPago')}
                       error={errors.metodoPago?.message}
-                      icon={<span className="material-symbols-outlined">payments</span>}
+                      icon={
+                        <span className="material-symbols-outlined">
+                          payments
+                        </span>
+                      }
                     >
                       {METODOS_PAGO.map((metodo) => (
                         <option key={metodo.value} value={metodo.value}>
@@ -395,7 +415,7 @@ export default function NuevaFacturaPage() {
               {/* Items de la factura */}
               <Card>
                 <CardBody>
-                  <h2 className="mb-4 text-xl font-semibold text-dark">
+                  <h2 className="text-dark mb-4 text-xl font-semibold">
                     Ítems de la Factura
                   </h2>
 
@@ -414,27 +434,27 @@ export default function NuevaFacturaPage() {
               {/* Notas y términos */}
               <Card>
                 <CardBody>
-                  <h2 className="mb-4 text-xl font-semibold text-dark">
+                  <h2 className="text-dark mb-4 text-xl font-semibold">
                     Información Adicional
                   </h2>
 
                   <div className="space-y-4">
                     {/* Notas */}
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-dark">
+                      <label className="text-dark mb-2 block text-sm font-medium">
                         Notas Adicionales
                       </label>
                       <textarea
                         {...register('notas')}
                         rows={3}
                         placeholder="Ej: Pago a 30 días, descuentos especiales, etc."
-                        className="w-full resize-none rounded-lg border border-light-200 px-4 py-3 text-sm transition-colors hover:border-light-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="border-light-200 hover:border-light-300 w-full resize-none rounded-lg border px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
-                      <p className="mt-1 text-xs text-dark-100">
+                      <p className="text-dark-100 mt-1 text-xs">
                         Máximo 500 caracteres
                       </p>
                       {errors.notas && (
-                        <p className="mt-1 text-sm text-error">
+                        <p className="text-error mt-1 text-sm">
                           {errors.notas.message}
                         </p>
                       )}
@@ -442,20 +462,20 @@ export default function NuevaFacturaPage() {
 
                     {/* Términos */}
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-dark">
+                      <label className="text-dark mb-2 block text-sm font-medium">
                         Términos y Condiciones
                       </label>
                       <textarea
                         {...register('terminos')}
                         rows={3}
                         placeholder="Ej: Esta factura se rige por las leyes colombianas..."
-                        className="w-full resize-none rounded-lg border border-light-200 px-4 py-3 text-sm transition-colors hover:border-light-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="border-light-200 hover:border-light-300 w-full resize-none rounded-lg border px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
-                      <p className="mt-1 text-xs text-dark-100">
+                      <p className="text-dark-100 mt-1 text-xs">
                         Máximo 300 caracteres
                       </p>
                       {errors.terminos && (
-                        <p className="mt-1 text-sm text-error">
+                        <p className="text-error mt-1 text-sm">
                           {errors.terminos.message}
                         </p>
                       )}
@@ -512,7 +532,7 @@ export default function NuevaFacturaPage() {
           </div>
 
           {/* Botones de acción (sticky bottom) */}
-          <div className="sticky bottom-0 z-10 mt-6 flex gap-3 rounded-lg border border-light-200 bg-white p-4 shadow-lg">
+          <div className="border-light-200 sticky bottom-0 z-10 mt-6 flex gap-3 rounded-lg border bg-white p-4 shadow-lg">
             <Button
               type="button"
               variant="outline"

@@ -19,9 +19,21 @@ export const itemFacturaSchema = z.object({
     .min(1, 'La cantidad debe ser al menos 1')
     .max(999999, 'La cantidad es demasiado grande'),
   valorUnitario: z
-    .number()
-    .min(0.01, 'El valor unitario debe ser mayor a 0')
-    .max(999999999.99, 'El valor unitario es demasiado grande'),
+    .union([z.string(), z.number()])
+    .transform((val) => {
+      // Si es string, remover puntos y convertir a número
+      if (typeof val === 'string') {
+        const cleaned = val.replace(/\./g, '')
+        return parseFloat(cleaned) || 0
+      }
+      return val
+    })
+    .pipe(
+      z
+        .number()
+        .min(0.01, 'El valor unitario debe ser mayor a 0')
+        .max(999999999.99, 'El valor unitario es demasiado grande')
+    ),
   iva: z
     .number()
     .min(0, 'El IVA no puede ser negativo')
@@ -39,7 +51,13 @@ export const crearFacturaSchema = z.object({
     invalid_type_error: 'Fecha inválida',
   }),
   metodoPago: z.enum(
-    ['EFECTIVO', 'TRANSFERENCIA', 'CHEQUE', 'TARJETA_CREDITO', 'TARJETA_DEBITO'],
+    [
+      'EFECTIVO',
+      'TRANSFERENCIA',
+      'CHEQUE',
+      'TARJETA_CREDITO',
+      'TARJETA_DEBITO',
+    ],
     {
       required_error: 'Debe seleccionar un método de pago',
       invalid_type_error: 'Método de pago inválido',
@@ -70,7 +88,13 @@ export const guardarBorradorSchema = z.object({
   clienteId: z.string().optional(),
   fecha: z.date().optional(),
   metodoPago: z
-    .enum(['EFECTIVO', 'TRANSFERENCIA', 'CHEQUE', 'TARJETA_CREDITO', 'TARJETA_DEBITO'])
+    .enum([
+      'EFECTIVO',
+      'TRANSFERENCIA',
+      'CHEQUE',
+      'TARJETA_CREDITO',
+      'TARJETA_DEBITO',
+    ])
     .optional(),
   items: z.array(itemFacturaSchema).min(0).optional(),
   notas: z.string().max(500).optional().or(z.literal('')),
