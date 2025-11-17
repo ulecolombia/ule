@@ -7,7 +7,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { z } from 'zod'
-import { TipoDocumento, TipoContrato, EstadoCivil } from '@prisma/client'
+import {
+  TipoDocumento,
+  TipoContrato,
+  EstadoCivil,
+  RegimenTributario,
+} from '@prisma/client'
 import { secureLogger } from '@/lib/security/secure-logger'
 
 // Schema completo para onboarding (POST)
@@ -76,6 +81,23 @@ const infoAdicionalSchema = z.object({
   suscribirNewsletter: z.boolean().optional(),
 })
 
+const infoTributariaSchema = z.object({
+  regimenTributario: z.nativeEnum(RegimenTributario, {
+    required_error: 'Debes seleccionar tu régimen tributario',
+  }),
+  responsableIVA: z.boolean(),
+  razonSocial: z
+    .string()
+    .min(3, 'Mínimo 3 caracteres')
+    .optional()
+    .or(z.literal('')),
+  emailFacturacion: z
+    .string()
+    .email('Email inválido')
+    .optional()
+    .or(z.literal('')),
+})
+
 // GET - Obtener perfil del usuario
 export async function GET(req: NextRequest) {
   const startTime = Date.now()
@@ -117,6 +139,25 @@ export async function GET(req: NextRequest) {
         estadoCivil: true,
         personasACargo: true,
         suscribirNewsletter: true,
+        // Información tributaria
+        nit: true,
+        razonSocial: true,
+        regimenTributario: true,
+        responsableIVA: true,
+        autorretenedor: true,
+        granContribuyente: true,
+        resolucionDIAN: true,
+        prefijoFactura: true,
+        rangoFacturacionDesde: true,
+        rangoFacturacionHasta: true,
+        fechaResolucion: true,
+        consecutivoActual: true,
+        logoEmpresaUrl: true,
+        colorPrimario: true,
+        nombreBanco: true,
+        tipoCuenta: true,
+        numeroCuenta: true,
+        emailFacturacion: true,
         perfilCompleto: true,
         createdAt: true,
         updatedAt: true,
@@ -138,10 +179,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ user })
   } catch (error) {
     secureLogger.error('Error obteniendo perfil', error)
-    return NextResponse.json(
-      { error: 'Error del servidor' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error del servidor' }, { status: 500 })
   }
 }
 
@@ -271,17 +309,26 @@ export async function PUT(req: NextRequest) {
         validatedData = seguridadSocialSchema.parse(data)
         // Convertir fechas
         if (validatedData.fechaAfiliacionSalud) {
-          validatedData.fechaAfiliacionSalud = new Date(validatedData.fechaAfiliacionSalud)
+          validatedData.fechaAfiliacionSalud = new Date(
+            validatedData.fechaAfiliacionSalud
+          )
         }
         if (validatedData.fechaAfiliacionPension) {
-          validatedData.fechaAfiliacionPension = new Date(validatedData.fechaAfiliacionPension)
+          validatedData.fechaAfiliacionPension = new Date(
+            validatedData.fechaAfiliacionPension
+          )
         }
         if (validatedData.fechaAfiliacionARL) {
-          validatedData.fechaAfiliacionARL = new Date(validatedData.fechaAfiliacionARL)
+          validatedData.fechaAfiliacionARL = new Date(
+            validatedData.fechaAfiliacionARL
+          )
         }
         break
       case 'adicional':
         validatedData = infoAdicionalSchema.parse(data)
+        break
+      case 'tributaria':
+        validatedData = infoTributariaSchema.parse(data)
         break
       default:
         throw new Error('Sección inválida')
@@ -319,6 +366,25 @@ export async function PUT(req: NextRequest) {
         estadoCivil: true,
         personasACargo: true,
         suscribirNewsletter: true,
+        // Información tributaria
+        nit: true,
+        razonSocial: true,
+        regimenTributario: true,
+        responsableIVA: true,
+        autorretenedor: true,
+        granContribuyente: true,
+        resolucionDIAN: true,
+        prefijoFactura: true,
+        rangoFacturacionDesde: true,
+        rangoFacturacionHasta: true,
+        fechaResolucion: true,
+        consecutivoActual: true,
+        logoEmpresaUrl: true,
+        colorPrimario: true,
+        nombreBanco: true,
+        tipoCuenta: true,
+        numeroCuenta: true,
+        emailFacturacion: true,
         perfilCompleto: true,
         createdAt: true,
         updatedAt: true,
@@ -348,9 +414,6 @@ export async function PUT(req: NextRequest) {
       )
     }
 
-    return NextResponse.json(
-      { error: 'Error al actualizar' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error al actualizar' }, { status: 500 })
   }
 }

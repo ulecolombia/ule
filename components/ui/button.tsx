@@ -55,4 +55,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
+// Helper function for external components that need button styles
+export const buttonVariants = (variant?: ButtonVariant, size?: ButtonSize) => {
+  return getButtonStyles(variant || 'primary', size || 'md')
+}
+
 export { Button }

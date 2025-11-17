@@ -15,6 +15,7 @@ interface FacturaPreviewProps {
   cliente?: {
     nombre: string
     numeroDocumento: string
+    tipoDocumento?: string
     email?: string
     telefono?: string
     direccion?: string
@@ -23,26 +24,34 @@ interface FacturaPreviewProps {
   items: Array<{
     descripcion: string
     cantidad: number
-    valorUnitario: number
-    iva: number
+    unidad?: string
+    valorUnitario: number | string
+    // Soportar ambos formatos (antiguo y nuevo)
+    iva?: number
+    aplicaIVA?: boolean
+    porcentajeIVA?: number
   }>
   subtotal: number
   totalIva: number
   total: number
   notas?: string
   terminos?: string
+  metodoPago?: string
   emisor?: {
-    nombre: string
-    numeroDocumento: string
+    razonSocial?: string
+    nombre?: string
+    documento?: string
+    numeroDocumento?: string
     direccion?: string
     ciudad?: string
     telefono?: string
     email?: string
   }
+  showPlaceholders?: boolean
 }
 
 export function FacturaPreview({
-  numeroFactura = 'ULE-XXXXXX-XXX',
+  numeroFactura = 'PREVIEW-001',
   fecha = new Date(),
   cliente,
   items,
@@ -51,70 +60,134 @@ export function FacturaPreview({
   total,
   notas,
   terminos,
+  metodoPago,
   emisor,
+  showPlaceholders = true,
 }: FacturaPreviewProps) {
+  // Función helper para obtener porcentaje de IVA (soporta ambos formatos)
+  const obtenerPorcentajeIVA = (item: any): number => {
+    if (item.aplicaIVA && item.porcentajeIVA !== undefined) {
+      return item.porcentajeIVA
+    }
+    return item.iva ?? 0
+  }
+
+  // Función helper para calcular total de un item
   const calcularTotalItem = (item: any) => {
-    const subtotalItem = item.cantidad * item.valorUnitario
-    const ivaItem = subtotalItem * (item.iva / 100)
+    const valorUnit =
+      typeof item.valorUnitario === 'string'
+        ? parseFloat(item.valorUnitario.replace(/\./g, '')) || 0
+        : item.valorUnitario || 0
+    const subtotalItem = item.cantidad * valorUnit
+    const porcentajeIVA = obtenerPorcentajeIVA(item)
+    const ivaItem = subtotalItem * (porcentajeIVA / 100)
     return subtotalItem + ivaItem
   }
 
+  // Función helper para formatear valor unitario
+  const formatearValorUnitario = (valor: number | string): number => {
+    if (typeof valor === 'string') {
+      return parseFloat(valor.replace(/\./g, '')) || 0
+    }
+    return valor || 0
+  }
+
   return (
-    <div className="h-full overflow-auto bg-white">
-      <div className="mx-auto max-w-3xl bg-white p-8 shadow-lg">
+    <div
+      id="factura-preview-print"
+      className="h-full overflow-auto bg-white"
+      style={{
+        width: '100%',
+        aspectRatio: '8.5 / 11',
+      }}
+    >
+      <div className="mx-auto bg-white p-6 text-[11px]">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between border-b border-gray-300 pb-6">
-          <div>
+        <div className="mb-6 flex items-start justify-between border-b-2 border-primary pb-4">
+          <div className="flex-1">
             {/* Logo placeholder */}
-            <div className="mb-4 flex h-12 w-32 items-center justify-center rounded-lg bg-primary/10">
-              <span className="text-lg font-bold text-primary">ULE</span>
+            <div className="mb-3 flex h-14 w-28 items-center justify-center rounded-lg bg-primary/10">
+              <span className="text-xl font-bold text-primary">ULE</span>
             </div>
-            <div className="space-y-1 text-sm text-gray-600">
-              <p className="font-semibold text-gray-900">
-                {emisor?.nombre || 'Tu Empresa'}
+            <div className="space-y-0.5 text-xs text-gray-700">
+              <p className="text-sm font-bold text-gray-900">
+                {emisor?.razonSocial || emisor?.nombre || 'Nombre del Emisor'}
               </p>
-              <p>NIT: {emisor?.numeroDocumento || '000000000-0'}</p>
-              {emisor?.direccion && <p>{emisor.direccion}</p>}
-              {emisor?.ciudad && <p>{emisor.ciudad}</p>}
-              {emisor?.telefono && <p>Tel: {emisor.telefono}</p>}
-              {emisor?.email && <p>Email: {emisor.email}</p>}
+              <p>
+                NIT:{' '}
+                {emisor?.documento || emisor?.numeroDocumento || '000000000-0'}
+              </p>
+              <p>{emisor?.direccion || 'Dirección fiscal'}</p>
+              <p>{emisor?.ciudad || 'Ciudad'}</p>
+              <p>Tel: {emisor?.telefono || 'Teléfono'}</p>
+              <p>Email: {emisor?.email || 'email@ejemplo.com'}</p>
             </div>
           </div>
 
           <div className="text-right">
-            <h1 className="mb-2 text-2xl font-bold text-gray-900">FACTURA</h1>
-            <div className="space-y-1 text-sm">
-              <p>
-                <span className="font-semibold">No:</span> {numeroFactura}
-              </p>
-              <p>
-                <span className="font-semibold">Fecha:</span>{' '}
-                {format(fecha, 'dd/MM/yyyy', { locale: es })}
-              </p>
+            <div className="mb-2 rounded-t-lg bg-primary px-4 py-2">
+              <h1 className="text-lg font-bold text-white">
+                FACTURA ELECTRÓNICA
+              </h1>
+            </div>
+            <div className="space-y-0.5 rounded-b-lg bg-primary/10 px-4 py-2 text-xs">
+              <p className="font-semibold">No. {numeroFactura}</p>
+              <p>Fecha: {format(fecha, 'dd/MM/yyyy', { locale: es })}</p>
+              {showPlaceholders && (
+                <p className="text-muted-foreground mt-1 text-[10px]">
+                  CUFE: Se generará al emitir
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Cliente */}
-        <div className="mb-6 rounded-lg bg-gray-50 p-4">
-          <h2 className="mb-2 text-sm font-semibold text-gray-700">
-            FACTURAR A:
-          </h2>
-          {cliente ? (
-            <div className="space-y-1 text-sm text-gray-600">
-              <p className="font-semibold text-gray-900">{cliente.nombre}</p>
-              <p>Documento: {cliente.numeroDocumento}</p>
-              {cliente.email && <p>Email: {cliente.email}</p>}
-              {cliente.telefono && <p>Teléfono: {cliente.telefono}</p>}
-              {cliente.direccion && <p>{cliente.direccion}</p>}
-              {cliente.ciudad && <p>{cliente.ciudad}</p>}
-            </div>
-          ) : (
-            <p className="text-sm italic text-gray-400">
-              Selecciona un cliente
-            </p>
-          )}
+        <div className="mb-4">
+          <h3 className="mb-2 text-xs font-bold uppercase text-primary">
+            Información del Cliente
+          </h3>
+          <div className="rounded-lg bg-gray-50 p-3">
+            {cliente ? (
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    {cliente.nombre}
+                  </p>
+                  <p className="text-[10px]">
+                    {cliente.tipoDocumento || 'CC'}: {cliente.numeroDocumento}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {cliente.email && (
+                    <p className="text-[10px]">{cliente.email}</p>
+                  )}
+                  {cliente.telefono && (
+                    <p className="text-[10px]">Tel: {cliente.telefono}</p>
+                  )}
+                </div>
+                {cliente.direccion && (
+                  <div className="col-span-2 text-[10px]">
+                    <p>{cliente.direccion}</p>
+                    {cliente.ciudad && <p>{cliente.ciudad}</p>}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="py-2 text-center text-xs italic text-gray-400">
+                Selecciona un cliente
+              </p>
+            )}
+          </div>
         </div>
+
+        {/* Método de pago */}
+        {metodoPago && (
+          <div className="mb-4 flex items-center gap-2 text-xs">
+            <span className="font-semibold text-gray-700">Método de pago:</span>
+            <span className="text-gray-600">{metodoPago}</span>
+          </div>
+        )}
 
         {/* Items */}
         <div className="mb-6">
@@ -199,9 +272,7 @@ export function FacturaPreview({
         {/* Notas */}
         {notas && (
           <div className="mb-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">
-              NOTAS:
-            </h3>
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">NOTAS:</h3>
             <p className="whitespace-pre-wrap text-sm text-gray-600">{notas}</p>
           </div>
         )}
@@ -225,8 +296,8 @@ export function FacturaPreview({
             DIAN
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            Este documento es una vista previa. El CUFE se generará al emitir
-            la factura.
+            Este documento es una vista previa. El CUFE se generará al emitir la
+            factura.
           </p>
         </div>
 

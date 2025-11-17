@@ -15,7 +15,11 @@ import { FiltrosFacturasComponent } from '@/components/facturacion/filtros-factu
 import { CarpetaMes } from '@/components/facturacion/carpeta-mes'
 import { AnularFacturaModal } from '@/components/facturacion/anular-factura-modal'
 import { EnviarEmailModal } from '@/components/facturacion/enviar-email-modal'
-import { useFacturas, useEstadisticas, FiltrosFacturas } from '@/hooks/use-facturas'
+import {
+  useFacturas,
+  useEstadisticas,
+  FiltrosFacturas,
+} from '@/hooks/use-facturas'
 
 export default function FacturasPage() {
   const router = useRouter()
@@ -36,8 +40,10 @@ export default function FacturasPage() {
     limit: 50,
   })
 
-  const [facturaSeleccionadaAnular, setFacturaSeleccionadaAnular] = useState<any>(null)
-  const [facturaSeleccionadaEmail, setFacturaSeleccionadaEmail] = useState<any>(null)
+  const [facturaSeleccionadaAnular, setFacturaSeleccionadaAnular] =
+    useState<any>(null)
+  const [facturaSeleccionadaEmail, setFacturaSeleccionadaEmail] =
+    useState<any>(null)
 
   // ==============================================
   // HOOKS
@@ -142,6 +148,43 @@ export default function FacturasPage() {
     document.body.removeChild(link)
   }
 
+  const handleClonarFactura = async (facturaId: string) => {
+    try {
+      // Obtener datos completos de la factura
+      const res = await fetch(`/api/facturacion/facturas/${facturaId}`)
+
+      if (!res.ok) {
+        throw new Error('No se pudo cargar la factura')
+      }
+
+      const { factura } = await res.json()
+
+      if (!factura) {
+        alert('No se pudo cargar la factura')
+        return
+      }
+
+      // Preparar plantilla (sin CUFE, número, estado, fecha de emisión)
+      const plantilla = {
+        clienteId: factura.clienteId,
+        metodoPago: factura.metodoPago,
+        items: factura.conceptos, // JSON de items
+        notas: factura.notas || '',
+        terminos: factura.terminos || '',
+      }
+
+      // Guardar en localStorage para nueva factura
+      localStorage.setItem('factura-plantilla', JSON.stringify(plantilla))
+      localStorage.setItem('factura-plantilla-numero', factura.numeroFactura)
+
+      // Redirigir a nueva factura con query param
+      router.push('/facturacion/nueva?plantilla=true')
+    } catch (error) {
+      console.error('Error clonando factura:', error)
+      alert('Error al clonar factura')
+    }
+  }
+
   const handlePaginaChange = (nuevaPagina: number) => {
     setFiltros({ ...filtros, page: nuevaPagina })
     // Scroll al inicio
@@ -154,11 +197,11 @@ export default function FacturasPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-3xl font-bold text-dark tracking-tight flex items-center gap-3">
+            <h1 className="text-dark mb-2 flex items-center gap-3 text-3xl font-bold tracking-tight">
               <span className="material-symbols-outlined text-4xl text-primary">
                 receipt_long
               </span>
@@ -170,7 +213,7 @@ export default function FacturasPage() {
           </div>
           <Button
             onClick={() => router.push('/facturacion/nueva')}
-            className="bg-primary hover:bg-primary/90 text-white transition-colors"
+            className="bg-primary text-white transition-colors hover:bg-primary/90"
           >
             <span className="material-symbols-outlined mr-2">add</span>
             Nueva Factura
@@ -187,7 +230,7 @@ export default function FacturasPage() {
         />
 
         {/* Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Gráfico de facturación (2/3) */}
           <div className="lg:col-span-2">
             <GraficoFacturacion
@@ -214,12 +257,14 @@ export default function FacturasPage() {
 
         {/* Error */}
         {isErrorFacturas && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-            <span className="material-symbols-outlined text-red-600 text-2xl">
+          <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+            <span className="material-symbols-outlined text-2xl text-red-600">
               error
             </span>
             <div>
-              <p className="font-semibold text-red-900">Error al cargar facturas</p>
+              <p className="font-semibold text-red-900">
+                Error al cargar facturas
+              </p>
               <p className="text-sm text-red-700">{errorFacturas}</p>
             </div>
           </div>
@@ -227,11 +272,11 @@ export default function FacturasPage() {
 
         {/* Loading */}
         {isLoadingFacturas && (
-          <div className="text-center py-12">
-            <span className="material-symbols-outlined text-5xl text-teal-600 animate-spin">
+          <div className="py-12 text-center">
+            <span className="material-symbols-outlined animate-spin text-5xl text-teal-600">
               progress_activity
             </span>
-            <p className="text-slate-600 mt-4">Cargando facturas...</p>
+            <p className="mt-4 text-slate-600">Cargando facturas...</p>
           </div>
         )}
 
@@ -239,21 +284,21 @@ export default function FacturasPage() {
         {!isLoadingFacturas && !isErrorFacturas && (
           <>
             {facturasPorMes.length === 0 ? (
-              <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
-                <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">
+              <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
+                <span className="material-symbols-outlined mb-4 text-6xl text-slate-300">
                   description
                 </span>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                <h3 className="mb-2 text-xl font-semibold text-slate-900">
                   No hay facturas
                 </h3>
-                <p className="text-slate-600 mb-6">
+                <p className="mb-6 text-slate-600">
                   {filtros.estado || filtros.busqueda || filtros.clienteId
                     ? 'No se encontraron facturas con los filtros aplicados'
                     : 'Comienza creando tu primera factura electrónica'}
                 </p>
                 <Button
                   onClick={() => router.push('/facturacion/nueva')}
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  className="bg-teal-600 text-white hover:bg-teal-700"
                 >
                   <span className="material-symbols-outlined mr-2">add</span>
                   Crear Primera Factura
@@ -272,19 +317,24 @@ export default function FacturasPage() {
                     cantidadFacturas={carpeta.cantidadFacturas}
                     onVerFactura={handleVerFactura}
                     onAnularFactura={(facturaId) => {
-                      const factura = carpeta.facturas.find((f) => f.id === facturaId)
+                      const factura = carpeta.facturas.find(
+                        (f) => f.id === facturaId
+                      )
                       if (factura) {
                         setFacturaSeleccionadaAnular(factura)
                       }
                     }}
                     onEnviarEmail={(facturaId) => {
-                      const factura = carpeta.facturas.find((f) => f.id === facturaId)
+                      const factura = carpeta.facturas.find(
+                        (f) => f.id === facturaId
+                      )
                       if (factura) {
                         setFacturaSeleccionadaEmail(factura)
                       }
                     }}
                     onDescargarPDF={handleDescargarPDF}
                     onDescargarXML={handleDescargarXML}
+                    onClonarFactura={handleClonarFactura}
                   />
                 ))}
               </div>
@@ -294,7 +344,7 @@ export default function FacturasPage() {
 
         {/* Paginación */}
         {!isLoadingFacturas && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-4">
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
             <div className="text-sm text-slate-600">
               Mostrando página {pagination.page} de {pagination.totalPages} (
               {pagination.total} facturas en total)

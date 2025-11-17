@@ -53,6 +53,36 @@ model User {
   suscribirNewsletter Boolean    @default(false) @map("suscribir_newsletter")
 
   // ============================================
+  // INFORMACIÓN TRIBUTARIA (FACTURACIÓN ELECTRÓNICA)
+  // ============================================
+  nit                     String?   @map("nit") // NIT o RUT para facturación
+  razonSocial             String?   @map("razon_social") // Nombre comercial/Razón social
+  regimenTributario       RegimenTributario? @map("regimen_tributario")
+  responsableIVA          Boolean   @default(false) @map("responsable_iva")
+  autorretenedor          Boolean   @default(false) @map("autorretenedor")
+  granContribuyente       Boolean   @default(false) @map("gran_contribuyente")
+
+  // Resolución DIAN para facturación electrónica
+  resolucionDIAN          String?   @map("resolucion_dian") // Número de resolución
+  prefijoFactura          String?   @map("prefijo_factura") // Ej: "FACT", "INV"
+  rangoFacturacionDesde   Int?      @map("rango_facturacion_desde") // Ej: 1
+  rangoFacturacionHasta   Int?      @map("rango_facturacion_hasta") // Ej: 5000
+  fechaResolucion         DateTime? @map("fecha_resolucion")
+  consecutivoActual       Int?      @default(1) @map("consecutivo_actual") // Último número usado
+
+  // Branding para facturas
+  logoEmpresaUrl          String?   @map("logo_empresa_url")
+  colorPrimario           String?   @map("color_primario") // Hex color para PDFs
+
+  // Información bancaria para facturas
+  nombreBanco             String?   @map("nombre_banco")
+  tipoCuenta              String?   @map("tipo_cuenta") // Ahorros, Corriente
+  numeroCuenta            String?   @map("numero_cuenta")
+
+  // Email específico para facturación (opcional, si difiere del email de cuenta)
+  emailFacturacion        String?   @map("email_facturacion")
+
+  // ============================================
   // CUMPLIMIENTO LEGAL - LEY 1581 DE 2012
   // ============================================
   aceptoTerminos          Boolean   @default(false) @map("acepto_terminos")
@@ -109,6 +139,7 @@ model User {
   aportes             Aporte[]
   configuracionPila   ConfiguracionPila?
   facturas            Factura[]
+  serviciosFrecuentes ServicioFrecuente[]
   conversaciones      Conversacion[]
   passwordResetTokens PasswordResetToken[]
   documentos          Documento[]
@@ -502,14 +533,12 @@ enum TipoDocumentoCliente {
   DIE       // Documento de Identificación Extranjero
 }
 
-/// Regímenes tributarios Colombia
+/// Regímenes tributarios Colombia (personas naturales)
 enum RegimenTributario {
-  SIMPLIFICADO   // Régimen Simplificado
-  COMUN          // Régimen Común
-  SIMPLE         // Régimen Simple de Tributación
-  ORDINARIO      // Régimen Ordinario
-  ESPECIAL       // Régimen Especial
-  NO_RESPONSABLE // No Responsable de IVA
+  SIMPLE        // Régimen Simple de Tributación
+  ORDINARIO     // Régimen Ordinario (Común)
+  ESPECIAL      // Régimen Especial (casos específicos)
+  NO_DECLARANTE // No declarante de renta
 }
 
 /// Estados de factura electrónica
@@ -520,6 +549,38 @@ enum EstadoFactura {
   VENCIDA   // Factura vencida sin pago
   ANULADA   // Factura anulada
   RECHAZADA // Rechazada por DIAN
+}
+
+// ============================================
+// MODELO PARA SERVICIOS FRECUENTES
+// Optimización de facturación - pre-cargar servicios comunes
+// ============================================
+
+/// Modelo para servicios frecuentes del usuario (optimización de facturación)
+/// Permite pre-cargar servicios comunes para agilizar la creación de facturas
+model ServicioFrecuente {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Datos del servicio (PASO 4 spec)
+  descripcion     String
+  valorUnitario   Decimal  @db.Decimal(15, 2)
+  unidad          String   @default("UND")  // UND, HORA, DIA, MES, etc.
+  aplicaIVA       Boolean  @default(false)
+  porcentajeIVA   Int      @default(0)      // 0, 5, 19
+
+  // Tracking y organización
+  vecesUtilizado  Int      @default(0)      // Para tracking de frecuencia
+  categoria       String?                   // Organización por categorías
+  activo          Boolean  @default(true)   // Soft-delete
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, activo])  // Query común: servicios activos del usuario
 }
 
 // ============================================

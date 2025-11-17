@@ -4,13 +4,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
@@ -30,7 +29,10 @@ export async function POST(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     // Si no existe progreso, crear uno
@@ -75,6 +77,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: 'Error al completar tour' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Error al completar tour' },
+      { status: 500 }
+    )
   }
 }

@@ -33,6 +33,7 @@ interface FacturaCardProps {
   onEnviarEmail: () => void
   onDescargarPDF: () => void
   onDescargarXML: () => void
+  onClonar?: () => void
 }
 
 export function FacturaCard({
@@ -42,6 +43,7 @@ export function FacturaCard({
   onEnviarEmail,
   onDescargarPDF,
   onDescargarXML,
+  onClonar,
 }: FacturaCardProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -89,11 +91,12 @@ export function FacturaCard({
       },
     }
 
-    const estado = estados[factura.estado as keyof typeof estados] || estados.BORRADOR
+    const estado =
+      estados[factura.estado as keyof typeof estados] || estados.BORRADOR
 
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${estado.bg} ${estado.text}`}
+        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ${estado.bg} ${estado.text}`}
       >
         <span className="material-symbols-outlined text-sm">{estado.icon}</span>
         {estado.label}
@@ -102,13 +105,13 @@ export function FacturaCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="transition-shadow hover:shadow-md">
       <CardBody className="p-4">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
           {/* Columna 1: Número y estado */}
           <div className="flex-shrink-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-slate-400 text-xl">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="material-symbols-outlined text-xl text-slate-400">
                 description
               </span>
               <span className="font-mono font-semibold text-slate-900">
@@ -119,8 +122,8 @@ export function FacturaCard({
           </div>
 
           {/* Columna 2: Cliente y fecha */}
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-slate-900 truncate mb-1">
+          <div className="min-w-0 flex-1">
+            <p className="mb-1 truncate font-semibold text-slate-900">
               {factura.cliente.nombre}
             </p>
             <div className="flex items-center gap-4 text-sm text-slate-600">
@@ -132,7 +135,9 @@ export function FacturaCard({
               </span>
               {factura.cliente.numeroDocumento && (
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm">badge</span>
+                  <span className="material-symbols-outlined text-sm">
+                    badge
+                  </span>
                   {factura.cliente.numeroDocumento}
                 </span>
               )}
@@ -141,14 +146,14 @@ export function FacturaCard({
 
           {/* Columna 3: Total */}
           <div className="text-left md:text-right">
-            <p className="text-sm text-slate-600 mb-1">Total</p>
+            <p className="mb-1 text-sm text-slate-600">Total</p>
             <p className="text-xl font-bold text-slate-900">
               {formatCurrency(factura.total)}
             </p>
           </div>
 
           {/* Columna 4: Acciones */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center gap-2">
             {/* Ver */}
             <Button
               variant="ghost"
@@ -167,7 +172,9 @@ export function FacturaCard({
                 onClick={onDescargarPDF}
                 title="Descargar PDF"
               >
-                <span className="material-symbols-outlined">picture_as_pdf</span>
+                <span className="material-symbols-outlined">
+                  picture_as_pdf
+                </span>
               </Button>
             )}
 
@@ -180,6 +187,19 @@ export function FacturaCard({
                 title="Descargar XML"
               >
                 <span className="material-symbols-outlined">code</span>
+              </Button>
+            )}
+
+            {/* Clonar (usar como plantilla) */}
+            {onClonar && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClonar}
+                title="Usar como plantilla"
+                className="text-primary hover:bg-primary/10 hover:text-primary/80"
+              >
+                <span className="material-symbols-outlined">content_copy</span>
               </Button>
             )}
 
@@ -202,7 +222,7 @@ export function FacturaCard({
                 size="sm"
                 onClick={onAnular}
                 title="Anular factura"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
               >
                 <span className="material-symbols-outlined">cancel</span>
               </Button>
@@ -212,10 +232,12 @@ export function FacturaCard({
 
         {/* CUFE (solo si existe) */}
         {factura.cufe && (
-          <div className="mt-3 pt-3 border-t border-slate-200">
+          <div className="mt-3 border-t border-slate-200 pt-3">
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="material-symbols-outlined text-sm">verified</span>
-              <span className="font-mono truncate">CUFE: {factura.cufe}</span>
+              <span className="material-symbols-outlined text-sm">
+                verified
+              </span>
+              <span className="truncate font-mono">CUFE: {factura.cufe}</span>
             </div>
           </div>
         )}

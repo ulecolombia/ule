@@ -1,0 +1,247 @@
+/**
+ * ULE - ESTILOS PERSONALIZADOS PARA CALENDARIO TRIBUTARIO
+ * Mejoras visuales para react-big-calendar
+ */
+
+/* Override de estilos del calendario */
+.rbc-calendar {
+  font-family: inherit;
+}
+
+/* Mejorar header del calendario */
+.rbc-toolbar {
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rbc-toolbar button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.rbc-toolbar button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+  background: #059669;
+  color: white;
+  border-color: #059669;
+}
+
+.rbc-toolbar-label {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #111827;
+  flex-grow: 1;
+  text-align: center;
+}
+
+/* Mejorar días de la semana */
+.rbc-header {
+  padding: 0.75rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Mejorar celdas del mes */
+.rbc-month-view {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rbc-day-bg {
+  border-color: #f3f4f6;
+}
+
+.rbc-day-bg:hover {
+  background: #f9fafb;
+}
+
+.rbc-off-range-bg {
+  background: #fafafa;
+}
+
+.rbc-today {
+  background: #ecfdf5 !important;
+}
+
+.rbc-date-cell {
+  padding: 0.5rem;
+}
+
+.rbc-button-link {
+  font-weight: 500;
+  color: #374151;
+}
+
+.rbc-today .rbc-button-link {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* Mejorar eventos */
+.rbc-event {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.813rem;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.rbc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.rbc-event-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.rbc-event-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mejorar vista de agenda */
+.rbc-agenda-view {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rbc-agenda-view table {
+  border: none;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.rbc-agenda-event-cell {
+  padding: 0.75rem 1rem;
+}
+
+/* Mejorar vista semanal y diaria */
+.rbc-time-view {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rbc-time-header {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.rbc-time-content {
+  border-top: none;
+}
+
+.rbc-timeslot-group {
+  border-color: #f3f4f6;
+  min-height: 60px;
+}
+
+.rbc-current-time-indicator {
+  background-color: #059669;
+  height: 2px;
+}
+
+/* Mejorar slot de tiempo */
+.rbc-time-slot {
+  border-color: #f3f4f6;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rbc-toolbar-label {
+    order: -1;
+    margin-bottom: 0.5rem;
+  }
+
+  .rbc-toolbar button {
+    width: 100%;
+  }
+
+  .rbc-btn-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .rbc-btn-group button {
+    flex: 1;
+  }
+}
+
+/* Animaciones suaves */
+.rbc-show-more {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669;
+  transition: all 0.2s;
+}
+
+.rbc-show-more:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* Mejorar selección */
+.rbc-selected-cell {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+/* Overlay para eventos */
+.rbc-overlay {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.rbc-overlay-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #111827;
+}

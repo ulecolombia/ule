@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import {
   analizarPerfilTributario,
   obtenerHistorialAnalisis,
-  compararAnalisis
+  compararAnalisis,
 } from '@/lib/services/analisis-tributario-service'
 
 // Cache simple en memoria para análisis (1 hora de TTL)
@@ -41,13 +40,10 @@ export async function GET(req: NextRequest) {
   let userId: string | undefined
 
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
@@ -98,7 +94,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Generar nuevo análisis (ya incluye obtención de análisis anterior)
-    const { reporte, analisisAnterior } = await analizarPerfilTributario(user.id)
+    const { reporte, analisisAnterior } = await analizarPerfilTributario(
+      user.id
+    )
 
     // Comparar con análisis anterior
     const comparacion = compararAnalisis(analisisAnterior, reporte)
@@ -120,10 +118,7 @@ export async function GET(req: NextRequest) {
     )
 
     if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json(

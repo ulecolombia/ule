@@ -25,9 +25,19 @@ import {
  * @param item - Item de factura
  * @returns Total calculado con 2 decimales
  */
-export const calcularTotalItem = (item: ItemFactura): number => {
+export const calcularTotalItem = (item: any): number => {
   const subtotalItem = item.cantidad * item.valorUnitario
-  const ivaItem = subtotalItem * (item.iva / 100)
+
+  // Determinar el porcentaje de IVA a usar
+  // Priorizar aplicaIVA/porcentajeIVA sobre iva (nuevo sistema vs legacy)
+  let porcentajeIVA = 0
+  if (item.aplicaIVA !== undefined) {
+    porcentajeIVA = item.aplicaIVA ? item.porcentajeIVA || 0 : 0
+  } else {
+    porcentajeIVA = item.iva || 0
+  }
+
+  const ivaItem = subtotalItem * (porcentajeIVA / 100)
   const descuentoItem = item.descuento || 0
 
   const total = subtotalItem + ivaItem - descuentoItem
@@ -41,7 +51,7 @@ export const calcularTotalItem = (item: ItemFactura): number => {
  * @param item - Item de factura
  * @returns Subtotal
  */
-export const calcularSubtotalItem = (item: ItemFactura): number => {
+export const calcularSubtotalItem = (item: any): number => {
   return Math.round(item.cantidad * item.valorUnitario * 100) / 100
 }
 
@@ -50,9 +60,19 @@ export const calcularSubtotalItem = (item: ItemFactura): number => {
  * @param item - Item de factura
  * @returns Valor del IVA
  */
-export const calcularIvaItem = (item: ItemFactura): number => {
+export const calcularIvaItem = (item: any): number => {
   const subtotal = calcularSubtotalItem(item)
-  return Math.round(subtotal * (item.iva / 100) * 100) / 100
+
+  // Determinar el porcentaje de IVA a usar
+  // Priorizar aplicaIVA/porcentajeIVA sobre iva (nuevo sistema vs legacy)
+  let porcentajeIVA = 0
+  if (item.aplicaIVA !== undefined) {
+    porcentajeIVA = item.aplicaIVA ? item.porcentajeIVA || 0 : 0
+  } else {
+    porcentajeIVA = item.iva || 0
+  }
+
+  return Math.round(subtotal * (porcentajeIVA / 100) * 100) / 100
 }
 
 // ============================================
@@ -64,9 +84,7 @@ export const calcularIvaItem = (item: ItemFactura): number => {
  * @param items - Array de items de la factura
  * @returns Objeto con todos los totales calculados
  */
-export const calcularTotalesFactura = (
-  items: ConceptosFactura
-): TotalesFactura => {
+export const calcularTotalesFactura = (items: any[]): TotalesFactura => {
   // Subtotal: suma de cantidad * valorUnitario de cada item
   const subtotal = items.reduce((acc, item) => {
     return acc + calcularSubtotalItem(item)
@@ -103,13 +121,18 @@ export const calcularTotalesFactura = (
  * @param items - Array de items de la factura
  * @returns Array de objetos con base e impuesto por cada tasa de IVA
  */
-export const calcularBreakdownIVA = (
-  items: ConceptosFactura
-): BreakdownIVA[] => {
+export const calcularBreakdownIVA = (items: any[]): BreakdownIVA[] => {
   const breakdown = new Map<number, { base: number; impuesto: number }>()
 
   items.forEach((item) => {
-    const tasa = item.iva
+    // Determinar el porcentaje de IVA a usar
+    let tasa = 0
+    if (item.aplicaIVA !== undefined) {
+      tasa = item.aplicaIVA ? item.porcentajeIVA || 0 : 0
+    } else {
+      tasa = item.iva || 0
+    }
+
     const base = calcularSubtotalItem(item)
     const impuesto = calcularIvaItem(item)
 
@@ -218,7 +241,7 @@ export const validarNumeroFactura = (numero: string): boolean => {
  * @returns Objeto con validación y errores
  */
 export const validarItem = (
-  item: ItemFactura
+  item: any
 ): { valido: boolean; errores: string[] } => {
   const errores: string[] = []
 
@@ -239,13 +262,18 @@ export const validarItem = (
   }
 
   if (item.valorUnitario > MAX_VALOR_UNITARIO) {
-    errores.push(
-      `El valor unitario no puede ser mayor a ${MAX_VALOR_UNITARIO}`
-    )
+    errores.push(`El valor unitario no puede ser mayor a ${MAX_VALOR_UNITARIO}`)
   }
 
-  if (item.iva < 0 || item.iva > 100) {
-    errores.push('El IVA debe estar entre 0 y 100%')
+  // Validar IVA según el sistema usado
+  if (item.aplicaIVA !== undefined && item.porcentajeIVA !== undefined) {
+    if (item.porcentajeIVA < 0 || item.porcentajeIVA > 100) {
+      errores.push('El IVA debe estar entre 0 y 100%')
+    }
+  } else if (item.iva !== undefined) {
+    if (item.iva < 0 || item.iva > 100) {
+      errores.push('El IVA debe estar entre 0 y 100%')
+    }
   }
 
   if (item.descuento && item.descuento < 0) {
@@ -264,7 +292,7 @@ export const validarItem = (
  * @returns Objeto con validación y errores
  */
 export const validarFactura = (
-  items: ConceptosFactura
+  items: any[]
 ): { valida: boolean; errores: string[] } => {
   const errores: string[] = []
 
@@ -273,7 +301,9 @@ export const validarFactura = (
   }
 
   if (items.length > MAX_ITEMS_POR_FACTURA) {
-    errores.push(`La factura no puede tener más de ${MAX_ITEMS_POR_FACTURA} items`)
+    errores.push(
+      `La factura no puede tener más de ${MAX_ITEMS_POR_FACTURA} items`
+    )
   }
 
   // Validar cada item
@@ -289,11 +319,15 @@ export const validarFactura = (
     const totales = calcularTotalesFactura(items)
 
     if (totales.total < MIN_VALOR_FACTURA) {
-      errores.push(`El total de la factura debe ser mayor a ${MIN_VALOR_FACTURA}`)
+      errores.push(
+        `El total de la factura debe ser mayor a ${MIN_VALOR_FACTURA}`
+      )
     }
 
     if (totales.total > MAX_VALOR_FACTURA) {
-      errores.push(`El total de la factura no puede ser mayor a ${MAX_VALOR_FACTURA}`)
+      errores.push(
+        `El total de la factura no puede ser mayor a ${MAX_VALOR_FACTURA}`
+      )
     }
   }
 

@@ -7,9 +7,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -20,17 +20,19 @@ import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { SearchableSelect } from '@/components/ui/searchable-select'
 import { ItemsTable } from '@/components/facturacion/items-table'
-import { TotalesCard } from '@/components/facturacion/totales-card'
-import { FacturaPreview } from '@/components/facturacion/factura-preview'
+import { VistaPreviaWrapper } from '@/components/facturacion/vista-previa-wrapper'
 import { ClienteModal } from '@/components/facturacion/cliente-modal'
+import { AutocompleteCliente } from '@/components/facturacion/autocomplete-cliente'
+import { ModalConfirmarEmision } from '@/components/facturacion/modal-confirmar-emision'
 
 import { useClientes } from '@/hooks/use-clientes'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   crearFacturaSchema,
   METODOS_PAGO,
   CrearFacturaInput,
+  EmisorFacturaInput,
 } from '@/lib/validations/factura'
 import { calcularTotalesFactura } from '@/lib/utils/facturacion-utils'
 
@@ -38,10 +40,20 @@ const STORAGE_KEY = 'ule_factura_borrador'
 
 export default function NuevaFacturaPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const esPlantilla = searchParams?.get('plantilla') === 'true'
   const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
   const [isClienteModalOpen, setIsClienteModalOpen] = useState(false)
+  const [modalConfirmOpen, setModalConfirmOpen] = useState(false)
+
+  // Estado del emisor
+  const [emisorData, setEmisorData] = useState<EmisorFacturaInput | null>(null)
+  const [editarEmisor, setEditarEmisor] = useState(false)
+  const [emisorOverride, setEmisorOverride] = useState<
+    Partial<EmisorFacturaInput>
+  >({})
+  const [responsableIVA, setResponsableIVA] = useState(false)
 
   // Obtener clientes
   const { clientes, mutate: mutateClientes } = useClientes(1, 999, '', 'TODOS')
@@ -56,16 +68,19 @@ export default function NuevaFacturaPage() {
     reset,
     formState: { errors, isDirty },
   } = useForm<CrearFacturaInput>({
-    resolver: zodResolver(crearFacturaSchema),
+    mode: 'onSubmit', // Solo validar al enviar, no mientras escribe
     defaultValues: {
       clienteId: '',
       fecha: new Date(),
-      metodoPago: 'EFECTIVO',
+      metodoPago: 'TRANSFERENCIA',
       items: [
         {
           descripcion: '',
           cantidad: 1,
+          unidad: 'UND',
           valorUnitario: '',
+          aplicaIVA: false,
+          porcentajeIVA: 0,
           iva: 19,
         },
       ],
@@ -88,11 +103,103 @@ export default function NuevaFacturaPage() {
   const watchNotas = watch('notas')
   const watchTerminos = watch('terminos')
 
+  // Observar todos los datos del formulario para la vista previa
+  const formData = useWatch({
+    control,
+  })
+
+  // Aplicar debounce para mejorar performance de la vista previa
+  const debouncedFormData = useDebounce(formData, 300)
+
   // Calcular totales
   const totales = calcularTotalesFactura(watchItems || [])
 
   // Cliente seleccionado
-  const clienteSeleccionado = clientes.find((c) => c.id === watchClienteId)
+  const clienteSeleccionado =
+    watchClienteId && watchClienteId !== ''
+      ? clientes.find((c) => c.id === watchClienteId)
+      : undefined
+
+  /**
+   * Validar información tributaria del usuario
+   * Redirigir al perfil si no está completa
+   */
+  useEffect(() => {
+    const verificarInfoTributaria = async () => {
+      try {
+        const response = await fetch('/api/user/profile')
+        if (!response.ok) return
+
+        const { user } = await response.json()
+
+        // Verificar que tenga info tributaria mínima
+        if (!user.regimenTributario || !user.razonSocial) {
+          toast.error(
+            'Por favor completa tu información tributaria antes de emitir facturas',
+            { duration: 5000 }
+          )
+          router.push('/perfil')
+          return
+        }
+
+        // Pre-cargar datos del emisor desde perfil tributario
+        setEmisorData({
+          razonSocial: user.razonSocial || user.nombre || '',
+          documento: user.numeroDocumento || '',
+          direccion: user.direccion || '',
+          ciudad: user.ciudad || '',
+          telefono: user.telefono || '',
+          email: user.emailFacturacion || user.email || '',
+        })
+
+        // Guardar si es responsable de IVA
+        setResponsableIVA(user.responsableIVA || false)
+      } catch (error) {
+        console.error('Error verificando info tributaria:', error)
+      }
+    }
+
+    verificarInfoTributaria()
+  }, [router])
+
+  /**
+   * Cargar plantilla desde factura clonada
+   */
+  useEffect(() => {
+    if (esPlantilla) {
+      const plantilla = localStorage.getItem('factura-plantilla')
+      const numeroOriginal = localStorage.getItem('factura-plantilla-numero')
+
+      if (plantilla) {
+        try {
+          const datos = JSON.parse(plantilla)
+
+          // Pre-llenar formulario con datos de la plantilla
+          reset({
+            clienteId: datos.clienteId || '',
+            fecha: new Date(), // Fecha actual, no la original
+            metodoPago: datos.metodoPago || 'TRANSFERENCIA',
+            items: datos.items || [],
+            notas: datos.notas || '',
+            terminos: datos.terminos || '',
+            estado: 'BORRADOR',
+          })
+
+          toast.info(`📋 Usando Factura ${numeroOriginal} como plantilla`, {
+            description: 'Ajusta los datos y emite cuando estés listo',
+            duration: 5000,
+          })
+
+          // Limpiar localStorage
+          localStorage.removeItem('factura-plantilla')
+          localStorage.removeItem('factura-plantilla-numero')
+        } catch (error) {
+          console.error('Error cargando plantilla:', error)
+          toast.error('Error al cargar plantilla')
+        }
+      }
+    }
+  }, [esPlantilla, reset])
 
   /**
    * Guardar borrador en localStorage
@@ -164,7 +271,7 @@ export default function NuevaFacturaPage() {
         reset({
           clienteId: borrador.clienteId || '',
           fecha: borrador.fecha ? new Date(borrador.fecha) : new Date(),
-          metodoPago: borrador.metodoPago || 'EFECTIVO',
+          metodoPago: borrador.metodoPago || 'TRANSFERENCIA',
           items: borrador.items || [],
           notas: borrador.notas || '',
           terminos: borrador.terminos || '',
@@ -194,17 +301,41 @@ export default function NuevaFacturaPage() {
 
   /**
    * Guardar borrador en servidor
+   * Solo requiere validación mínima
    */
-  const guardarBorrador = async (data: CrearFacturaInput) => {
+  const guardarBorrador = async () => {
+    // Validación mínima: al menos 1 ítem con descripción
+    const items = watch('items')
+
+    if (!items || items.length === 0) {
+      toast.error('Debes agregar al menos un ítem para guardar el borrador')
+      return
+    }
+
+    const tieneDescripcion = items.some(
+      (item) => item.descripcion && item.descripcion.trim().length > 0
+    )
+    if (!tieneDescripcion) {
+      toast.error('Al menos un ítem debe tener descripción')
+      return
+    }
+
     setIsSubmitting(true)
     try {
+      const data = {
+        clienteId: watch('clienteId'),
+        fecha: watch('fecha'),
+        metodoPago: watch('metodoPago'),
+        items: watch('items'),
+        notas: watch('notas'),
+        terminos: watch('terminos'),
+        estado: 'BORRADOR',
+      }
+
       const response = await fetch('/api/facturacion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          estado: 'BORRADOR',
-        }),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
@@ -231,27 +362,72 @@ export default function NuevaFacturaPage() {
   }
 
   /**
-   * Emitir factura
+   * Preparar emisión - valida y abre modal de confirmación
    */
-  const emitirFactura = async (data: CrearFacturaInput) => {
+  const prepararEmision = async () => {
+    // Validar formulario completo
+    const isValid = await handleSubmit(() => {})()
+
+    if (!isValid || Object.keys(errors).length > 0) {
+      toast.error('Por favor completa todos los campos requeridos')
+      return
+    }
+
+    // Abrir modal de confirmación
+    setModalConfirmOpen(true)
+  }
+
+  /**
+   * Emitir factura (después de confirmación)
+   */
+  const emitirFactura = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/facturacion', {
+      // Primero guardar como borrador
+      const data = {
+        clienteId: watch('clienteId'),
+        fecha: watch('fecha'),
+        metodoPago: watch('metodoPago'),
+        items: watch('items'),
+        notas: watch('notas'),
+        terminos: watch('terminos'),
+        estado: 'BORRADOR',
+      }
+
+      const saveDraftResponse = await fetch('/api/facturacion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          estado: 'EMITIDA',
-        }),
+        body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
+      if (!saveDraftResponse.ok) {
+        const error = await saveDraftResponse.json()
+        throw new Error(error.error || 'Error al preparar factura')
+      }
+
+      const draftResult = await saveDraftResponse.json()
+      const facturaId = draftResult.factura.id
+
+      // Luego emitir la factura
+      const emitResponse = await fetch('/api/facturacion/emitir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ facturaId }),
+      })
+
+      if (!emitResponse.ok) {
+        const error = await emitResponse.json()
         throw new Error(error.error || 'Error al emitir factura')
       }
 
-      const result = await response.json()
-      toast.success('Factura emitida exitosamente')
+      const result = await emitResponse.json()
+      toast.success(
+        `Factura ${result.factura.numeroFactura} emitida exitosamente`,
+        {
+          description: 'Se ha generado el PDF y XML de la factura',
+          duration: 5000,
+        }
+      )
       limpiarBorradorLocal()
 
       // Redirigir a detalle de factura
@@ -261,6 +437,7 @@ export default function NuevaFacturaPage() {
       toast.error(error.message || 'Error al emitir factura')
     } finally {
       setIsSubmitting(false)
+      setModalConfirmOpen(false)
     }
   }
 
@@ -326,9 +503,211 @@ export default function NuevaFacturaPage() {
           </div>
 
           {/* Layout principal */}
-          <div className="flex flex-col gap-6 lg:flex-row">
+          <div className="flex flex-col gap-6 2xl:flex-row">
             {/* Columna izquierda - Formulario (60%) */}
             <div className="flex-1 space-y-6">
+              {/* Información del emisor */}
+              <Card>
+                <CardBody>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-dark text-xl font-semibold">
+                      Información del Emisor
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setEditarEmisor(!editarEmisor)}
+                      className="flex items-center gap-1 text-sm text-primary transition-colors hover:text-primary/80"
+                    >
+                      <span className="material-symbols-outlined text-base">
+                        {editarEmisor ? 'check' : 'edit'}
+                      </span>
+                      {editarEmisor ? 'Guardar' : 'Editar para esta factura'}
+                    </button>
+                  </div>
+
+                  {emisorData ? (
+                    editarEmisor ? (
+                      /* Modo edición */
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <Input
+                            label="Razón Social *"
+                            placeholder="Nombre o razón social"
+                            value={
+                              emisorOverride.razonSocial ??
+                              emisorData.razonSocial
+                            }
+                            onChange={(e) =>
+                              setEmisorOverride({
+                                ...emisorOverride,
+                                razonSocial: e.target.value,
+                              })
+                            }
+                            icon={
+                              <span className="material-symbols-outlined">
+                                business
+                              </span>
+                            }
+                          />
+                          <Input
+                            label="Documento *"
+                            placeholder="Número de documento"
+                            value={
+                              emisorOverride.documento ?? emisorData.documento
+                            }
+                            onChange={(e) =>
+                              setEmisorOverride({
+                                ...emisorOverride,
+                                documento: e.target.value,
+                              })
+                            }
+                            icon={
+                              <span className="material-symbols-outlined">
+                                badge
+                              </span>
+                            }
+                          />
+                        </div>
+                        <Input
+                          label="Dirección *"
+                          placeholder="Dirección fiscal"
+                          value={
+                            emisorOverride.direccion ?? emisorData.direccion
+                          }
+                          onChange={(e) =>
+                            setEmisorOverride({
+                              ...emisorOverride,
+                              direccion: e.target.value,
+                            })
+                          }
+                          icon={
+                            <span className="material-symbols-outlined">
+                              location_on
+                            </span>
+                          }
+                        />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                          <Input
+                            label="Ciudad *"
+                            placeholder="Ciudad"
+                            value={emisorOverride.ciudad ?? emisorData.ciudad}
+                            onChange={(e) =>
+                              setEmisorOverride({
+                                ...emisorOverride,
+                                ciudad: e.target.value,
+                              })
+                            }
+                            icon={
+                              <span className="material-symbols-outlined">
+                                location_city
+                              </span>
+                            }
+                          />
+                          <Input
+                            label="Teléfono *"
+                            placeholder="10 dígitos"
+                            value={
+                              emisorOverride.telefono ?? emisorData.telefono
+                            }
+                            onChange={(e) =>
+                              setEmisorOverride({
+                                ...emisorOverride,
+                                telefono: e.target.value,
+                              })
+                            }
+                            icon={
+                              <span className="material-symbols-outlined">
+                                phone
+                              </span>
+                            }
+                          />
+                          <Input
+                            label="Email *"
+                            type="email"
+                            placeholder="correo@ejemplo.com"
+                            value={emisorOverride.email ?? emisorData.email}
+                            onChange={(e) =>
+                              setEmisorOverride({
+                                ...emisorOverride,
+                                email: e.target.value,
+                              })
+                            }
+                            icon={
+                              <span className="material-symbols-outlined">
+                                email
+                              </span>
+                            }
+                          />
+                        </div>
+                        <div className="rounded-lg bg-warning-light/20 p-3 text-sm text-warning-text-light">
+                          <span className="material-symbols-outlined mr-2 align-middle text-base">
+                            info
+                          </span>
+                          Los cambios solo aplican para esta factura. Para
+                          actualizar permanentemente, edita tu{' '}
+                          <a href="/perfil" className="underline">
+                            perfil tributario
+                          </a>
+                          .
+                        </div>
+                      </div>
+                    ) : (
+                      /* Modo lectura */
+                      <div className="rounded-lg bg-gray-50 p-4">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <div>
+                            <p className="text-dark-100 text-xs">
+                              Razón Social
+                            </p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.razonSocial ||
+                                emisorData.razonSocial}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-dark-100 text-xs">Documento</p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.documento || emisorData.documento}
+                            </p>
+                          </div>
+                          <div className="md:col-span-2">
+                            <p className="text-dark-100 text-xs">Dirección</p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.direccion || emisorData.direccion}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-dark-100 text-xs">Ciudad</p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.ciudad || emisorData.ciudad}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-dark-100 text-xs">Teléfono</p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.telefono || emisorData.telefono}
+                            </p>
+                          </div>
+                          <div className="md:col-span-2">
+                            <p className="text-dark-100 text-xs">Email</p>
+                            <p className="text-dark font-semibold">
+                              {emisorOverride.email || emisorData.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    /* Loading state */
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-10 rounded-lg bg-gray-200"></div>
+                      <div className="h-10 rounded-lg bg-gray-200"></div>
+                      <div className="h-10 rounded-lg bg-gray-200"></div>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+
               {/* Información del cliente */}
               <Card>
                 <CardBody>
@@ -337,44 +716,26 @@ export default function NuevaFacturaPage() {
                   </h2>
 
                   <div className="space-y-4">
-                    {/* Selector de cliente */}
-                    <div>
-                      <label className="text-dark mb-2 block text-sm font-medium">
-                        Cliente *
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <SearchableSelect
-                            options={clientes.map((c) => ({
-                              value: c.id,
-                              label: `${c.nombre} - ${c.numeroDocumento}`,
-                            }))}
-                            value={watchClienteId}
-                            onChange={(value) => setValue('clienteId', value)}
-                            placeholder="Buscar cliente..."
-                            icon={
-                              <span className="material-symbols-outlined">
-                                person
-                              </span>
-                            }
-                          />
-                          {errors.clienteId && (
-                            <p className="text-error mt-1.5 text-sm">
-                              {errors.clienteId.message}
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsClienteModalOpen(true)}
-                          className="flex items-center gap-2"
-                        >
-                          <span className="material-symbols-outlined">add</span>
-                          Nuevo
-                        </Button>
-                      </div>
-                    </div>
+                    {/* Selector de cliente con autocomplete */}
+                    <AutocompleteCliente
+                      onSelect={(cliente) => {
+                        setValue('clienteId', cliente.id, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }}
+                      onClear={() => {
+                        setValue('clienteId', '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }}
+                      onNuevoCliente={() => setIsClienteModalOpen(true)}
+                      selectedClienteId={watchClienteId}
+                      error={errors.clienteId?.message}
+                    />
 
                     {/* Fecha */}
                     <Input
@@ -425,113 +786,78 @@ export default function NuevaFacturaPage() {
                     append={append}
                     remove={remove}
                     watch={watch}
+                    setValue={setValue}
                     errors={errors}
                     control={control}
+                    responsableIVA={responsableIVA}
                   />
                 </CardBody>
               </Card>
 
-              {/* Notas y términos */}
+              {/* Notas adicionales */}
               <Card>
                 <CardBody>
                   <h2 className="text-dark mb-4 text-xl font-semibold">
-                    Información Adicional
+                    Notas Adicionales
                   </h2>
 
-                  <div className="space-y-4">
-                    {/* Notas */}
-                    <div>
-                      <label className="text-dark mb-2 block text-sm font-medium">
-                        Notas Adicionales
-                      </label>
-                      <textarea
-                        {...register('notas')}
-                        rows={3}
-                        placeholder="Ej: Pago a 30 días, descuentos especiales, etc."
-                        className="border-light-200 hover:border-light-300 w-full resize-none rounded-lg border px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                      <p className="text-dark-100 mt-1 text-xs">
-                        Máximo 500 caracteres
+                  <div>
+                    <label className="text-dark mb-2 block text-sm font-medium">
+                      Agrega información relevante sobre esta factura
+                    </label>
+                    <textarea
+                      {...register('notas')}
+                      rows={4}
+                      placeholder="Ej: Pago a 30 días, descuentos especiales, incluye transporte, etc."
+                      className="border-light-200 hover:border-light-300 w-full resize-none rounded-lg border px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <p className="text-dark-100 mt-1 text-xs">
+                      Opcional - Máximo 500 caracteres
+                    </p>
+                    {errors.notas && (
+                      <p className="text-error mt-1 text-sm">
+                        {errors.notas.message}
                       </p>
-                      {errors.notas && (
-                        <p className="text-error mt-1 text-sm">
-                          {errors.notas.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Términos */}
-                    <div>
-                      <label className="text-dark mb-2 block text-sm font-medium">
-                        Términos y Condiciones
-                      </label>
-                      <textarea
-                        {...register('terminos')}
-                        rows={3}
-                        placeholder="Ej: Esta factura se rige por las leyes colombianas..."
-                        className="border-light-200 hover:border-light-300 w-full resize-none rounded-lg border px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                      <p className="text-dark-100 mt-1 text-xs">
-                        Máximo 300 caracteres
-                      </p>
-                      {errors.terminos && (
-                        <p className="text-error mt-1 text-sm">
-                          {errors.terminos.message}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </CardBody>
               </Card>
             </div>
 
-            {/* Columna derecha - Preview y totales (40%) */}
-            <div className="w-full space-y-6 lg:w-[400px]">
-              {/* Totales */}
-              <TotalesCard
-                subtotal={totales.subtotal}
-                totalIva={totales.totalIva}
-                total={totales.total}
+            {/* Columna derecha - Vista Previa */}
+            <div className="hidden 2xl:block 2xl:w-[550px] 2xl:flex-shrink-0">
+              {/* Vista Previa con Wrapper Responsive */}
+              <VistaPreviaWrapper
+                key={watchClienteId || 'no-cliente'}
+                data={debouncedFormData as Partial<CrearFacturaInput>}
+                numeroFactura="PREVIEW-001"
+                emisor={{
+                  razonSocial:
+                    emisorOverride.razonSocial || emisorData?.razonSocial,
+                  documento: emisorOverride.documento || emisorData?.documento,
+                  direccion: emisorOverride.direccion || emisorData?.direccion,
+                  ciudad: emisorOverride.ciudad || emisorData?.ciudad,
+                  telefono: emisorOverride.telefono || emisorData?.telefono,
+                  email: emisorOverride.email || emisorData?.email,
+                }}
+                cliente={
+                  clienteSeleccionado
+                    ? {
+                        nombre: clienteSeleccionado.nombre,
+                        numeroDocumento: clienteSeleccionado.numeroDocumento,
+                        tipoDocumento: clienteSeleccionado.tipoDocumento,
+                        email: clienteSeleccionado.email || undefined,
+                        telefono: clienteSeleccionado.telefono || undefined,
+                        direccion: clienteSeleccionado.direccion || undefined,
+                        ciudad: clienteSeleccionado.ciudad || undefined,
+                      }
+                    : undefined
+                }
               />
-
-              {/* Toggle preview en mobile */}
-              <div className="lg:hidden">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="w-full"
-                >
-                  <span className="material-symbols-outlined mr-2">
-                    {showPreview ? 'visibility_off' : 'visibility'}
-                  </span>
-                  {showPreview ? 'Ocultar' : 'Ver'} Vista Previa
-                </Button>
-              </div>
-
-              {/* Preview (siempre visible en desktop, toggle en mobile) */}
-              <div className={`${showPreview ? 'block' : 'hidden'} lg:block`}>
-                <Card>
-                  <CardBody className="p-0">
-                    <div className="max-h-[600px] overflow-auto">
-                      <FacturaPreview
-                        cliente={clienteSeleccionado}
-                        fecha={watchFecha}
-                        items={watchItems || []}
-                        subtotal={totales.subtotal}
-                        totalIva={totales.totalIva}
-                        total={totales.total}
-                        notas={watchNotas}
-                        terminos={watchTerminos}
-                      />
-                    </div>
-                  </CardBody>
-                </Card>
-              </div>
             </div>
           </div>
 
-          {/* Botones de acción (sticky bottom) */}
+          {/* Botones de acción (sticky bottom) - FUERA del flex container */}
           <div className="border-light-200 sticky bottom-0 z-10 mt-6 flex gap-3 rounded-lg border bg-white p-4 shadow-lg">
             <Button
               type="button"
@@ -546,7 +872,7 @@ export default function NuevaFacturaPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleSubmit(guardarBorrador)}
+              onClick={guardarBorrador}
               disabled={isSubmitting}
               className="flex-1 lg:flex-initial"
             >
@@ -567,7 +893,7 @@ export default function NuevaFacturaPage() {
 
             <Button
               type="button"
-              onClick={handleSubmit(emitirFactura)}
+              onClick={prepararEmision}
               disabled={isSubmitting}
               className="flex-1 bg-primary hover:bg-primary/90 lg:flex-initial"
             >
@@ -576,7 +902,7 @@ export default function NuevaFacturaPage() {
                   <span className="material-symbols-outlined mr-2 animate-spin">
                     progress_activity
                   </span>
-                  Emitiendo...
+                  Procesando...
                 </>
               ) : (
                 <>
@@ -595,6 +921,19 @@ export default function NuevaFacturaPage() {
         isOpen={isClienteModalOpen}
         onClose={() => setIsClienteModalOpen(false)}
         onSuccess={handleClienteCreado}
+      />
+
+      {/* Modal de confirmación de emisión */}
+      <ModalConfirmarEmision
+        open={modalConfirmOpen}
+        onClose={() => setModalConfirmOpen(false)}
+        onConfirm={emitirFactura}
+        datosFactura={{
+          clienteNombre: clienteSeleccionado?.nombre,
+          total: totales.total,
+          itemsCount: watchItems?.length || 0,
+        }}
+        loading={isSubmitting}
       />
     </>
   )

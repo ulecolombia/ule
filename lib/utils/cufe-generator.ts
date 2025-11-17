@@ -3,8 +3,6 @@
  * Código Único de Factura Electrónica según normativa DIAN
  */
 
-import { createHash } from 'crypto'
-
 export interface CUFEData {
   numeroFactura: string
   fecha: Date
@@ -14,6 +12,23 @@ export interface CUFEData {
   baseImponible: number
   impuesto: number
   totalConImpuestos: number
+}
+
+/**
+ * Genera hash simple para mock de CUFE
+ * NOTA: Esta es una implementación simplificada para mock/educativo
+ * En producción, el CUFE real lo genera el proveedor tecnológico (Siigo/Facture/Carvajal)
+ */
+function simpleHash(str: string): string {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  // Convertir a hexadecimal positivo y hacer padding
+  const hex = Math.abs(hash).toString(16).toUpperCase()
+  return hex.padStart(16, '0')
 }
 
 /**
@@ -68,11 +83,17 @@ export function generateCUFE(data: CUFEData): string {
     '2', // Ambiente (2=pruebas, 1=producción)
   ].join('')
 
-  // Generar hash SHA-384 (DIAN usa SHA-384)
-  const hash = createHash('sha384').update(cadenaBase).digest('hex')
+  // Generar hash mock (SHA-384 tiene 96 caracteres hexadecimales)
+  // Generamos 6 segmentos de 16 caracteres para simular un CUFE real
+  const hash1 = simpleHash(cadenaBase)
+  const hash2 = simpleHash(cadenaBase + data.numeroFactura)
+  const hash3 = simpleHash(cadenaBase + data.fecha.toISOString())
+  const hash4 = simpleHash(cadenaBase + data.total.toString())
+  const hash5 = simpleHash(cadenaBase + data.nit)
+  const hash6 = simpleHash(cadenaBase + Date.now().toString())
 
   // CUFE es el hash en mayúsculas (96 caracteres hexadecimales)
-  return hash.toUpperCase()
+  return (hash1 + hash2 + hash3 + hash4 + hash5 + hash6).toUpperCase()
 }
 
 /**
@@ -122,7 +143,13 @@ export function generateCUDE(data: CUFEData): string {
     'CLAVECUDE123456', // Clave técnica DIAN para CUDE (mock)
   ].join('')
 
-  const hash = createHash('sha384').update(cadenaBase).digest('hex')
+  // Generar hash mock (SHA-384 tiene 96 caracteres hexadecimales)
+  const hash1 = simpleHash(cadenaBase)
+  const hash2 = simpleHash(cadenaBase + data.numeroFactura)
+  const hash3 = simpleHash(cadenaBase + data.fecha.toISOString())
+  const hash4 = simpleHash(cadenaBase + data.totalConImpuestos.toString())
+  const hash5 = simpleHash(cadenaBase + data.nit)
+  const hash6 = simpleHash(cadenaBase + 'CUDE' + Date.now().toString())
 
-  return hash.toUpperCase()
+  return (hash1 + hash2 + hash3 + hash4 + hash5 + hash6).toUpperCase()
 }

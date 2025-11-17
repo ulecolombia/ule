@@ -39,8 +39,9 @@ export default auth(async (req) => {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // Verificar perfil completo para rutas críticas
-  const rutasCriticas = ['/pila', '/facturacion', '/asesoria', '/archivo']
+  // Verificar perfil completo solo para rutas que realmente lo requieren
+  // Facturación hace su propia validación de campos tributarios específicos
+  const rutasCriticas = ['/pila', '/archivo']
   const esRutaCritica = rutasCriticas.some((ruta) => path.startsWith(ruta))
 
   if (esRutaCritica && session.user?.perfilCompleto === false) {

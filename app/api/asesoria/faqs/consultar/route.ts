@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -11,13 +10,10 @@ const consultarFAQSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
@@ -40,10 +36,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (!faq) {
-      return NextResponse.json(
-        { error: 'FAQ no encontrada' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'FAQ no encontrada' }, { status: 404 })
     }
 
     // Registrar consulta

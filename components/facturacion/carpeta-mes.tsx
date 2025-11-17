@@ -41,6 +41,7 @@ interface CarpetaMesProps {
   onEnviarEmail: (facturaId: string) => void
   onDescargarPDF: (pdfUrl: string, numeroFactura: string) => void
   onDescargarXML: (xmlUrl: string, numeroFactura: string) => void
+  onClonarFactura?: (facturaId: string) => void
 }
 
 export function CarpetaMes({
@@ -53,6 +54,7 @@ export function CarpetaMes({
   onEnviarEmail,
   onDescargarPDF,
   onDescargarXML,
+  onClonarFactura,
 }: CarpetaMesProps) {
   const [isOpen, setIsOpen] = useState(true)
 
@@ -72,12 +74,12 @@ export function CarpetaMes({
           {/* Header del mes (siempre visible) */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+            className="flex w-full items-center justify-between p-4 transition-colors hover:bg-slate-50"
           >
             <div className="flex items-center gap-3">
               {/* Icono de carpeta */}
-              <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
-                <span className="material-symbols-outlined text-teal-600 text-2xl">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-50">
+                <span className="material-symbols-outlined text-2xl text-teal-600">
                   folder
                 </span>
               </div>
@@ -94,7 +96,7 @@ export function CarpetaMes({
 
             <div className="flex items-center gap-4">
               {/* Total del mes */}
-              <div className="text-right hidden md:block">
+              <div className="hidden text-right md:block">
                 <p className="text-sm text-slate-600">Total</p>
                 <p className="text-lg font-bold text-slate-900">
                   {formatCurrency(totalMes)}
@@ -112,8 +114,8 @@ export function CarpetaMes({
           {isOpen && (
             <div className="border-t border-slate-200 bg-slate-50/50 p-4">
               {facturas.length === 0 ? (
-                <div className="text-center py-8">
-                  <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">
+                <div className="py-8 text-center">
+                  <span className="material-symbols-outlined mb-2 text-4xl text-slate-300">
                     description
                   </span>
                   <p className="text-slate-500">No hay facturas en este mes</p>
@@ -134,6 +136,11 @@ export function CarpetaMes({
                       onDescargarXML={() =>
                         factura.xmlUrl &&
                         onDescargarXML(factura.xmlUrl, factura.numeroFactura)
+                      }
+                      onClonar={
+                        onClonarFactura
+                          ? () => onClonarFactura(factura.id)
+                          : undefined
                       }
                     />
                   ))}

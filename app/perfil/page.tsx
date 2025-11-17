@@ -22,7 +22,11 @@ import {
   formatEstadoCivil,
   formatTipoDocumento,
 } from '@/lib/utils/format'
-import { EPS_COLOMBIA, FONDOS_PENSION as FONDOS_PENSION_DATA, ARL_COLOMBIA } from '@/lib/data/entidades-seguridad-social'
+import {
+  EPS_COLOMBIA,
+  FONDOS_PENSION as FONDOS_PENSION_DATA,
+  ARL_COLOMBIA,
+} from '@/lib/data/entidades-seguridad-social'
 import { PROFESIONES_COMUNES } from '@/lib/data/profesiones'
 import { CODIGOS_CIIU } from '@/lib/data/codigos-ciiu'
 
@@ -64,6 +68,25 @@ interface UserData {
   estadoCivil: string
   personasACargo: number
   suscribirNewsletter: boolean
+  // Información tributaria
+  nit: string | null
+  razonSocial: string | null
+  regimenTributario: string | null
+  responsableIVA: boolean
+  autorretenedor: boolean
+  granContribuyente: boolean
+  resolucionDIAN: string | null
+  prefijoFactura: string | null
+  rangoFacturacionDesde: number | null
+  rangoFacturacionHasta: number | null
+  fechaResolucion: string | null
+  consecutivoActual: number | null
+  logoEmpresaUrl: string | null
+  colorPrimario: string | null
+  nombreBanco: string | null
+  tipoCuenta: string | null
+  numeroCuenta: string | null
+  emailFacturacion: string | null
   perfilCompleto: boolean
   createdAt: string
   updatedAt: string
@@ -73,6 +96,7 @@ type EditingSection =
   | 'personal'
   | 'laboral'
   | 'seguridad_social'
+  | 'tributaria'
   | 'adicional'
   | null
 
@@ -157,6 +181,14 @@ export default function PerfilPage() {
           suscribirNewsletter: userData.suscribirNewsletter,
         })
         break
+      case 'tributaria':
+        setSectionData({
+          regimenTributario: userData.regimenTributario || '',
+          responsableIVA: userData.responsableIVA || false,
+          razonSocial: userData.razonSocial || userData.nombre || '',
+          emailFacturacion: userData.emailFacturacion || userData.email || '',
+        })
+        break
     }
   }
 
@@ -207,7 +239,10 @@ export default function PerfilPage() {
   // Get user initials
   const getInitials = (name: string): string => {
     if (!name) return 'U'
-    const parts = name.trim().split(' ').filter(p => p.length > 0)
+    const parts = name
+      .trim()
+      .split(' ')
+      .filter((p) => p.length > 0)
     if (parts.length >= 2 && parts[0] && parts[1]) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
     }
@@ -220,7 +255,7 @@ export default function PerfilPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg text-dark-100">Error al cargar perfil</p>
+          <p className="text-dark-100 text-lg">Error al cargar perfil</p>
           <Button onClick={() => router.push('/dashboard')} className="mt-4">
             Volver al Dashboard
           </Button>
@@ -231,13 +266,14 @@ export default function PerfilPage() {
 
   const ciudadesDisponibles =
     DEPARTAMENTOS_CIUDADES.find(
-      (d: { departamento: string; ciudades: string[] }) => d.departamento === sectionData.departamento
+      (d: { departamento: string; ciudades: string[] }) =>
+        d.departamento === sectionData.departamento
     )?.ciudades || []
 
   return (
     <div className="container mx-auto max-w-5xl space-y-6 p-6">
       {/* Breadcrumb */}
-      <nav className="text-sm text-dark-100">
+      <nav className="text-dark-100 text-sm">
         <span
           onClick={() => router.push('/dashboard')}
           className="cursor-pointer hover:text-primary"
@@ -250,8 +286,8 @@ export default function PerfilPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-dark">Mi Perfil</h1>
-        <p className="mt-1 text-dark-100">
+        <h1 className="text-dark text-3xl font-bold">Mi Perfil</h1>
+        <p className="text-dark-100 mt-1">
           Administra tu información personal y configuración de cuenta
         </p>
       </div>
@@ -267,8 +303,10 @@ export default function PerfilPage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-dark">{userData.nombre}</h2>
-              <p className="mt-1 text-dark-100">{userData.email}</p>
+              <h2 className="text-dark text-2xl font-bold">
+                {userData.nombre}
+              </h2>
+              <p className="text-dark-100 mt-1">{userData.email}</p>
               <div className="mt-2">
                 <Badge variant="success">Perfil Completo</Badge>
               </div>
@@ -276,7 +314,9 @@ export default function PerfilPage() {
 
             {/* Change Photo Button */}
             <Button variant="outline" disabled>
-              <span className="material-symbols-outlined mr-2">photo_camera</span>
+              <span className="material-symbols-outlined mr-2">
+                photo_camera
+              </span>
               Cambiar foto
             </Button>
           </div>
@@ -294,7 +334,7 @@ export default function PerfilPage() {
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-dark">
+                <h3 className="text-dark text-lg font-semibold">
                   Datos Personales
                 </h3>
                 {editingSection === 'personal' && (
@@ -372,7 +412,7 @@ export default function PerfilPage() {
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Departamento <span className="text-error">*</span>
                 </label>
                 <select
@@ -381,25 +421,27 @@ export default function PerfilPage() {
                     updateSectionData('departamento', e.target.value)
                     updateSectionData('ciudad', '')
                   }}
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
-                  {DEPARTAMENTOS_CIUDADES.map((d: { departamento: string; ciudades: string[] }) => (
-                    <option key={d.departamento} value={d.departamento}>
-                      {d.departamento}
-                    </option>
-                  ))}
+                  {DEPARTAMENTOS_CIUDADES.map(
+                    (d: { departamento: string; ciudades: string[] }) => (
+                      <option key={d.departamento} value={d.departamento}>
+                        {d.departamento}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Ciudad <span className="text-error">*</span>
                 </label>
                 <select
                   value={sectionData.ciudad || ''}
                   onChange={(e) => updateSectionData('ciudad', e.target.value)}
                   disabled={!sectionData.departamento}
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
                 >
                   <option value="">Selecciona...</option>
                   {ciudadesDisponibles.map((c: string) => (
@@ -413,33 +455,33 @@ export default function PerfilPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-dark-100">Nombre completo</p>
-                <p className="font-medium text-dark">{userData.nombre}</p>
+                <p className="text-dark-100 text-sm">Nombre completo</p>
+                <p className="text-dark font-medium">{userData.nombre}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Documento</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Documento</p>
+                <p className="text-dark font-medium">
                   {formatTipoDocumento(userData.tipoDocumento)}{' '}
                   {userData.numeroDocumento}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Teléfono</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Teléfono</p>
+                <p className="text-dark font-medium">
                   {formatPhone(userData.telefono)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Dirección</p>
-                <p className="font-medium text-dark">{userData.direccion}</p>
+                <p className="text-dark-100 text-sm">Dirección</p>
+                <p className="text-dark font-medium">{userData.direccion}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Departamento</p>
-                <p className="font-medium text-dark">{userData.departamento}</p>
+                <p className="text-dark-100 text-sm">Departamento</p>
+                <p className="text-dark font-medium">{userData.departamento}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Ciudad</p>
-                <p className="font-medium text-dark">{userData.ciudad}</p>
+                <p className="text-dark-100 text-sm">Ciudad</p>
+                <p className="text-dark font-medium">{userData.ciudad}</p>
               </div>
             </div>
           )}
@@ -457,7 +499,7 @@ export default function PerfilPage() {
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-dark">
+                <h3 className="text-dark text-lg font-semibold">
                   Información Laboral
                 </h3>
                 {editingSection === 'laboral' && (
@@ -501,9 +543,11 @@ export default function PerfilPage() {
 
         <CardBody>
           {editingSection === 'laboral' && (
-            <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
-              <p className="flex items-center gap-2 text-sm text-warning-text">
-                <span className="material-symbols-outlined text-base">info</span>
+            <div className="border-warning/30 bg-warning/10 mb-4 rounded-lg border p-3">
+              <p className="text-warning-text flex items-center gap-2 text-sm">
+                <span className="material-symbols-outlined text-base">
+                  info
+                </span>
                 Cambios en el ingreso pueden afectar tus aportes a PILA
               </p>
             </div>
@@ -512,7 +556,7 @@ export default function PerfilPage() {
           {editingSection === 'laboral' ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Tipo de contrato <span className="text-error">*</span>
                 </label>
                 <select
@@ -520,7 +564,7 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('tipoContrato', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
                   <option value="OPS">Orden de Prestación de Servicios</option>
@@ -532,7 +576,7 @@ export default function PerfilPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Profesión <span className="text-error">*</span>
                 </label>
                 <select
@@ -540,7 +584,7 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('profesion', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
                   {PROFESIONES.map((p: string) => (
@@ -551,7 +595,7 @@ export default function PerfilPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Actividad económica (CIIU){' '}
                   <span className="text-error">*</span>
                 </label>
@@ -560,14 +604,16 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('actividadEconomica', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
-                  {CODIGOS_CIIU.map((c: { codigo: string; descripcion: string }) => (
-                    <option key={c.codigo} value={c.codigo}>
-                      {c.codigo} - {c.descripcion}
-                    </option>
-                  ))}
+                  {CODIGOS_CIIU.map(
+                    (c: { codigo: string; descripcion: string }) => (
+                      <option key={c.codigo} value={c.codigo}>
+                        {c.codigo} - {c.descripcion}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
               <Input
@@ -600,18 +646,18 @@ export default function PerfilPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-dark-100">Tipo de contrato</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Tipo de contrato</p>
+                <p className="text-dark font-medium">
                   {formatTipoContrato(userData.tipoContrato)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Profesión</p>
-                <p className="font-medium text-dark">{userData.profesion}</p>
+                <p className="text-dark-100 text-sm">Profesión</p>
+                <p className="text-dark font-medium">{userData.profesion}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Actividad económica</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Actividad económica</p>
+                <p className="text-dark font-medium">
                   {userData.actividadEconomica} -{' '}
                   {
                     CODIGOS_CIIU.find(
@@ -621,15 +667,17 @@ export default function PerfilPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Número de contratos</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Número de contratos</p>
+                <p className="text-dark font-medium">
                   {userData.numeroContratos}{' '}
                   {userData.numeroContratos === 1 ? 'contrato' : 'contratos'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Ingreso mensual promedio</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">
+                  Ingreso mensual promedio
+                </p>
+                <p className="text-dark font-medium">
                   {formatCurrency(userData.ingresoMensualPromedio)}
                 </p>
               </div>
@@ -649,7 +697,7 @@ export default function PerfilPage() {
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-dark">
+                <h3 className="text-dark text-lg font-semibold">
                   Seguridad Social
                 </h3>
                 {editingSection === 'seguridad_social' && (
@@ -693,9 +741,11 @@ export default function PerfilPage() {
 
         <CardBody>
           {editingSection === 'seguridad_social' && (
-            <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
-              <p className="flex items-center gap-2 text-sm text-warning-text">
-                <span className="material-symbols-outlined text-base">info</span>
+            <div className="border-warning/30 bg-warning/10 mb-4 rounded-lg border p-3">
+              <p className="text-warning-text flex items-center gap-2 text-sm">
+                <span className="material-symbols-outlined text-base">
+                  info
+                </span>
                 Cambios en entidades pueden requerir trámites adicionales
               </p>
             </div>
@@ -704,7 +754,7 @@ export default function PerfilPage() {
           {editingSection === 'seguridad_social' ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   EPS <span className="text-error">*</span>
                 </label>
                 <select
@@ -712,7 +762,7 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('entidadSalud', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
                   {EPS_LIST.map((eps: string) => (
@@ -731,7 +781,7 @@ export default function PerfilPage() {
                 }
               />
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Fondo de pensión <span className="text-error">*</span>
                 </label>
                 <select
@@ -739,7 +789,7 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('entidadPension', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
                   {FONDOS_PENSION.map((fondo: string) => (
@@ -758,13 +808,13 @@ export default function PerfilPage() {
                 }
               />
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   ARL (opcional)
                 </label>
                 <select
                   value={sectionData.arl || ''}
                   onChange={(e) => updateSectionData('arl', e.target.value)}
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Sin ARL</option>
                   {ARL_LIST.map((arl: string) => (
@@ -777,7 +827,7 @@ export default function PerfilPage() {
               {sectionData.arl && (
                 <>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-dark">
+                    <label className="text-dark mb-2 block text-sm font-medium">
                       Nivel de riesgo
                     </label>
                     <select
@@ -788,7 +838,7 @@ export default function PerfilPage() {
                           parseInt(e.target.value)
                         )
                       }
-                      className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       <option value="">Selecciona...</option>
                       <option value="1">Nivel I - Riesgo mínimo</option>
@@ -812,12 +862,12 @@ export default function PerfilPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-dark-100">EPS</p>
-                <p className="font-medium text-dark">{userData.entidadSalud}</p>
+                <p className="text-dark-100 text-sm">EPS</p>
+                <p className="text-dark font-medium">{userData.entidadSalud}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Fecha afiliación EPS</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Fecha afiliación EPS</p>
+                <p className="text-dark font-medium">
                   {userData.fechaAfiliacionSalud
                     ? new Date(
                         userData.fechaAfiliacionSalud
@@ -826,14 +876,16 @@ export default function PerfilPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Fondo de pensión</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Fondo de pensión</p>
+                <p className="text-dark font-medium">
                   {userData.entidadPension}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Fecha afiliación pensión</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">
+                  Fecha afiliación pensión
+                </p>
+                <p className="text-dark font-medium">
                   {userData.fechaAfiliacionPension
                     ? new Date(
                         userData.fechaAfiliacionPension
@@ -842,15 +894,15 @@ export default function PerfilPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">ARL</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">ARL</p>
+                <p className="text-dark font-medium">
                   {userData.arl || 'Sin ARL'}
                 </p>
               </div>
               {userData.nivelRiesgoARL && (
                 <div>
-                  <p className="text-sm text-dark-100">Nivel de riesgo</p>
-                  <p className="font-medium text-dark">
+                  <p className="text-dark-100 text-sm">Nivel de riesgo</p>
+                  <p className="text-dark font-medium">
                     Nivel {userData.nivelRiesgoARL}
                   </p>
                 </div>
@@ -871,7 +923,7 @@ export default function PerfilPage() {
                 </span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-dark">
+                <h3 className="text-dark text-lg font-semibold">
                   Información Adicional
                 </h3>
                 {editingSection === 'adicional' && (
@@ -917,7 +969,7 @@ export default function PerfilPage() {
           {editingSection === 'adicional' ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Estado civil <span className="text-error">*</span>
                 </label>
                 <select
@@ -925,7 +977,7 @@ export default function PerfilPage() {
                   onChange={(e) =>
                     updateSectionData('estadoCivil', e.target.value)
                   }
-                  className="w-full rounded-lg border border-light-300 bg-white px-4 py-2 text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">Selecciona...</option>
                   <option value="SOLTERO">Soltero/a</option>
@@ -946,16 +998,16 @@ export default function PerfilPage() {
                 min={0}
               />
               <div className="sm:col-span-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={sectionData.suscribirNewsletter || false}
                     onChange={(e) =>
                       updateSectionData('suscribirNewsletter', e.target.checked)
                     }
-                    className="h-5 w-5 rounded border-light-300 text-primary focus:ring-2 focus:ring-primary/20"
+                    className="border-light-300 h-5 w-5 rounded text-primary focus:ring-2 focus:ring-primary/20"
                   />
-                  <span className="text-sm text-dark">
+                  <span className="text-dark text-sm">
                     Quiero recibir tips, actualizaciones y novedades de Ule
                   </span>
                 </label>
@@ -964,22 +1016,224 @@ export default function PerfilPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-dark-100">Estado civil</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Estado civil</p>
+                <p className="text-dark font-medium">
                   {formatEstadoCivil(userData.estadoCivil)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-dark-100">Personas a cargo</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Personas a cargo</p>
+                <p className="text-dark font-medium">
                   {userData.personasACargo}{' '}
                   {userData.personasACargo === 1 ? 'persona' : 'personas'}
                 </p>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-sm text-dark-100">Newsletter</p>
-                <p className="font-medium text-dark">
+                <p className="text-dark-100 text-sm">Newsletter</p>
+                <p className="text-dark font-medium">
                   {userData.suscribirNewsletter ? 'Suscrito' : 'No suscrito'}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* SECCIÓN 5: INFORMACIÓN TRIBUTARIA */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <span className="material-symbols-outlined text-primary">
+                  receipt_long
+                </span>
+              </div>
+              <div>
+                <h3 className="text-dark text-lg font-semibold">
+                  Información Tributaria
+                </h3>
+                <p className="text-dark-100 text-sm">
+                  Datos para emisión de facturas electrónicas
+                </p>
+                {editingSection === 'tributaria' && (
+                  <p className="text-sm text-primary">En modo edición</p>
+                )}
+              </div>
+            </div>
+            {editingSection !== 'tributaria' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEditSection('tributaria')}
+                disabled={editingSection !== null}
+              >
+                <span className="material-symbols-outlined mr-1 text-sm">
+                  edit
+                </span>
+                Editar
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveSection('tributaria')}
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Guardando...' : 'Guardar'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardBody>
+          {/* Banner informativo */}
+          <div className="border-info/30 bg-info/10 mb-4 rounded-lg border p-3">
+            <p className="text-dark flex items-center gap-2 text-sm">
+              <span className="material-symbols-outlined text-base text-primary">
+                info
+              </span>
+              Esta información se usa para generar tus facturas electrónicas.
+              Asegúrate de que coincida con tu registro en DIAN. Ule no valida
+              ni asesora sobre aspectos tributarios.
+            </p>
+          </div>
+
+          {editingSection === 'tributaria' ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Régimen Tributario */}
+              <div>
+                <label className="text-dark mb-2 block text-sm font-medium">
+                  Régimen Tributario <span className="text-error">*</span>
+                </label>
+                <select
+                  value={sectionData.regimenTributario || ''}
+                  onChange={(e) =>
+                    updateSectionData('regimenTributario', e.target.value)
+                  }
+                  className="border-light-300 text-dark w-full rounded-lg border bg-white px-4 py-2 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Selecciona tu régimen...</option>
+                  <option value="SIMPLE">Régimen Simple de Tributación</option>
+                  <option value="ORDINARIO">Régimen Ordinario (Común)</option>
+                  <option value="ESPECIAL">Régimen Especial</option>
+                  <option value="NO_DECLARANTE">No Declarante</option>
+                </select>
+                <p className="text-dark-100 mt-1 text-xs">
+                  Selecciona tu régimen tributario según tu inscripción en DIAN
+                </p>
+              </div>
+
+              {/* Responsable de IVA */}
+              <div>
+                <label className="text-dark mb-2 block text-sm font-medium">
+                  ¿Responsable de IVA? <span className="text-error">*</span>
+                </label>
+                <div className="flex items-center gap-4 pt-2">
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="radio"
+                      name="responsableIVA"
+                      checked={sectionData.responsableIVA === true}
+                      onChange={() => updateSectionData('responsableIVA', true)}
+                      className="border-light-300 h-4 w-4 text-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <span className="text-dark text-sm">Sí</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="radio"
+                      name="responsableIVA"
+                      checked={sectionData.responsableIVA === false}
+                      onChange={() =>
+                        updateSectionData('responsableIVA', false)
+                      }
+                      className="border-light-300 h-4 w-4 text-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <span className="text-dark text-sm">No</span>
+                  </label>
+                </div>
+                <p className="text-dark-100 mt-1 text-xs">
+                  Marca SÍ si la DIAN te inscribió como responsable de IVA
+                </p>
+              </div>
+
+              {/* Razón Social */}
+              <div>
+                <Input
+                  label="Razón Social para Facturar"
+                  value={sectionData.razonSocial || ''}
+                  onChange={(e) =>
+                    updateSectionData('razonSocial', e.target.value)
+                  }
+                  placeholder="Nombre completo o razón social"
+                />
+                <p className="text-dark-100 mt-1 text-xs">
+                  Nombre que aparecerá en tus facturas
+                </p>
+              </div>
+
+              {/* Email de Facturación */}
+              <div>
+                <Input
+                  label="Email de Facturación"
+                  type="email"
+                  value={sectionData.emailFacturacion || ''}
+                  onChange={(e) =>
+                    updateSectionData('emailFacturacion', e.target.value)
+                  }
+                  placeholder="correo@ejemplo.com"
+                />
+                <p className="text-dark-100 mt-1 text-xs">
+                  Email específico para facturas (opcional)
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-dark-100 text-sm">Régimen Tributario</p>
+                <p className="text-dark font-medium">
+                  {userData.regimenTributario
+                    ? userData.regimenTributario === 'SIMPLE'
+                      ? 'Régimen Simple de Tributación'
+                      : userData.regimenTributario === 'ORDINARIO'
+                        ? 'Régimen Ordinario (Común)'
+                        : userData.regimenTributario === 'ESPECIAL'
+                          ? 'Régimen Especial'
+                          : 'No Declarante'
+                    : 'No configurado'}
+                </p>
+              </div>
+              <div>
+                <p className="text-dark-100 text-sm">Responsable de IVA</p>
+                <p className="text-dark font-medium">
+                  {userData.responsableIVA ? (
+                    <Badge variant="default">Sí</Badge>
+                  ) : (
+                    <Badge variant="default">No</Badge>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-dark-100 text-sm">Razón Social</p>
+                <p className="text-dark font-medium">
+                  {userData.razonSocial || 'No configurado'}
+                </p>
+              </div>
+              <div>
+                <p className="text-dark-100 text-sm">Email de Facturación</p>
+                <p className="text-dark font-medium">
+                  {userData.emailFacturacion || userData.email}
                 </p>
               </div>
             </div>
@@ -996,7 +1250,7 @@ export default function PerfilPage() {
                 lock
               </span>
             </div>
-            <h3 className="text-lg font-semibold text-dark">
+            <h3 className="text-dark text-lg font-semibold">
               Seguridad de la Cuenta
             </h3>
           </div>
@@ -1005,10 +1259,10 @@ export default function PerfilPage() {
         <CardBody>
           <div className="space-y-4">
             {/* Cambiar Contraseña */}
-            <div className="flex items-center justify-between rounded-lg border border-light-200 p-4">
+            <div className="border-light-200 flex items-center justify-between rounded-lg border p-4">
               <div>
-                <h4 className="font-medium text-dark">Contraseña</h4>
-                <p className="text-sm text-dark-100">
+                <h4 className="text-dark font-medium">Contraseña</h4>
+                <p className="text-dark-100 text-sm">
                   Actualiza tu contraseña regularmente para mayor seguridad
                 </p>
               </div>
@@ -1021,15 +1275,15 @@ export default function PerfilPage() {
             </div>
 
             {/* 2FA */}
-            <div className="flex items-center justify-between rounded-lg border border-light-200 p-4">
+            <div className="border-light-200 flex items-center justify-between rounded-lg border p-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-dark">
+                  <h4 className="text-dark font-medium">
                     Autenticación de Dos Factores
                   </h4>
                   <Badge variant="default">Desactivado</Badge>
                 </div>
-                <p className="text-sm text-dark-100">
+                <p className="text-dark-100 text-sm">
                   Agrega una capa extra de seguridad a tu cuenta
                 </p>
               </div>
@@ -1039,14 +1293,16 @@ export default function PerfilPage() {
             </div>
 
             {/* Sesiones */}
-            <div className="rounded-lg border border-light-200 p-4">
-              <h4 className="font-medium text-dark mb-2">Sesiones Activas</h4>
-              <div className="flex items-center justify-between rounded bg-light-50 p-3">
+            <div className="border-light-200 rounded-lg border p-4">
+              <h4 className="text-dark mb-2 font-medium">Sesiones Activas</h4>
+              <div className="bg-light-50 flex items-center justify-between rounded p-3">
                 <div>
-                  <p className="text-sm font-medium text-dark">
+                  <p className="text-dark text-sm font-medium">
                     Esta sesión (actual)
                   </p>
-                  <p className="text-xs text-dark-100">Última actividad: Ahora</p>
+                  <p className="text-dark-100 text-xs">
+                    Última actividad: Ahora
+                  </p>
                 </div>
                 <Badge variant="success">Activa</Badge>
               </div>
@@ -1070,7 +1326,9 @@ export default function PerfilPage() {
             <span className="material-symbols-outlined text-red-600">
               warning
             </span>
-            <h3 className="text-lg font-semibold text-red-900">Zona de Peligro</h3>
+            <h3 className="text-lg font-semibold text-red-900">
+              Zona de Peligro
+            </h3>
           </div>
         </CardHeader>
 

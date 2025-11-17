@@ -15,7 +15,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { SearchableSelect } from '@/components/ui/searchable-select'
-import { departamentos, ciudadesPorDepartamento } from '@/lib/data/colombia-data'
+import {
+  departamentos,
+  ciudadesPorDepartamento,
+} from '@/lib/data/colombia-data'
 import { ClienteConCount } from '@/hooks/use-clientes'
 
 interface ClienteModalProps {
@@ -160,15 +163,21 @@ export function ClienteModal({
     : []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-dark">
+            <h2 className="text-dark text-2xl font-bold">
               {mode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'}
             </h2>
-            <p className="text-sm text-dark-100">
+            <p className="text-dark-100 text-sm">
               {mode === 'create'
                 ? 'Completa la información del cliente'
                 : 'Actualiza la información del cliente'}
@@ -176,7 +185,7 @@ export function ClienteModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-dark-100 transition-colors hover:bg-light-100"
+            className="text-dark-100 hover:bg-light-100 rounded-lg p-2 transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -185,7 +194,7 @@ export function ClienteModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* SECCIÓN: INFORMACIÓN BÁSICA */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-dark">
+            <h3 className="text-dark mb-4 text-lg font-semibold">
               Información Básica
             </h3>
             <div className="space-y-4">
@@ -194,9 +203,7 @@ export function ClienteModal({
                 label="Tipo de Documento *"
                 error={errors.tipoDocumento?.message}
                 {...register('tipoDocumento')}
-                icon={
-                  <span className="material-symbols-outlined">badge</span>
-                }
+                icon={<span className="material-symbols-outlined">badge</span>}
               >
                 <option value="CC">CC - Cédula de Ciudadanía</option>
                 <option value="CE">CE - Cédula de Extranjería</option>
@@ -217,7 +224,11 @@ export function ClienteModal({
                       ? 'Ej: 900123456-7'
                       : 'Ej: 1234567890'
                   }
-                  error={errors.numeroDocumento?.message || documentoError || undefined}
+                  error={
+                    errors.numeroDocumento?.message ||
+                    documentoError ||
+                    undefined
+                  }
                   icon={
                     <span className="material-symbols-outlined">
                       fingerprint
@@ -226,12 +237,12 @@ export function ClienteModal({
                   {...register('numeroDocumento')}
                 />
                 {isValidatingDocumento && (
-                  <p className="mt-1 text-xs text-dark-100">
+                  <p className="text-dark-100 mt-1 text-xs">
                     Validando documento...
                   </p>
                 )}
                 {tipoDocumento === 'NIT' && (
-                  <p className="mt-1 text-xs text-dark-100">
+                  <p className="text-dark-100 mt-1 text-xs">
                     Incluye el dígito de verificación (Ej: 900123456-7)
                   </p>
                 )}
@@ -239,20 +250,12 @@ export function ClienteModal({
 
               {/* Nombre / Razón Social */}
               <Input
-                label={
-                  esEmpresa
-                    ? 'Razón Social *'
-                    : 'Nombre Completo *'
-                }
+                label={esEmpresa ? 'Razón Social *' : 'Nombre Completo *'}
                 placeholder={
-                  esEmpresa
-                    ? 'Ej: Empresa S.A.S.'
-                    : 'Ej: Juan Pérez García'
+                  esEmpresa ? 'Ej: Empresa S.A.S.' : 'Ej: Juan Pérez García'
                 }
                 error={errors.nombre?.message}
-                icon={
-                  <span className="material-symbols-outlined">person</span>
-                }
+                icon={<span className="material-symbols-outlined">person</span>}
                 {...register('nombre')}
               />
             </div>
@@ -260,7 +263,7 @@ export function ClienteModal({
 
           {/* SECCIÓN: INFORMACIÓN DE CONTACTO */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-dark">
+            <h3 className="text-dark mb-4 text-lg font-semibold">
               Información de Contacto
             </h3>
             <div className="space-y-4">
@@ -270,9 +273,7 @@ export function ClienteModal({
                 type="email"
                 placeholder="ejemplo@correo.com"
                 error={errors.email?.message}
-                icon={
-                  <span className="material-symbols-outlined">email</span>
-                }
+                icon={<span className="material-symbols-outlined">email</span>}
                 {...register('email')}
               />
 
@@ -282,9 +283,7 @@ export function ClienteModal({
                 type="tel"
                 placeholder="3001234567"
                 error={errors.telefono?.message}
-                icon={
-                  <span className="material-symbols-outlined">phone</span>
-                }
+                icon={<span className="material-symbols-outlined">phone</span>}
                 {...register('telefono')}
               />
 
@@ -293,15 +292,13 @@ export function ClienteModal({
                 label="Dirección"
                 placeholder="Calle 123 # 45-67"
                 error={errors.direccion?.message}
-                icon={
-                  <span className="material-symbols-outlined">home</span>
-                }
+                icon={<span className="material-symbols-outlined">home</span>}
                 {...register('direccion')}
               />
 
               {/* Departamento */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Departamento
                 </label>
                 <Controller
@@ -317,15 +314,13 @@ export function ClienteModal({
                       onChange={field.onChange}
                       placeholder="Selecciona un departamento"
                       icon={
-                        <span className="material-symbols-outlined">
-                          map
-                        </span>
+                        <span className="material-symbols-outlined">map</span>
                       }
                     />
                   )}
                 />
                 {errors.departamento && (
-                  <p className="mt-1.5 text-sm text-error">
+                  <p className="text-error mt-1.5 text-sm">
                     {errors.departamento.message}
                   </p>
                 )}
@@ -333,7 +328,7 @@ export function ClienteModal({
 
               {/* Ciudad */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-dark">
+                <label className="text-dark mb-2 block text-sm font-medium">
                   Ciudad
                 </label>
                 <Controller
@@ -362,7 +357,7 @@ export function ClienteModal({
                   )}
                 />
                 {errors.ciudad && (
-                  <p className="mt-1.5 text-sm text-error">
+                  <p className="text-error mt-1.5 text-sm">
                     {errors.ciudad.message}
                   </p>
                 )}
@@ -373,7 +368,7 @@ export function ClienteModal({
           {/* SECCIÓN: INFORMACIÓN FISCAL (Solo para NIT) */}
           {esEmpresa && (
             <div>
-              <h3 className="mb-4 text-lg font-semibold text-dark">
+              <h3 className="text-dark mb-4 text-lg font-semibold">
                 Información Fiscal
               </h3>
               <div className="space-y-4">
@@ -420,28 +415,20 @@ export function ClienteModal({
                   }
                 >
                   <option value="">Selecciona una responsabilidad</option>
-                  <option value="O-13">
-                    O-13 - Gran Contribuyente
-                  </option>
-                  <option value="O-15">
-                    O-15 - Autoretenedor
-                  </option>
-                  <option value="O-23">
-                    O-23 - Agente de Retención IVA
-                  </option>
+                  <option value="O-13">O-13 - Gran Contribuyente</option>
+                  <option value="O-15">O-15 - Autoretenedor</option>
+                  <option value="O-23">O-23 - Agente de Retención IVA</option>
                   <option value="O-47">
                     O-47 - Régimen Simple de Tributación
                   </option>
-                  <option value="R-99-PN">
-                    R-99-PN - No Responsable
-                  </option>
+                  <option value="R-99-PN">R-99-PN - No Responsable</option>
                 </Select>
               </div>
             </div>
           )}
 
           {/* FOOTER ACTIONS */}
-          <div className="flex justify-end gap-3 border-t border-light-200 pt-4">
+          <div className="border-light-200 flex justify-end gap-3 border-t pt-4">
             <Button
               type="button"
               variant="outline"
@@ -452,7 +439,9 @@ export function ClienteModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !!documentoError || isValidatingDocumento}
+              disabled={
+                isSubmitting || !!documentoError || isValidatingDocumento
+              }
               className="flex items-center gap-2"
             >
               {isSubmitting ? (

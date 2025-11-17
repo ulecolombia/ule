@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Card, CardBody } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatearMoneda } from '@/lib/utils/format'
+import { formatCurrency } from '@/lib/utils'
 
 interface ProximoPagoPILA {
   id: string
@@ -177,7 +177,7 @@ export default function DashboardPage() {
                   {proximoPagoPILA ? (
                     <>
                       <p className="text-dark mb-1.5 text-3xl font-bold">
-                        {formatearMoneda(proximoPagoPILA.monto)}
+                        {formatCurrency(proximoPagoPILA.monto)}
                       </p>
                       <p className="text-dark-100 text-sm font-medium">
                         Vence en {proximoPagoPILA.diasRestantes} día
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                     {facturasDelMes.cantidad}
                   </p>
                   <p className="text-dark-100 text-sm font-medium">
-                    Total: {formatearMoneda(facturasDelMes.total)}
+                    Total: {formatCurrency(facturasDelMes.total)}
                   </p>
                 </div>
               </CardBody>

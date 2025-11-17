@@ -42,6 +42,7 @@ const menuItems: MenuItem[] = [
       { label: 'Nueva Factura', href: '/facturacion/nueva' },
       { label: 'Mis Facturas', href: '/facturacion/facturas' },
       { label: 'Clientes', href: '/facturacion/clientes' },
+      { label: 'Mis Servicios', href: '/facturacion/mis-servicios' },
     ],
   },
   {
@@ -97,8 +98,8 @@ export function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
     const itemsToExpand: string[] = []
     menuItems.forEach((item) => {
       if (item.subItems) {
-        const hasActiveChild = item.subItems.some(
-          (sub) => pathname.startsWith(sub.href)
+        const hasActiveChild = item.subItems.some((sub) =>
+          pathname.startsWith(sub.href)
         )
         if (hasActiveChild) {
           itemsToExpand.push(item.label)
@@ -134,13 +135,13 @@ export function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 z-40 bg-black/50 animate-fadeIn"
+        className="animate-fadeIn fixed inset-0 z-40 bg-black/50"
         onClick={onClose}
         aria-label="Cerrar menú"
       />
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-50 h-full w-[280px] bg-white shadow-2xl overflow-y-auto animate-slideRight">
+      <aside className="animate-slideRight fixed left-0 top-0 z-50 h-full w-[280px] overflow-y-auto bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <Logo size="sm" />
@@ -193,7 +194,7 @@ export function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
 
                       {/* Submenu */}
                       {isExpanded && (
-                        <ul className="ml-4 mt-1 space-y-1 overflow-hidden border-l-2 border-gray-200 pl-4 animate-expandHeight">
+                        <ul className="animate-expandHeight ml-4 mt-1 space-y-1 overflow-hidden border-l-2 border-gray-200 pl-4">
                           {item.subItems?.map((subItem) => (
                             <li key={subItem.href}>
                               <Link

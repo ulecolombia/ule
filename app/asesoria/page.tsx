@@ -5,8 +5,9 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useSession } from 'next-auth/react'
+import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/asesoria/sidebar'
 import { ChatPanel } from '@/components/asesoria/chat-panel'
 import { ContextPanel } from '@/components/asesoria/context-panel'
@@ -93,9 +94,9 @@ export default function AsesoriaPage() {
   // Loading state
   if (!session) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-indigo-600" />
           <p className="text-gray-600">Cargando sesión...</p>
         </div>
       </div>
@@ -103,98 +104,102 @@ export default function AsesoriaPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* SIDEBAR - Historial de conversaciones */}
-      <aside
-        className={`
+    <>
+      <Header userName={session?.user?.name} userEmail={session?.user?.email} />
+
+      <div className="flex h-screen overflow-hidden bg-gray-50">
+        {/* SIDEBAR - Historial de conversaciones */}
+        <aside
+          className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          fixed lg:relative lg:translate-x-0
-          w-80 h-full bg-white border-r border-light-200
-          transition-transform duration-300 ease-in-out
-          z-30
+          border-light-200 fixed z-30
+          h-full w-80 border-r bg-white transition-transform
+          duration-300 ease-in-out lg:relative
+          lg:translate-x-0
         `}
-      >
-        <Sidebar
-          conversaciones={conversacionesHook.conversaciones}
-          conversacionActual={conversacionActual}
-          onSeleccionarConversacion={handleSeleccionarConversacion}
-          onNuevaConversacion={handleNuevaConversacion}
-          onEliminarConversacion={handleEliminarConversacion}
-          isLoading={conversacionesHook.isLoading}
-        />
-      </aside>
+        >
+          <Sidebar
+            conversaciones={conversacionesHook.conversaciones}
+            conversacionActual={conversacionActual}
+            onSeleccionarConversacion={handleSeleccionarConversacion}
+            onNuevaConversacion={handleNuevaConversacion}
+            onEliminarConversacion={handleEliminarConversacion}
+            isLoading={conversacionesHook.isLoading}
+          />
+        </aside>
 
-      {/* PANEL CENTRAL - Chat */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Header con controles de paneles */}
-        <header className="bg-white border-b border-light-200 px-4 py-3 flex items-center justify-between lg:justify-end">
-          {/* Toggle sidebar (móvil) */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </Button>
+        {/* PANEL CENTRAL - Chat */}
+        <main className="flex min-w-0 flex-1 flex-col">
+          {/* Header con controles de paneles */}
+          <header className="border-light-200 flex items-center justify-between border-b bg-white px-4 py-3 lg:justify-end">
+            {/* Toggle sidebar (móvil) */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
 
-          {/* Toggle context panel */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setContextOpen(!contextOpen)}
-            className="text-dark-100 hover:text-dark font-medium transition-colors"
-          >
-            {contextOpen ? (
-              <PanelRightClose className="w-5 h-5" />
-            ) : (
-              <PanelRightOpen className="w-5 h-5" />
-            )}
-            <span className="ml-2 hidden sm:inline">
-              {contextOpen ? 'Ocultar contexto' : 'Mostrar contexto'}
-            </span>
-          </Button>
-        </header>
+            {/* Toggle context panel */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setContextOpen(!contextOpen)}
+              className="text-dark-100 hover:text-dark font-medium transition-colors"
+            >
+              {contextOpen ? (
+                <PanelRightClose className="h-5 w-5" />
+              ) : (
+                <PanelRightOpen className="h-5 w-5" />
+              )}
+              <span className="ml-2 hidden sm:inline">
+                {contextOpen ? 'Ocultar contexto' : 'Mostrar contexto'}
+              </span>
+            </Button>
+          </header>
 
-        {/* Chat Panel */}
-        <ChatPanel
-          conversacionId={conversacionActual}
-          iaHook={iaHook}
-          onConversacionCreada={(id) => {
-            setConversacionActual(id)
-            conversacionesHook.cargarConversaciones()
-          }}
-        />
-      </main>
+          {/* Chat Panel */}
+          <ChatPanel
+            conversacionId={conversacionActual}
+            iaHook={iaHook}
+            onConversacionCreada={(id) => {
+              setConversacionActual(id)
+              conversacionesHook.cargarConversaciones()
+            }}
+          />
+        </main>
 
-      {/* PANEL DERECHO - Contexto del usuario */}
-      <aside
-        className={`
+        {/* PANEL DERECHO - Contexto del usuario */}
+        <aside
+          className={`
           ${contextOpen ? 'translate-x-0' : 'translate-x-full'}
-          fixed lg:relative lg:translate-x-0
-          w-80 h-full bg-white border-l border-light-200
-          transition-transform duration-300 ease-in-out
-          z-20
+          border-light-200 fixed z-20
+          h-full w-80 border-l bg-white transition-transform
+          duration-300 ease-in-out lg:relative
+          lg:translate-x-0
           ${!contextOpen && 'lg:hidden'}
         `}
-      >
-        <ContextPanel session={session} />
-      </aside>
+        >
+          <ContextPanel session={session} />
+        </aside>
 
-      {/* Overlay para cerrar paneles en móvil */}
-      {(sidebarOpen || contextOpen) && (
-        <div
-          className="fixed inset-0 bg-black/20 z-10 lg:hidden"
-          onClick={() => {
-            setSidebarOpen(false)
-            setContextOpen(false)
-          }}
-        />
-      )}
-    </div>
+        {/* Overlay para cerrar paneles en móvil */}
+        {(sidebarOpen || contextOpen) && (
+          <div
+            className="fixed inset-0 z-10 bg-black/20 lg:hidden"
+            onClick={() => {
+              setSidebarOpen(false)
+              setContextOpen(false)
+            }}
+          />
+        )}
+      </div>
+    </>
   )
 }

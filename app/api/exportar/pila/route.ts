@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import {
   exportarPilaExcel,
@@ -16,12 +15,9 @@ import {
 export async function POST(req: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
     // Obtener usuario
@@ -38,12 +34,7 @@ export async function POST(req: NextRequest) {
 
     // Obtener parámetros
     const body = await req.json()
-    const {
-      formato = 'excel',
-      año,
-      mes,
-      estado,
-    } = body
+    const { formato = 'excel', año, mes, estado } = body
 
     // Validar formato
     if (!['excel', 'csv', 'pdf'].includes(formato)) {

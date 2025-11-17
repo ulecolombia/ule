@@ -9,36 +9,100 @@ import { z } from 'zod'
  * Schema para un ítem individual de la factura
  */
 export const itemFacturaSchema = z.object({
-  descripcion: z
-    .string()
-    .min(3, 'La descripción debe tener al menos 3 caracteres')
-    .max(500, 'La descripción no puede exceder 500 caracteres')
-    .trim(),
-  cantidad: z
-    .number()
-    .min(1, 'La cantidad debe ser al menos 1')
-    .max(999999, 'La cantidad es demasiado grande'),
+  descripcion: z.string().optional().or(z.literal('')),
+  cantidad: z.number().optional().default(1),
+  unidad: z
+    .enum(['UND', 'HORA', 'DIA', 'MES', 'SERVICIO'])
+    .optional()
+    .default('UND'),
   valorUnitario: z
     .union([z.string(), z.number()])
+    .optional()
     .transform((val) => {
       // Si es string, remover puntos y convertir a número
       if (typeof val === 'string') {
         const cleaned = val.replace(/\./g, '')
         return parseFloat(cleaned) || 0
       }
-      return val
-    })
-    .pipe(
-      z
-        .number()
-        .min(0.01, 'El valor unitario debe ser mayor a 0')
-        .max(999999999.99, 'El valor unitario es demasiado grande')
-    ),
-  iva: z
-    .number()
-    .min(0, 'El IVA no puede ser negativo')
-    .max(100, 'El IVA no puede ser mayor a 100%')
-    .default(19),
+      if (typeof val === 'number') {
+        return val
+      }
+      return 0
+    }),
+  aplicaIVA: z.boolean().optional().default(false),
+  porcentajeIVA: z.number().optional().default(0),
+  // Mantener campo iva para retrocompatibilidad
+  iva: z.number().optional().default(19),
+})
+
+/**
+ * Schema para datos del emisor de la factura
+ */
+export const emisorFacturaSchema = z.object({
+  razonSocial: z
+    .string()
+    .min(3, 'Razón social requerida')
+    .max(200, 'Razón social demasiado larga')
+    .trim(),
+  documento: z
+    .string()
+    .min(5, 'Documento requerido')
+    .max(20, 'Documento inválido')
+    .trim(),
+  direccion: z
+    .string()
+    .min(5, 'Dirección requerida')
+    .max(200, 'Dirección demasiado larga')
+    .trim(),
+  ciudad: z
+    .string()
+    .min(2, 'Ciudad requerida')
+    .max(100, 'Ciudad demasiado larga')
+    .trim(),
+  telefono: z
+    .string()
+    .regex(/^[0-9]{10}$/, 'Teléfono debe tener 10 dígitos')
+    .trim(),
+  email: z
+    .string()
+    .email('Email inválido')
+    .max(100, 'Email demasiado largo')
+    .trim(),
+})
+
+/**
+ * Schema para datos del cliente de la factura
+ */
+export const clienteFacturaSchema = z.object({
+  nombre: z
+    .string()
+    .min(3, 'Nombre requerido')
+    .max(200, 'Nombre demasiado largo')
+    .trim(),
+  documento: z
+    .string()
+    .min(5, 'Documento requerido')
+    .max(20, 'Documento inválido')
+    .trim(),
+  direccion: z
+    .string()
+    .min(5, 'Dirección requerida')
+    .max(200, 'Dirección demasiado larga')
+    .trim(),
+  ciudad: z
+    .string()
+    .min(2, 'Ciudad requerida')
+    .max(100, 'Ciudad demasiado larga')
+    .trim(),
+  telefono: z
+    .string()
+    .regex(/^[0-9]{10}$/, 'Teléfono debe tener 10 dígitos')
+    .trim(),
+  email: z
+    .string()
+    .email('Email inválido')
+    .max(100, 'Email demasiado largo')
+    .trim(),
 })
 
 /**
@@ -106,6 +170,8 @@ export const guardarBorradorSchema = z.object({
  * Type exports
  */
 export type ItemFacturaInput = z.infer<typeof itemFacturaSchema>
+export type EmisorFacturaInput = z.infer<typeof emisorFacturaSchema>
+export type ClienteFacturaInput = z.infer<typeof clienteFacturaSchema>
 export type CrearFacturaInput = z.infer<typeof crearFacturaSchema>
 export type GuardarBorradorInput = z.infer<typeof guardarBorradorSchema>
 

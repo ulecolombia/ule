@@ -95,3 +95,84 @@
     animation: expandHeight 0.2s ease-out;
   }
 }
+
+/* Estilos de impresión para vista previa de factura */
+@media print {
+  /* Ocultar todo excepto la vista previa */
+  body * {
+    visibility: hidden;
+  }
+
+  .vista-previa-factura,
+  .vista-previa-factura * {
+    visibility: visible;
+  }
+
+  .vista-previa-factura {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Ocultar botones y elementos UI */
+  button,
+  nav,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Forzar impresión de colores y backgrounds */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Asegurar que backgrounds se impriman */
+  .vista-previa-factura * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Asegurar que el logo se imprima correctamente */
+  .print-logo {
+    background-color: #e0f2f1 !important;
+    border: 2px solid #00897b !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Forzar impresión de colores en tablas y elementos clave */
+  .vista-previa-factura table thead {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .vista-previa-factura .bg-primary,
+  .vista-previa-factura .bg-primary\/10,
+  .vista-previa-factura .bg-gray-50,
+  .vista-previa-factura .bg-gray-100,
+  .vista-previa-factura .bg-gray-200 {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ajustar tamaño de página */
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+
+  /* Asegurar que las tablas no se corten entre páginas */
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Evitar saltos de página en elementos críticos */
+  .vista-previa-factura > div {
+    page-break-inside: avoid;
+  }
+}

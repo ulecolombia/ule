@@ -171,12 +171,16 @@ export function EnviarEmailModal({
     }
 
     if (asunto.trim().length < EMAIL_CONSTRAINTS.ASUNTO_MIN) {
-      setError(`El asunto debe tener al menos ${EMAIL_CONSTRAINTS.ASUNTO_MIN} caracteres`)
+      setError(
+        `El asunto debe tener al menos ${EMAIL_CONSTRAINTS.ASUNTO_MIN} caracteres`
+      )
       return
     }
 
     if (asunto.trim().length > EMAIL_CONSTRAINTS.ASUNTO_MAX) {
-      setError(`El asunto no puede exceder ${EMAIL_CONSTRAINTS.ASUNTO_MAX} caracteres`)
+      setError(
+        `El asunto no puede exceder ${EMAIL_CONSTRAINTS.ASUNTO_MAX} caracteres`
+      )
       return
     }
 
@@ -186,12 +190,16 @@ export function EnviarEmailModal({
     }
 
     if (mensaje.trim().length < EMAIL_CONSTRAINTS.MENSAJE_MIN) {
-      setError(`El mensaje debe tener al menos ${EMAIL_CONSTRAINTS.MENSAJE_MIN} caracteres`)
+      setError(
+        `El mensaje debe tener al menos ${EMAIL_CONSTRAINTS.MENSAJE_MIN} caracteres`
+      )
       return
     }
 
     if (mensaje.trim().length > EMAIL_CONSTRAINTS.MENSAJE_MAX) {
-      setError(`El mensaje no puede exceder ${EMAIL_CONSTRAINTS.MENSAJE_MAX} caracteres`)
+      setError(
+        `El mensaje no puede exceder ${EMAIL_CONSTRAINTS.MENSAJE_MAX} caracteres`
+      )
       return
     }
 
@@ -236,10 +244,16 @@ export function EnviarEmailModal({
   if (!isOpen || !factura) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-900"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Enviar Factura por Email
@@ -258,11 +272,11 @@ export function EnviarEmailModal({
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-slate-200 dark:border-slate-800 px-6 flex-shrink-0">
+        <div className="flex-shrink-0 border-b border-slate-200 px-6 dark:border-slate-800">
           <div className="flex gap-4">
             <button
               onClick={() => setActiveTab('formulario')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'formulario'
                   ? 'border-teal-600 text-teal-600 dark:text-teal-400'
                   : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -272,7 +286,7 @@ export function EnviarEmailModal({
             </button>
             <button
               onClick={() => setActiveTab('vista-previa')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'vista-previa'
                   ? 'border-teal-600 text-teal-600 dark:text-teal-400'
                   : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -284,16 +298,16 @@ export function EnviarEmailModal({
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4 overflow-y-auto flex-1">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {success ? (
             // Success state
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-teal-600 dark:text-teal-400 text-4xl">
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/20">
+                <span className="material-symbols-outlined text-4xl text-teal-600 dark:text-teal-400">
                   check_circle
                 </span>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-white">
                 ¡Email enviado exitosamente!
               </h3>
               <p className="text-slate-600 dark:text-slate-400">
@@ -305,14 +319,16 @@ export function EnviarEmailModal({
             <div className="space-y-4">
               {/* Template selector */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Template de email
                 </label>
                 <Select
                   onChange={(e) => handleTemplateChange(e.target.value)}
                   defaultValue="personalizado"
                 >
-                  <option value="personalizado">Personalizado (Estándar)</option>
+                  <option value="personalizado">
+                    Personalizado (Estándar)
+                  </option>
                   <option value="formal">Formal (Empresarial)</option>
                   <option value="amigable">Amigable (Casual)</option>
                 </Select>
@@ -320,7 +336,7 @@ export function EnviarEmailModal({
 
               {/* Destinatario */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Destinatario *
                 </label>
                 <Input
@@ -334,7 +350,7 @@ export function EnviarEmailModal({
 
               {/* CC */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   CC (opcional)
                 </label>
                 <Input
@@ -344,14 +360,14 @@ export function EnviarEmailModal({
                   placeholder="email1@empresa.com, email2@empresa.com"
                   disabled={isLoading}
                 />
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Separa múltiples emails con comas
                 </p>
               </div>
 
               {/* Asunto */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Asunto *
                 </label>
                 <Input
@@ -362,14 +378,14 @@ export function EnviarEmailModal({
                   disabled={isLoading}
                   maxLength={200}
                 />
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {asunto.length} / 200 caracteres
                 </p>
               </div>
 
               {/* Mensaje */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Mensaje *
                 </label>
                 <textarea
@@ -379,41 +395,41 @@ export function EnviarEmailModal({
                   disabled={isLoading}
                   rows={12}
                   maxLength={2000}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {mensaje.length} / 2000 caracteres
                 </p>
               </div>
 
               {/* Adjuntos */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Archivos adjuntos
                 </label>
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex cursor-pointer items-center gap-2">
                     <input
                       type="checkbox"
                       checked={adjuntarPdf}
                       onChange={(e) => setAdjuntarPdf(e.target.checked)}
                       disabled={isLoading}
-                      className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
+                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       Adjuntar PDF de la factura
                     </span>
-                    <span className="text-xs text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded">
+                    <span className="rounded bg-teal-50 px-2 py-0.5 text-xs text-teal-600 dark:bg-teal-900/20 dark:text-teal-400">
                       Recomendado
                     </span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex cursor-pointer items-center gap-2">
                     <input
                       type="checkbox"
                       checked={adjuntarXml}
                       onChange={(e) => setAdjuntarXml(e.target.checked)}
                       disabled={isLoading}
-                      className="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
+                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       Adjuntar XML (formato DIAN)
@@ -424,8 +440,10 @@ export function EnviarEmailModal({
 
               {/* Error */}
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
-                  <span className="material-symbols-outlined text-lg">error</span>
+                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                  <span className="material-symbols-outlined text-lg">
+                    error
+                  </span>
                   {error}
                 </div>
               )}
@@ -446,7 +464,7 @@ export function EnviarEmailModal({
 
         {/* Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
             <Button
               variant="outline"
               onClick={handleClose}
@@ -460,17 +478,19 @@ export function EnviarEmailModal({
                 onClick={() => setActiveTab('vista-previa')}
                 disabled={isLoading}
               >
-                <span className="material-symbols-outlined mr-2">visibility</span>
+                <span className="material-symbols-outlined mr-2">
+                  visibility
+                </span>
                 Vista Previa
               </Button>
               <Button
                 onClick={handleEnviar}
                 disabled={isLoading || !destinatario || !asunto || !mensaje}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 text-white hover:bg-teal-700"
               >
                 {isLoading ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin mr-2">
+                    <span className="material-symbols-outlined mr-2 animate-spin">
                       progress_activity
                     </span>
                     Enviando...

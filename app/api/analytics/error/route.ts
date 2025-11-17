@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { logError } from '@/lib/services/analytics-service'
 import { rateLimit } from '@/lib/rate-limit'
 import { z } from 'zod'
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     const body = await req.json()
     const data = logErrorSchema.parse(body)
 
@@ -77,6 +76,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error logging error:', error)
-    return NextResponse.json({ error: 'Error al registrar error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Error al registrar error' },
+      { status: 500 }
+    )
   }
 }

@@ -1,6 +1,10 @@
 /**
  * ULE - COLOMBIA DATA
  * Departamentos y ciudades de Colombia
+ *
+ * NOTA: Bogotá D.C. es un Distrito Capital, no un departamento, pero se lista
+ * aquí como una división territorial de primer orden para simplificar la
+ * selección geográfica en formularios.
  */
 
 export const departamentos = [
@@ -8,6 +12,7 @@ export const departamentos = [
   'Antioquia',
   'Arauca',
   'Atlántico',
+  'Bogotá D.C.',
   'Bolívar',
   'Boyacá',
   'Caldas',
@@ -61,6 +66,7 @@ export const ciudadesPorDepartamento: Record<string, string[]> = {
     'Puerto Colombia',
     'Galapa',
   ],
+  'Bogotá D.C.': ['Bogotá'],
   Bolívar: [
     'Cartagena',
     'Magangué',
@@ -104,7 +110,6 @@ export const ciudadesPorDepartamento: Record<string, string[]> = {
     'Planeta Rica',
   ],
   Cundinamarca: [
-    'Bogotá D.C.',
     'Soacha',
     'Fusagasugá',
     'Facatativá',

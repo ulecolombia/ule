@@ -3,7 +3,7 @@
  * Tipos TypeScript para el sistema de facturación electrónica
  */
 
-import { Prisma } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 // ============================================
 // TIPOS PARA ITEMS DE FACTURA
