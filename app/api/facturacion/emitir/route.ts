@@ -7,10 +7,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { emitirFactura } from '@/lib/services/facturacion-service'
-import { generateFacturaPDF, generateFacturaXML } from '@/lib/utils/pdf-generator'
+import {
+  generateFacturaPDF,
+  generateFacturaXML,
+} from '@/lib/utils/pdf-generator'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { z } from 'zod'
+import { guardarFacturaEmitida } from '@/lib/services/documentos-service'
 
 const emitirFacturaSchema = z.object({
   facturaId: z.string().cuid(),
@@ -168,6 +172,22 @@ export async function POST(req: NextRequest) {
     const xmlUrl = `/facturas/${user.id}/${xmlFilename}`
 
     // ==============================================
+    // ✨ NUEVO: GUARDAR AUTOMÁTICAMENTE EN BIBLIOTECA
+    // ==============================================
+
+    const documento = await guardarFacturaEmitida(
+      user.id,
+      facturaId,
+      pdfBuffer,
+      factura.numeroFactura,
+      factura.fecha
+    )
+
+    console.log(
+      `✅ [Facturación] Factura emitida y guardada en biblioteca: ${documento.id}`
+    )
+
+    // ==============================================
     // ACTUALIZAR FACTURA EN BASE DE DATOS
     // ==============================================
 
@@ -177,7 +197,7 @@ export async function POST(req: NextRequest) {
         estado: 'EMITIDA',
         cufe: resultado.cufe,
         qrCode: resultado.qrCode,
-        pdfUrl,
+        pdfUrl: documento.rutaArchivo, // Usar ruta del documento
         xmlUrl,
         fechaEmision: resultado.fechaEmision,
         updatedAt: new Date(),
@@ -186,13 +206,6 @@ export async function POST(req: NextRequest) {
         cliente: true,
       },
     })
-
-    // ==============================================
-    // REGISTRAR EN HISTORIAL (opcional)
-    // ==============================================
-
-    // Aquí se podría guardar en una tabla de auditoría/historial
-    // Para tracking de todas las operaciones
 
     // ==============================================
     // ENVIAR EMAIL (opcional - próxima subfase)

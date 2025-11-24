@@ -643,50 +643,81 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
-// Modelo para Biblioteca de Archivos
+// ============================================
+// BIBLIOTECA DE ARCHIVOS UNIFICADA
+// Centraliza todos los documentos del usuario
+// ============================================
+
+/// Modelo unificado de documentos
+/// Registra automáticamente comprobantes PILA, facturas emitidas
+/// y permite subir documentos adicionales manualmente
 model Documento {
   id     String @id @default(cuid())
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Información del archivo
-  nombre           String // nombre original del archivo
-  nombreAlmacenado String               @map("nombre_almacenado") // nombre único en storage
-  tipo             TipoDocumentoArchivo // FACTURA, RECIBO_PAGO, COMPROBANTE_PILA, OTRO
-  categoria        String? // categoría adicional (opcional)
+  // Tipo y categoría del documento
+  tipo      TipoDocumentoArchivo
+  categoria CategoriaDocumento
 
-  // Metadata
-  tipoArchivo String @map("tipo_archivo") // mime type: application/pdf, image/jpeg, etc.
-  tamanoBytes Int    @map("tamano_bytes") // tamaño en bytes
-  url         String // URL del archivo (Vercel Blob o local)
+  // Información del archivo
+  nombre           String // Nombre descriptivo para el usuario
+  nombreAlmacenado String @map("nombre_almacenado") // Nombre único en storage
+  rutaArchivo      String @map("ruta_archivo") // Ruta completa del archivo
+  tipoMIME         String @map("tipo_mime") // application/pdf, image/jpeg, etc.
+  tamanoBytes      Int    @map("tamano_bytes") // Tamaño en bytes
+
+  // Relaciones con registros automáticos
+  aporteId  String?  @unique @map("aporte_id")
+  facturaId String?  @unique @map("factura_id")
 
   // Organización temporal
-  mes   Int // 1-12
-  anio  Int // 2024, 2025, etc.
-  fecha DateTime @default(now())
+  periodo String? // "2025-11" para organización por mes/año
+  mes     Int? // 1-12
+  anio    Int? // 2025, 2026, etc.
 
-  // Metadata adicional
-  descripcion String? // descripción opcional del usuario
-  etiquetas   String[] // array de etiquetas para búsqueda
+  // Etiquetas y búsqueda
+  etiquetas   String[] // ["renta", "gastos", "deducible"]
+  descripcion String? // Descripción adicional del usuario
+
+  // Control de acceso (para futuras funcionalidades de compartir)
+  esPublico     Boolean  @default(false) @map("es_publico")
+  compartidoCon String[] @map("compartido_con") // IDs de usuarios con acceso
 
   // Auditoría
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // soft delete
+  deletedAt DateTime? @map("deleted_at") // Soft delete
 
-  @@index([userId, mes, anio])
   @@index([userId, tipo])
-  @@index([userId, fecha])
+  @@index([userId, categoria])
+  @@index([userId, anio, mes])
+  @@index([userId, periodo])
+  @@index([aporteId])
+  @@index([facturaId])
   @@map("documentos")
 }
 
+/// Tipos de documento para la biblioteca
 enum TipoDocumentoArchivo {
-  FACTURA
-  RECIBO_PAGO
-  COMPROBANTE_PILA
-  CERTIFICADO
-  CONTRATO
-  OTRO
+  COMPROBANTE_PILA // Generado automáticamente tras pago PILA
+  FACTURA_EMITIDA  // Generado automáticamente al emitir factura
+  FACTURA_RECIBIDA // Subida manualmente por el usuario (gastos/proveedores)
+  CERTIFICADO      // Certificaciones laborales, ingresos, etc.
+  CONTRATO         // Contratos laborales o prestación de servicios
+  OTRO             // Cualquier otro documento
+}
+
+/// Categorías para organización de documentos
+enum CategoriaDocumento {
+  SEGURIDAD_SOCIAL    // Comprobantes PILA, afiliaciones
+  FACTURACION         // Facturas emitidas (ingresos)
+  GASTOS              // Facturas de proveedores/gastos deducibles
+  INGRESOS            // Otros comprobantes de ingreso
+  CONTRATOS           // Contratos laborales o comerciales
+  DECLARACION_RENTA   // Documentos para declaración de renta
+  CERTIFICACIONES     // Certificados laborales, diplomas
+  OTROS               // Sin categoría específica
 }
 
 // ============================================

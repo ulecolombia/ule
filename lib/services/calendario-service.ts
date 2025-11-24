@@ -28,7 +28,9 @@ export async function generarEventosPreCargados(
   const eventos: any[] = []
 
   // Calcular día de vencimiento PILA según último dígito del documento
-  const diaVencimientoPILA = calcularDiaVencimientoPILA(user.numeroDocumento)
+  const diaVencimientoPILA = calcularDiaVencimientoPILA(
+    user.numeroDocumento || undefined
+  )
 
   // 1. VENCIMIENTOS PILA - Según último dígito del documento
   for (let mes = 0; mes < 12; mes++) {
@@ -206,7 +208,7 @@ function obtenerNombreMes(mes: number): string {
     'Noviembre',
     'Diciembre',
   ]
-  return meses[mes]
+  return meses[mes] || 'Mes desconocido'
 }
 
 /**
@@ -241,7 +243,6 @@ export async function generarICS(
       title: evento.titulo,
       description: evento.descripcion || '',
       status: 'CONFIRMED' as ics.EventStatus,
-      busyStatus: 'BUSY' as ics.BusyStatus,
       organizer: { name: 'Ule', email: 'noreply@ule.app' },
       alarms: [
         {
