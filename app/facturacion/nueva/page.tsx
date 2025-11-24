@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -493,13 +494,37 @@ export default function NuevaFacturaPage() {
           </div>
 
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-dark text-3xl font-bold">
-              Nueva Factura Electrónica
-            </h1>
-            <p className="text-dark-100">
-              Completa el formulario para crear una nueva factura
-            </p>
+          <div className="mb-6 flex items-start justify-between">
+            <div>
+              <h1 className="text-dark text-3xl font-bold">
+                Nueva Factura Electrónica
+              </h1>
+              <p className="text-dark-100">
+                Completa el formulario para crear una nueva factura
+              </p>
+            </div>
+
+            {/* Menú de navegación de Facturación */}
+            <div className="relative">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    router.push(e.target.value)
+                  }
+                }}
+                defaultValue=""
+                className="text-dark cursor-pointer appearance-none rounded-lg border-2 border-gray-200 bg-white px-4 py-2 pr-8 text-sm font-medium shadow-sm transition-all hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="" disabled>
+                  Ir a
+                </option>
+                <option value="/facturacion/facturas">Mis Facturas</option>
+                <option value="/facturacion/clientes">Clientes</option>
+              </select>
+              <span className="material-symbols-outlined text-dark-100 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-lg">
+                expand_more
+              </span>
+            </div>
           </div>
 
           {/* Layout principal */}
@@ -877,17 +902,17 @@ export default function NuevaFacturaPage() {
               className="flex-1 lg:flex-initial"
             >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center">
                   <span className="material-symbols-outlined mr-2 animate-spin">
                     progress_activity
                   </span>
                   Guardando...
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center">
                   <span className="material-symbols-outlined mr-2">save</span>
                   Guardar Borrador
-                </>
+                </div>
               )}
             </Button>
 
@@ -898,17 +923,17 @@ export default function NuevaFacturaPage() {
               className="flex-1 bg-primary hover:bg-primary/90 lg:flex-initial"
             >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center">
                   <span className="material-symbols-outlined mr-2 animate-spin">
                     progress_activity
                   </span>
                   Procesando...
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center">
                   <span className="material-symbols-outlined mr-2">send</span>
                   Emitir Factura
-                </>
+                </div>
               )}
             </Button>
           </div>

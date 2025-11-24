@@ -32,6 +32,7 @@ export interface CrearDocumentoParams {
 export interface FiltrosDocumentos {
   tipo?: string
   categoria?: string
+  categorias?: string[] // Múltiples categorías
   anio?: number
   mes?: number
   etiquetas?: string[]
@@ -230,7 +231,14 @@ export async function obtenerDocumentos(
   const where: any = { userId, deletedAt: null }
 
   if (filtros?.tipo) where.tipo = filtros.tipo
-  if (filtros?.categoria) where.categoria = filtros.categoria
+
+  // Manejar múltiples categorías
+  if (filtros?.categorias && filtros.categorias.length > 0) {
+    where.categoria = { in: filtros.categorias }
+  } else if (filtros?.categoria) {
+    where.categoria = filtros.categoria
+  }
+
   if (filtros?.anio) where.anio = filtros.anio
   if (filtros?.mes) where.mes = filtros.mes
   if (filtros?.etiquetas && filtros.etiquetas.length > 0) {

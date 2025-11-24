@@ -32,7 +32,6 @@ const menuItems: MenuItem[] = [
     subItems: [
       { label: 'Liquidar PILA', href: '/pila/liquidar' },
       { label: 'Comprobantes', href: '/pila/comprobantes' },
-      { label: 'Configuración', href: '/pila/configuracion' },
     ],
   },
   {
@@ -42,7 +41,6 @@ const menuItems: MenuItem[] = [
       { label: 'Nueva Factura', href: '/facturacion/nueva' },
       { label: 'Mis Facturas', href: '/facturacion/facturas' },
       { label: 'Clientes', href: '/facturacion/clientes' },
-      { label: 'Mis Servicios', href: '/facturacion/mis-servicios' },
     ],
   },
   {

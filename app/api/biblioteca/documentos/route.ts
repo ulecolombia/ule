@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     // Parsear query params
     const { searchParams } = new URL(req.url)
     const tipo = searchParams.get('tipo') || undefined
-    const categoria = searchParams.get('categoria') || undefined
+    const categoriaStr = searchParams.get('categoria') || undefined
     const anioStr = searchParams.get('anio')
     const mesStr = searchParams.get('mes')
     const etiquetasStr = searchParams.get('etiquetas')
@@ -53,10 +53,14 @@ export async function GET(req: NextRequest) {
     const mes = mesStr ? parseInt(mesStr) : undefined
     const etiquetas = etiquetasStr ? etiquetasStr.split(',') : undefined
 
+    // Manejar múltiples categorías (separadas por coma)
+    const categorias = categoriaStr ? categoriaStr.split(',') : undefined
+
     // Obtener documentos con filtros
     const documentos = await obtenerDocumentos(user.id, {
       tipo,
-      categoria,
+      categoria: categorias?.[0], // Por ahora solo primera categoría
+      categorias, // Pasar array completo
       anio,
       mes,
       etiquetas,
@@ -71,7 +75,7 @@ export async function GET(req: NextRequest) {
       estadisticas,
       filtros: {
         tipo,
-        categoria,
+        categoria: categoriaStr,
         anio,
         mes,
         etiquetas,

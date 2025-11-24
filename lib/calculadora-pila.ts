@@ -6,6 +6,8 @@
  * para trabajadores independientes y por prestación de servicios (OPS).
  */
 
+import { memoize } from '@/lib/cache/memoize'
+
 // ============================================
 // CONSTANTES OFICIALES 2025
 // ============================================
@@ -98,6 +100,67 @@ export interface CalculoAportes {
 }
 
 // ============================================
+// FUNCIONES DE VALIDACIÓN
+// ============================================
+
+/**
+ * 🛡️ Valida que un valor sea un número positivo válido
+ *
+ * Esta función proporciona validación robusta contra:
+ * - null/undefined
+ * - NaN (Not a Number)
+ * - Infinity/-Infinity
+ * - Tipos incorrectos (strings, arrays, objects, etc.)
+ * - Números negativos o cero
+ *
+ * @param valor - Valor a validar
+ * @param nombreCampo - Nombre descriptivo del campo (para mensajes de error)
+ * @returns El valor validado como número
+ * @throws TypeError si el valor no es un número
+ * @throws Error si el valor es NaN, Infinity, o no positivo
+ *
+ * @example
+ * ```typescript
+ * validarNumeroPositivo(1000000, 'Ingreso mensual')  // ✅ OK
+ * validarNumeroPositivo(undefined, 'IBC')  // ❌ TypeError
+ * validarNumeroPositivo(NaN, 'Salud')  // ❌ Error
+ * validarNumeroPositivo(-500, 'Pensión')  // ❌ Error
+ * ```
+ */
+function validarNumeroPositivo(valor: any, nombreCampo: string): number {
+  // 🚨 Validar que NO sea null/undefined
+  if (valor === null || valor === undefined) {
+    throw new TypeError(`${nombreCampo} es requerido (recibido: ${valor})`)
+  }
+
+  // 🚨 Validar que SEA un número (no string, array, object, etc.)
+  if (typeof valor !== 'number') {
+    throw new TypeError(
+      `${nombreCampo} debe ser un número, recibido tipo: ${typeof valor}`
+    )
+  }
+
+  // 🚨 Validar que NO sea NaN
+  if (isNaN(valor)) {
+    throw new Error(`${nombreCampo} no es un número válido (NaN)`)
+  }
+
+  // 🚨 Validar que NO sea Infinity
+  if (!isFinite(valor)) {
+    throw new Error(
+      `${nombreCampo} debe ser un número finito (recibido: ${valor})`
+    )
+  }
+
+  // 🚨 Validar que sea POSITIVO
+  if (valor <= 0) {
+    throw new Error(`${nombreCampo} debe ser mayor a cero (recibido: ${valor})`)
+  }
+
+  return valor
+}
+
+// ============================================
 // FUNCIONES DE CÁLCULO
 // ============================================
 
@@ -120,14 +183,15 @@ export interface CalculoAportes {
  * ```
  */
 export function calcularIBC(ingresoMensual: number): CalculoIBC {
-  let ibc = ingresoMensual
+  // 🛡️ Validación robusta de entrada
+  const ingresoValidado = validarNumeroPositivo(
+    ingresoMensual,
+    'Ingreso mensual'
+  )
+
+  let ibc = ingresoValidado
   let ajustado = false
   let motivoAjuste: 'MINIMO' | 'MAXIMO' | undefined
-
-  // Validación de ingreso
-  if (ingresoMensual <= 0) {
-    throw new Error('El ingreso mensual debe ser mayor a cero')
-  }
 
   // Aplicar límite mínimo (1 SMMLV)
   if (ibc < IBC_MINIMO) {
@@ -144,7 +208,7 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
   }
 
   return {
-    ingresoReportado: ingresoMensual,
+    ingresoReportado: ingresoValidado,
     ibc: Math.round(ibc),
     ajustado,
     motivoAjuste,
@@ -168,12 +232,11 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
  * ```
  */
 export function calcularSalud(ibc: number): number {
-  if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero')
-  }
+  // 🛡️ Validación robusta de entrada
+  const ibcValidado = validarNumeroPositivo(ibc, 'IBC')
 
   // Calcular porcentaje y redondear
-  const resultado = ibc * (PORCENTAJE_SALUD / 100)
+  const resultado = ibcValidado * (PORCENTAJE_SALUD / 100)
 
   // Redondear al entero más cercano
   return Math.round(resultado)
@@ -196,12 +259,11 @@ export function calcularSalud(ibc: number): number {
  * ```
  */
 export function calcularPension(ibc: number): number {
-  if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero')
-  }
+  // 🛡️ Validación robusta de entrada
+  const ibcValidado = validarNumeroPositivo(ibc, 'IBC')
 
   // Calcular porcentaje y redondear
-  const resultado = ibc * (PORCENTAJE_PENSION / 100)
+  const resultado = ibcValidado * (PORCENTAJE_PENSION / 100)
 
   // Redondear al entero más cercano
   return Math.round(resultado)
@@ -225,9 +287,8 @@ export function calcularPension(ibc: number): number {
  * ```
  */
 export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
-  if (ibc <= 0) {
-    throw new Error('IBC debe ser mayor a cero')
-  }
+  // 🛡️ Validación robusta de entrada
+  const ibcValidado = validarNumeroPositivo(ibc, 'IBC')
 
   const porcentaje = PORCENTAJES_ARL[nivelRiesgo]
   if (!porcentaje) {
@@ -235,7 +296,7 @@ export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
   }
 
   // Calcular porcentaje y redondear
-  const resultado = ibc * (porcentaje / 100)
+  const resultado = ibcValidado * (porcentaje / 100)
 
   // Redondear al entero más cercano
   return Math.round(resultado)
@@ -429,3 +490,48 @@ export function validarIBC(ibc: number): boolean {
 export function obtenerPorcentajeARL(nivelRiesgo: NivelRiesgoARL): number {
   return PORCENTAJES_ARL[nivelRiesgo]
 }
+
+// ============================================
+// EXPORT ALIASES
+// ============================================
+
+/**
+ * Alias para calcularTotalAportes
+ * Mantenido para compatibilidad con código existente
+ */
+export { calcularTotalAportes as calcularAportes }
+
+// ============================================
+// VERSIONES MEMOIZADAS (OPTIMIZACIÓN)
+// ============================================
+
+/**
+ * Versión memoizada de calcularIBC
+ * Cache: 200 entradas, TTL 10 minutos
+ *
+ * Uso recomendado para interfaces donde el usuario puede recalcular
+ * múltiples veces con el mismo ingreso
+ */
+export const calcularIBCMemoized = memoize(calcularIBC, {
+  maxSize: 200,
+  ttl: 10 * 60 * 1000, // 10 minutos
+  keyGenerator: (ingreso) => String(ingreso),
+})
+
+/**
+ * Versión memoizada de calcularTotalAportes
+ * Cache: 200 entradas, TTL 10 minutos
+ *
+ * Mejora significativa cuando el usuario calcula múltiples veces
+ * con los mismos parámetros
+ */
+export const calcularTotalAportesMemoized = memoize(calcularTotalAportes, {
+  maxSize: 200,
+  ttl: 10 * 60 * 1000, // 10 minutos
+  keyGenerator: (ingreso, nivel) => `${ingreso}-${nivel}`,
+})
+
+/**
+ * Alias memoizado
+ */
+export const calcularAportesMemoized = calcularTotalAportesMemoized
