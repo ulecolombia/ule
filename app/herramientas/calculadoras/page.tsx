@@ -28,6 +28,13 @@ export default function CalculadorasPage() {
   const [tabActiva, setTabActiva] =
     useState<CalculadoraTipo>('RETENCION_FUENTE')
 
+  const handleReloadCalculo = (calculo: any) => {
+    // Switch to the appropriate calculator tab
+    setTabActiva(calculo.tipoCalculadora as CalculadoraTipo)
+    // Note: Individual calculators would need to be refactored to accept
+    // initial values as props to fully reload calculations
+  }
+
   const tabs = [
     {
       id: 'RETENCION_FUENTE' as CalculadoraTipo,
@@ -199,7 +206,10 @@ export default function CalculadorasPage() {
 
             {/* Historial (1 columna) */}
             <div className="lg:col-span-1">
-              <HistorialCalculos tipo={tabActiva} />
+              <HistorialCalculos
+                tipo={tabActiva}
+                onReload={handleReloadCalculo}
+              />
             </div>
           </div>
 

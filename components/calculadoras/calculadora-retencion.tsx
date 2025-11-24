@@ -15,17 +15,33 @@ import { toast } from 'sonner'
 export function CalculadoraRetencion() {
   const [ingresoMensual, setIngresoMensual] = useState('')
   const [resultado, setResultado] = useState<any>(null)
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [error, setError] = useState('')
 
   const handleCalcular = () => {
     const ingreso = parseFloat(ingresoMensual.replace(/[^0-9]/g, ''))
 
     if (isNaN(ingreso) || ingreso <= 0) {
+      setError('Ingresa un ingreso mensual válido mayor a 0')
       toast.error('Ingresa un valor válido')
       return
     }
 
-    const calculo = calcularRetencionFuente(ingreso)
-    setResultado(calculo)
+    setError('')
+    setIsCalculating(true)
+
+    // Simulate async calculation for better UX
+    setTimeout(() => {
+      const calculo = calcularRetencionFuente(ingreso)
+      setResultado(calculo)
+      setIsCalculating(false)
+    }, 300)
+  }
+
+  const handleReset = () => {
+    setIngresoMensual('')
+    setResultado(null)
+    setError('')
   }
 
   const handleGuardar = async () => {
@@ -48,20 +64,20 @@ export function CalculadoraRetencion() {
   return (
     <Card className="p-6">
       <div className="mb-6">
-        <h2 className="flex items-center text-2xl font-bold text-dark">
+        <h2 className="text-dark flex items-center text-2xl font-bold">
           <span className="material-symbols-outlined mr-2 text-primary">
             receipt_long
           </span>
           Calculadora de Retención en la Fuente
         </h2>
-        <p className="mt-1 text-sm text-dark-100">
+        <p className="text-dark-100 mt-1 text-sm">
           Calcula la retención según tabla UVT 2025 para personas naturales
         </p>
       </div>
 
       <div className="space-y-6">
         <div>
-          <label className="mb-2 block text-sm font-medium text-dark">
+          <label className="text-dark mb-2 block text-sm font-medium">
             Ingreso Mensual *
           </label>
           <Input
@@ -73,48 +89,76 @@ export function CalculadoraRetencion() {
               setIngresoMensual(
                 value ? parseInt(value).toLocaleString('es-CO') : ''
               )
+              if (error) setError('')
             }}
-            className="text-lg"
+            className={`text-lg ${error ? 'border-error' : ''}`}
           />
-          <p className="mt-1 text-xs text-dark-100">
-            Ingresa tu ingreso mensual promedio antes de retención
-          </p>
+          {error ? (
+            <p className="text-error mt-1 text-xs">{error}</p>
+          ) : (
+            <p className="text-dark-100 mt-1 text-xs">
+              Ingresa tu ingreso mensual promedio antes de retención
+            </p>
+          )}
         </div>
 
-        <Button onClick={handleCalcular} size="lg" className="w-full">
-          <span className="material-symbols-outlined mr-2">calculate</span>
-          Calcular Retención
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={handleCalcular}
+            size="lg"
+            className="flex-1"
+            disabled={isCalculating}
+          >
+            {isCalculating ? (
+              <>
+                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                Calculando...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined mr-2">
+                  calculate
+                </span>
+                Calcular Retención
+              </>
+            )}
+          </Button>
+          {(ingresoMensual || resultado) && !isCalculating && (
+            <Button onClick={handleReset} size="lg" variant="outline">
+              <span className="material-symbols-outlined">restart_alt</span>
+            </Button>
+          )}
+        </div>
 
         {resultado && (
-          <div className="space-y-4 border-t pt-4">
+          <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 border-t pt-4 duration-500">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg bg-blue-50 p-4">
-                <p className="text-sm text-dark-100">Ingreso Anual</p>
+                <p className="text-dark-100 text-sm">Ingreso Anual</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {formatearMoneda(resultado.ingresoAnual)}
                 </p>
               </div>
 
               <div className="rounded-lg bg-blue-50 p-4">
-                <p className="text-sm text-dark-100">En UVT</p>
+                <p className="text-dark-100 text-sm">En UVT</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {resultado.uvtAnual.toFixed(2)} UVT
                 </p>
               </div>
 
               <div className="rounded-lg bg-red-50 p-4">
-                <p className="text-sm text-dark-100">Retención Anual</p>
+                <p className="text-dark-100 text-sm">Retención Anual</p>
                 <p className="text-2xl font-bold text-red-600">
                   {formatearMoneda(resultado.retencion)}
                 </p>
-                <p className="mt-1 text-xs text-dark-100">
+                <p className="text-dark-100 mt-1 text-xs">
                   Tarifa: {(resultado.tarifa * 100).toFixed(1)}%
                 </p>
               </div>
 
               <div className="rounded-lg bg-green-50 p-4">
-                <p className="text-sm text-dark-100">Ingreso Neto Anual</p>
+                <p className="text-dark-100 text-sm">Ingreso Neto Anual</p>
                 <p className="text-2xl font-bold text-green-600">
                   {formatearMoneda(resultado.ingresoNeto)}
                 </p>
@@ -128,7 +172,7 @@ export function CalculadoraRetencion() {
                 </span>
                 ¿Qué significa esto?
               </h4>
-              <p className="text-sm text-dark">
+              <p className="text-dark text-sm">
                 Si ganas{' '}
                 <strong>{formatearMoneda(resultado.ingresoMensual)}</strong> al
                 mes, tu ingreso anual es{' '}
@@ -141,7 +185,11 @@ export function CalculadoraRetencion() {
               </p>
             </div>
 
-            <Button variant="outline" onClick={handleGuardar} className="w-full">
+            <Button
+              variant="outline"
+              onClick={handleGuardar}
+              className="w-full"
+            >
               <span className="material-symbols-outlined mr-2">bookmark</span>
               Guardar Cálculo
             </Button>

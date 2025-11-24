@@ -19,6 +19,7 @@ export async function generarEventosPreCargados(
     select: {
       tipoContrato: true,
       ingresoMensualPromedio: true,
+      numeroDocumento: true,
     },
   })
 
@@ -26,16 +27,19 @@ export async function generarEventosPreCargados(
 
   const eventos: any[] = []
 
-  // 1. VENCIMIENTOS PILA - Día 10 de cada mes
+  // Calcular día de vencimiento PILA según último dígito del documento
+  const diaVencimientoPILA = calcularDiaVencimientoPILA(user.numeroDocumento)
+
+  // 1. VENCIMIENTOS PILA - Según último dígito del documento
   for (let mes = 0; mes < 12; mes++) {
-    const fecha = new Date(año, mes, 10, 9, 0, 0) // Día 10 a las 9:00 AM
+    const fecha = new Date(año, mes, diaVencimientoPILA, 9, 0, 0)
 
     eventos.push({
       userId,
       titulo: `Vencimiento PILA - ${obtenerNombreMes(mes)} ${año}`,
       descripcion: `Fecha límite para pagar aportes a seguridad social del periodo ${obtenerNombreMes(
         mes
-      )} ${año}. Incluye: Salud (12.5%), Pensión (16%) y ARL.`,
+      )} ${año}. Incluye: Salud (12.5%), Pensión (16%) y ARL. Tu fecha de vencimiento es el día ${diaVencimientoPILA} según el último dígito de tu documento.`,
       fecha,
       tipo: 'VENCIMIENTO_PILA',
       categoria: 'LABORAL',
@@ -137,6 +141,31 @@ export async function generarEventosPreCargados(
     data: eventos,
     skipDuplicates: true,
   })
+}
+
+/**
+ * Calcular día de vencimiento PILA según último dígito del documento
+ */
+function calcularDiaVencimientoPILA(numeroDocumento?: string): number {
+  if (!numeroDocumento) return 10 // Default día 10 si no hay documento
+
+  const ultimoDigito = parseInt(numeroDocumento.slice(-1))
+
+  // Tabla de vencimientos PILA según último dígito
+  const diasVencimiento: Record<number, number> = {
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 6,
+    6: 7,
+    7: 8,
+    8: 9,
+    9: 10,
+    0: 11,
+  }
+
+  return diasVencimiento[ultimoDigito] || 10
 }
 
 /**
@@ -362,7 +391,5 @@ async function enviarNotificacion(
     },
   })
 
-  console.log(
-    `[Calendario] Notificación enviada a usuario ${evento.userId} para evento "${evento.titulo}" (${diasAntes} días antes)`
-  )
+  // Notificación enviada exitosamente
 }

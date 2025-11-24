@@ -472,7 +472,7 @@ export function SimuladorPensional() {
 
         {/* Resultados */}
         {resultado && (
-          <div className="space-y-6 border-t pt-6">
+          <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 border-t pt-6 duration-500">
             {/* Advertencias */}
             {resultado.advertencias.length > 0 && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -496,7 +496,7 @@ export function SimuladorPensional() {
             )}
 
             {/* Información General */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border-light-200 rounded-lg border bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
                 <p className="text-dark-100 mb-1 text-xs font-medium">
                   Edad de Pensión
@@ -544,8 +544,8 @@ export function SimuladorPensional() {
             </div>
 
             {/* Comparativa RPM vs RAIS */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
+            <div className="border-light-200 overflow-x-auto rounded-lg border">
+              <table className="w-full min-w-[500px] border-collapse">
                 <thead>
                   <tr className="border-light-200 border-b-2 bg-gradient-to-r from-slate-50 to-slate-100">
                     <th className="text-dark p-3 text-left text-sm font-semibold">
@@ -669,8 +669,8 @@ export function SimuladorPensional() {
                 </button>
 
                 {mostrarProyeccion && (
-                  <div className="border-light-200 mt-4 overflow-x-auto rounded-lg border">
-                    <table className="w-full text-sm">
+                  <div className="border-light-200 mt-4 overflow-x-auto rounded-lg border shadow-sm">
+                    <table className="w-full min-w-[700px] text-sm">
                       <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                         <tr>
                           <th className="p-3 text-left">Año</th>

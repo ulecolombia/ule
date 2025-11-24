@@ -136,14 +136,40 @@ export default function CalendarioPage() {
     }
   }
 
+  const handleGenerarEventos = async () => {
+    try {
+      const añoActual = new Date().getFullYear()
+      const response = await fetch('/api/calendario/generar-eventos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ año: añoActual + 1 }), // Generar para el próximo año
+      })
+
+      if (!response.ok) throw new Error('Error al generar eventos')
+
+      toast.success('Eventos tributarios generados', {
+        description: `Se han cargado las fechas importantes de ${añoActual + 1}`,
+      })
+
+      await cargarEventos()
+    } catch (error) {
+      console.error('[Calendario] Error:', error)
+      toast.error('Error al generar eventos')
+    }
+  }
+
   const eventStyleGetter = (event: any) => {
     // Mapeo de colores según el tipo de evento
     const colorMap: Record<string, string> = {
-      PILA: '#10B981', // emerald-500
-      DECLARACION: '#EF4444', // red-500
-      PAGO: '#8B5CF6', // purple-500
-      ACTUALIZACION: '#3B82F6', // blue-500
-      EVENTO_PERSONAL: '#6B7280', // gray-500
+      VENCIMIENTO_PILA: '#10B981', // emerald-500 - PILA
+      DECLARACION_RENTA: '#EF4444', // red-500 - Declaraciones
+      DECLARACION_IVA: '#EF4444',
+      DECLARACION_RETEFUENTE: '#F59E0B', // amber-500
+      PAGO_IMPUESTOS: '#8B5CF6', // purple-500 - Pagos
+      ACTUALIZACION_SMMLV: '#3B82F6', // blue-500 - Actualizaciones
+      RENOVACION_RUT: '#06B6D4', // cyan-500 - Actualizaciones
+      EVENTO_PERSONAL: '#6B7280', // gray-500 - Personales
+      OTRO: '#6B7280',
     }
 
     const style: any = {
@@ -261,43 +287,90 @@ export default function CalendarioPage() {
           {/* Leyenda con mejor diseño */}
           <Card className="border-light-200 mb-6 bg-white shadow-sm">
             <div className="p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-dark-100 text-lg">
-                  palette
-                </span>
-                <h3 className="text-dark text-sm font-semibold">
-                  Tipos de eventos
-                </h3>
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-dark-100 text-lg">
+                    palette
+                  </span>
+                  <h3 className="text-dark text-sm font-semibold">
+                    Tipos de eventos
+                  </h3>
+                </div>
+                {eventos.length === 0 && (
+                  <Button
+                    size="sm"
+                    onClick={handleGenerarEventos}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      auto_fix_high
+                    </span>
+                    <span className="hidden sm:inline">
+                      Generar Eventos {new Date().getFullYear() + 1}
+                    </span>
+                    <span className="sm:hidden">Generar</span>
+                  </Button>
+                )}
               </div>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 transition-all hover:bg-emerald-100">
+              <div className="flex flex-wrap gap-2">
+                <div
+                  className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 transition-all hover:bg-emerald-100"
+                  title="Aportes a seguridad social (Salud, Pensión, ARL) - Vence día 10 de cada mes"
+                >
                   <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
                   <span className="text-sm font-medium text-emerald-700">
-                    PILA
+                    PILA - Seguridad Social
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-emerald-600 opacity-50 group-hover:opacity-100">
+                    info
                   </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 transition-all hover:bg-red-100">
+                <div
+                  className="group flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 transition-all hover:bg-red-100"
+                  title="Declaración de renta anual como persona natural"
+                >
                   <div className="h-3 w-3 rounded-full bg-red-500"></div>
                   <span className="text-sm font-medium text-red-700">
-                    Declaraciones
+                    Declaraciones de Renta
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-red-600 opacity-50 group-hover:opacity-100">
+                    info
                   </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2 transition-all hover:bg-purple-100">
+                <div
+                  className="group flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2 transition-all hover:bg-purple-100"
+                  title="Pagos de impuestos según tu régimen tributario"
+                >
                   <div className="h-3 w-3 rounded-full bg-purple-500"></div>
                   <span className="text-sm font-medium text-purple-700">
-                    Pagos
+                    Pagos de Impuestos
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-purple-600 opacity-50 group-hover:opacity-100">
+                    info
                   </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 transition-all hover:bg-blue-100">
+                <div
+                  className="group flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 transition-all hover:bg-blue-100"
+                  title="Actualizaciones importantes (SMMLV, RUT, etc.)"
+                >
                   <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                   <span className="text-sm font-medium text-blue-700">
                     Actualizaciones
                   </span>
+                  <span className="material-symbols-outlined text-xs text-blue-600 opacity-50 group-hover:opacity-100">
+                    info
+                  </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 transition-all hover:bg-gray-100">
+                <div
+                  className="group flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 transition-all hover:bg-gray-100"
+                  title="Eventos personalizados que tú creates"
+                >
                   <div className="h-3 w-3 rounded-full bg-gray-500"></div>
                   <span className="text-sm font-medium text-gray-700">
-                    Personales
+                    Mis Eventos
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-gray-600 opacity-50 group-hover:opacity-100">
+                    info
                   </span>
                 </div>
               </div>

@@ -8,7 +8,11 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { convertirUVTaCOP, convertirCOPaUVT, CONSTANTES_2025 } from '@/lib/services/calculadoras-service'
+import {
+  convertirUVTaCOP,
+  convertirCOPaUVT,
+  CONSTANTES_2025,
+} from '@/lib/services/calculadoras-service'
 import { formatearMoneda } from '@/lib/utils/format'
 import { toast } from 'sonner'
 
@@ -16,19 +20,34 @@ export function ConversorUVT() {
   const [modo, setModo] = useState<'uvt-cop' | 'cop-uvt'>('uvt-cop')
   const [valor, setValor] = useState('')
   const [resultado, setResultado] = useState<any>(null)
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [error, setError] = useState('')
 
   const handleConvertir = () => {
     const val = parseFloat(valor.replace(/[^0-9.]/g, ''))
 
     if (isNaN(val) || val <= 0) {
+      setError('Ingresa un valor válido mayor a 0')
       toast.error('Ingresa un valor válido')
       return
     }
 
-    const conversion =
-      modo === 'uvt-cop' ? convertirUVTaCOP(val) : convertirCOPaUVT(val)
+    setError('')
+    setIsCalculating(true)
 
-    setResultado(conversion)
+    setTimeout(() => {
+      const conversion =
+        modo === 'uvt-cop' ? convertirUVTaCOP(val) : convertirCOPaUVT(val)
+
+      setResultado(conversion)
+      setIsCalculating(false)
+    }, 300)
+  }
+
+  const handleReset = () => {
+    setValor('')
+    setResultado(null)
+    setError('')
   }
 
   const handleGuardar = async () => {
@@ -51,13 +70,13 @@ export function ConversorUVT() {
   return (
     <Card className="p-6">
       <div className="mb-6">
-        <h2 className="flex items-center text-2xl font-bold text-dark">
+        <h2 className="text-dark flex items-center text-2xl font-bold">
           <span className="material-symbols-outlined mr-2 text-primary">
             currency_exchange
           </span>
           Conversor UVT ↔ COP
         </h2>
-        <p className="mt-1 text-sm text-dark-100">
+        <p className="text-dark-100 mt-1 text-sm">
           Convierte entre UVT y pesos colombianos (Vigencia 2025)
         </p>
       </div>
@@ -65,7 +84,7 @@ export function ConversorUVT() {
       <div className="space-y-6">
         {/* Valor UVT 2025 */}
         <div className="rounded-lg bg-primary/10 p-4 text-center">
-          <p className="text-sm text-dark-100">Valor UVT 2025</p>
+          <p className="text-dark-100 text-sm">Valor UVT 2025</p>
           <p className="text-3xl font-bold text-primary">
             {formatearMoneda(CONSTANTES_2025.UVT)}
           </p>
@@ -96,7 +115,7 @@ export function ConversorUVT() {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-dark">
+          <label className="text-dark mb-2 block text-sm font-medium">
             {modo === 'uvt-cop' ? 'Cantidad en UVT *' : 'Cantidad en COP *'}
           </label>
           <Input
@@ -112,36 +131,59 @@ export function ConversorUVT() {
                 const val = e.target.value.replace(/[^0-9]/g, '')
                 setValor(val ? parseInt(val).toLocaleString('es-CO') : '')
               }
+              if (error) setError('')
             }}
-            className="text-lg"
+            className={`text-lg ${error ? 'border-error' : ''}`}
           />
+          {error && <p className="text-error mt-1 text-xs">{error}</p>}
         </div>
 
-        <Button onClick={handleConvertir} size="lg" className="w-full">
-          <span className="material-symbols-outlined mr-2">sync_alt</span>
-          Convertir
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={handleConvertir}
+            size="lg"
+            className="flex-1"
+            disabled={isCalculating}
+          >
+            {isCalculating ? (
+              <>
+                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                Convirtiendo...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined mr-2">sync_alt</span>
+                Convertir
+              </>
+            )}
+          </Button>
+          {(valor || resultado) && !isCalculating && (
+            <Button onClick={handleReset} size="lg" variant="outline">
+              <span className="material-symbols-outlined">restart_alt</span>
+            </Button>
+          )}
+        </div>
 
         {resultado && (
-          <div className="space-y-4 border-t pt-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 border-t pt-4 duration-500">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-lg bg-blue-50 p-4">
-                <p className="text-sm text-dark-100">UVT</p>
+                <p className="text-dark-100 text-sm">UVT</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {resultado.uvt.toFixed(2)}
                 </p>
               </div>
 
               <div className="rounded-lg bg-green-50 p-4">
-                <p className="text-sm text-dark-100">COP</p>
+                <p className="text-dark-100 text-sm">COP</p>
                 <p className="text-2xl font-bold text-green-600">
                   {formatearMoneda(resultado.cop)}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg bg-light-50 p-4">
-              <p className="text-sm text-dark">
+            <div className="bg-light-50 rounded-lg p-4">
+              <p className="text-dark text-sm">
                 <strong>Fórmula:</strong>{' '}
                 {modo === 'uvt-cop'
                   ? `${resultado.uvt.toFixed(2)} UVT × ${formatearMoneda(resultado.uvtValor)} = ${formatearMoneda(resultado.cop)}`
@@ -156,15 +198,20 @@ export function ConversorUVT() {
                 </span>
                 ¿Qué es la UVT?
               </h4>
-              <p className="text-sm text-dark">
-                La Unidad de Valor Tributario (UVT) es una medida usada en Colombia
-                para calcular impuestos, multas y sanciones. Se actualiza cada año
-                según la inflación. Para 2025, una UVT equivale a{' '}
+              <p className="text-dark text-sm">
+                La Unidad de Valor Tributario (UVT) es una medida usada en
+                Colombia para calcular impuestos, multas y sanciones. Se
+                actualiza cada año según la inflación. Para 2025, una UVT
+                equivale a{' '}
                 <strong>{formatearMoneda(CONSTANTES_2025.UVT)}</strong>.
               </p>
             </div>
 
-            <Button variant="outline" onClick={handleGuardar} className="w-full">
+            <Button
+              variant="outline"
+              onClick={handleGuardar}
+              className="w-full"
+            >
               <span className="material-symbols-outlined mr-2">bookmark</span>
               Guardar Conversión
             </Button>

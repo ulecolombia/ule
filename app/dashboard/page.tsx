@@ -367,7 +367,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-dark font-semibold group-hover:text-white">
-                      Simulador Tributario
+                      Simulador
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
