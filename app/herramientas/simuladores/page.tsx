@@ -14,6 +14,7 @@ import { SimuladorRegimen } from '@/components/calculadoras/simulador-regimen'
 import { SimuladorPensional } from '@/components/calculadoras/simulador-pensional'
 import { HistorialCalculos } from '@/components/calculadoras/historial-calculos'
 import Link from 'next/link'
+import './print.css'
 
 type SimuladorTipo = 'SIMULADOR_REGIMEN' | 'SIMULADOR_PENSIONAL'
 
@@ -84,7 +85,7 @@ export default function SimuladoresPage() {
                 </div>
                 <div>
                   <h1 className="text-dark text-3xl font-bold tracking-tight">
-                    Simuladores Financieros
+                    Simuladores
                   </h1>
                   <p className="text-dark-100 mt-1 text-base">
                     Simula escenarios tributarios, pensionales y financieros
@@ -149,26 +150,6 @@ export default function SimuladoresPage() {
                     )}
                   </button>
                 ))}
-              </div>
-
-              {/* Coming Soon Badge */}
-              <div className="mt-4 overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50">
-                <div className="flex items-start gap-3 p-4">
-                  <div className="rounded-lg bg-amber-100 p-2">
-                    <span className="material-symbols-outlined text-xl text-amber-600">
-                      schedule
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-dark mb-1 font-semibold">
-                      Próximamente
-                    </h4>
-                    <p className="text-dark-100 text-sm leading-relaxed">
-                      Simulador de Nómina, Simulador de Flujo de Caja,
-                      Proyección de Inversiones y más herramientas avanzadas
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </Card>

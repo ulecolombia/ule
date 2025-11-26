@@ -1109,6 +1109,7 @@ enum TipoCalculadora {
   IVA
   PROYECCION_PILA
   SIMULADOR_REGIMEN
+  SIMULADOR_PENSIONAL
   CONVERSOR_UVT
 }
 
@@ -1221,6 +1222,7 @@ enum CategoriaEventoAnalytics {
   EXPORTACION     // descarga de datos
   NAVEGACION      // pageviews
   SISTEMA         // errores, performance
+  CALCULADORAS    // uso de calculadoras y simuladores
 }
 
 /// Modelo de métricas agregadas (para dashboard rápido)

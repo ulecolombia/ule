@@ -19,6 +19,7 @@ const trackEventSchema = z.object({
     'EXPORTACION',
     'NAVEGACION',
     'SISTEMA',
+    'CALCULADORAS',
   ]),
   metadata: z.any().optional(),
   sessionId: z.string().optional(),

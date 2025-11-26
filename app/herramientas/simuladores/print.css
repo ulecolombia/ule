@@ -1,0 +1,177 @@
+/**
+ * PRINT STYLESHEET FOR SIMULADORES
+ * Optimiza la impresión de resultados de calculadoras
+ */
+
+@media print {
+  /* Ocultar elementos innecesarios */
+  header,
+  nav,
+  footer,
+  .no-print,
+  button,
+  .material-symbols-outlined {
+    display: none !important;
+  }
+
+  /* Optimizar tamaño de página */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  body {
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #000;
+    background: white;
+  }
+
+  /* Títulos y encabezados */
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-after: avoid;
+    color: #000;
+    margin-top: 1em;
+  }
+
+  h1 {
+    font-size: 18pt;
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.5em;
+  }
+
+  h2 {
+    font-size: 14pt;
+  }
+
+  h3 {
+    font-size: 12pt;
+  }
+
+  /* Tablas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: avoid;
+    margin: 1em 0;
+  }
+
+  table,
+  th,
+  td {
+    border: 1px solid #000;
+  }
+
+  th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+    padding: 0.5em;
+  }
+
+  td {
+    padding: 0.5em;
+  }
+
+  /* Tarjetas y secciones */
+  .card,
+  .rounded-lg,
+  .border {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin: 1em 0;
+    padding: 1em;
+  }
+
+  /* Advertencias e información importante */
+  .bg-amber-50,
+  .bg-blue-50,
+  .bg-green-50,
+  .bg-purple-50 {
+    background-color: #f9f9f9 !important;
+    border-left: 4px solid #333 !important;
+    padding: 1em;
+  }
+
+  /* Gráficos (mostrar valores numéricos) */
+  .chart,
+  .graph {
+    display: block;
+    page-break-inside: avoid;
+  }
+
+  /* Enlaces */
+  a {
+    text-decoration: underline;
+    color: #000;
+  }
+
+  a[href]:after {
+    content: ' (' attr(href) ')';
+    font-size: 9pt;
+    color: #666;
+  }
+
+  /* Evitar saltos de página inapropiados */
+  tr,
+  img,
+  ul,
+  ol {
+    page-break-inside: avoid;
+  }
+
+  /* Inputs (mostrar valores) */
+  input {
+    border: 1px solid #ccc !important;
+    padding: 0.2em 0.5em;
+  }
+
+  /* Footer de impresión */
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9pt;
+    color: #666;
+    border-top: 1px solid #ccc;
+    padding-top: 0.5em;
+  }
+
+  /* Asegurar contraste adecuado */
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Resultados destacados */
+  .font-bold {
+    font-weight: bold !important;
+  }
+
+  .text-primary,
+  .text-blue-600,
+  .text-green-600,
+  .text-red-600 {
+    color: #000 !important;
+    font-weight: bold;
+  }
+
+  /* Espaciado mejorado */
+  section {
+    margin: 1.5em 0;
+  }
+
+  /* Ocultar elementos decorativos */
+  .animate-pulse,
+  .shadow-md,
+  .shadow-lg {
+    animation: none !important;
+    box-shadow: none !important;
+  }
+}
