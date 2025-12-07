@@ -37,6 +37,7 @@ export type CategoriaEvento =
   | 'EXPORTACION'
   | 'NAVEGACION'
   | 'SISTEMA'
+  | 'CALCULADORAS'
 
 // Whitelist de keys permitidas en metadata
 export type MetadataAllowedKey =
