@@ -104,17 +104,17 @@ export function CookieBanner() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-      <div className="max-w-7xl mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+      <div className="mx-auto max-w-7xl">
         {!showDetails ? (
           // Vista simplificada
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex-1 text-sm text-gray-700 dark:text-gray-300">
-              <p className="font-medium mb-1">🍪 Este sitio utiliza cookies</p>
+              <p className="mb-1 font-medium">🍪 Este sitio utiliza cookies</p>
               <p>
                 Usamos cookies para mejorar tu experiencia, analizar el tráfico
-                y personalizar contenido. Al hacer clic en "Aceptar todas",
-                aceptas nuestro uso de cookies.{' '}
+                y personalizar contenido. Al hacer clic en &quot;Aceptar
+                todas&quot;, aceptas nuestro uso de cookies.{' '}
                 <a
                   href="/politica-privacidad"
                   className="underline hover:text-primary"
@@ -142,11 +142,7 @@ export function CookieBanner() {
               >
                 Solo esenciales
               </Button>
-              <Button
-                onClick={aceptarTodas}
-                size="sm"
-                disabled={isLoading}
-              >
+              <Button onClick={aceptarTodas} size="sm" disabled={isLoading}>
                 {isLoading ? 'Guardando...' : 'Aceptar todas'}
               </Button>
             </div>
@@ -155,9 +151,7 @@ export function CookieBanner() {
           // Vista detallada
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                Preferencias de Cookies
-              </h3>
+              <h3 className="text-lg font-semibold">Preferencias de Cookies</h3>
               <button
                 onClick={() => setShowDetails(false)}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -166,9 +160,9 @@ export function CookieBanner() {
               </button>
             </div>
 
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="max-h-64 space-y-3 overflow-y-auto">
               {/* Cookies Esenciales */}
-              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   id="esenciales"
@@ -179,12 +173,12 @@ export function CookieBanner() {
                 <div className="flex-1">
                   <label
                     htmlFor="esenciales"
-                    className="font-medium text-sm cursor-pointer"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     Cookies Esenciales{' '}
                     <span className="text-xs text-gray-500">(Requeridas)</span>
                   </label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Necesarias para el funcionamiento básico del sitio,
                     incluyendo autenticación y seguridad.
                   </p>
@@ -192,7 +186,7 @@ export function CookieBanner() {
               </div>
 
               {/* Cookies Analíticas */}
-              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   id="analiticas"
@@ -203,11 +197,11 @@ export function CookieBanner() {
                 <div className="flex-1">
                   <label
                     htmlFor="analiticas"
-                    className="font-medium text-sm cursor-pointer"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     Cookies Analíticas
                   </label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Nos ayudan a entender cómo los visitantes interactúan con el
                     sitio, recopilando información anónima.
                   </p>
@@ -215,7 +209,7 @@ export function CookieBanner() {
               </div>
 
               {/* Cookies de Marketing */}
-              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   id="marketing"
@@ -226,11 +220,11 @@ export function CookieBanner() {
                 <div className="flex-1">
                   <label
                     htmlFor="marketing"
-                    className="font-medium text-sm cursor-pointer"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     Cookies de Marketing
                   </label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Se usan para mostrar anuncios relevantes y medir la
                     efectividad de campañas.
                   </p>
@@ -238,7 +232,7 @@ export function CookieBanner() {
               </div>
 
               {/* Cookies de Personalización */}
-              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                 <input
                   type="checkbox"
                   id="personalizacion"
@@ -249,11 +243,11 @@ export function CookieBanner() {
                 <div className="flex-1">
                   <label
                     htmlFor="personalizacion"
-                    className="font-medium text-sm cursor-pointer"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     Cookies de Personalización
                   </label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Permiten recordar tus preferencias para ofrecerte una
                     experiencia más personalizada.
                   </p>
@@ -261,7 +255,7 @@ export function CookieBanner() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end gap-2 border-t border-gray-200 pt-3 dark:border-gray-700">
               <Button
                 onClick={rechazarOpcionales}
                 variant="outline"
@@ -282,7 +276,7 @@ export function CookieBanner() {
         )}
 
         {/* Información legal */}
-        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+        <div className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
           Al continuar navegando, aceptas nuestra{' '}
           <a
             href="/politica-cookies"
