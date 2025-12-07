@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { Prisma, CategoriaFAQ } from '@prisma/client'
 
 /**
  * Sanitizar búsqueda para prevenir inyección
@@ -31,7 +31,10 @@ export async function GET(req: NextRequest) {
     }
 
     if (categoria && categoria !== 'TODAS') {
-      where.categoria = categoria
+      // Validar que sea un valor válido del enum
+      if (Object.values(CategoriaFAQ).includes(categoria as CategoriaFAQ)) {
+        where.categoria = categoria as CategoriaFAQ
+      }
     }
 
     if (busqueda) {
@@ -67,13 +70,16 @@ export async function GET(req: NextRequest) {
     ])
 
     // Agrupar por categoría
-    const faqsPorCategoria = faqs.reduce((acc, faq) => {
-      if (!acc[faq.categoria]) {
-        acc[faq.categoria] = []
-      }
-      acc[faq.categoria].push(faq)
-      return acc
-    }, {} as Record<string, typeof faqs>)
+    const faqsPorCategoria = faqs.reduce(
+      (acc, faq) => {
+        if (!acc[faq.categoria]) {
+          acc[faq.categoria] = []
+        }
+        acc[faq.categoria].push(faq)
+        return acc
+      },
+      {} as Record<string, typeof faqs>
+    )
 
     return NextResponse.json({
       faqs: faqsPorCategoria,
