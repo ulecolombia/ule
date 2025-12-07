@@ -26,7 +26,7 @@ const updateSchema = z.object({
  * GET - Obtener detalle de alerta
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -56,7 +56,10 @@ export async function GET(
     })
 
     if (!alerta) {
-      return NextResponse.json({ error: 'Alerta no encontrada' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Alerta no encontrada' },
+        { status: 404 }
+      )
     }
 
     // Obtener logs relacionados
@@ -117,7 +120,10 @@ export async function PATCH(
     })
 
     if (!alertaActual) {
-      return NextResponse.json({ error: 'Alerta no encontrada' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Alerta no encontrada' },
+        { status: 404 }
+      )
     }
 
     // Actualizar alerta
