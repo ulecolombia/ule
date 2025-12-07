@@ -15,9 +15,13 @@
  */
 
 import { db } from '@/lib/db'
-import { AccionAuditoria, CategoriaAuditoria, NivelRiesgo } from '@prisma/client'
-import UAParser from 'ua-parser-js'
-import { PQueue } from 'p-queue'
+import {
+  AccionAuditoria,
+  CategoriaAuditoria,
+  NivelRiesgo,
+} from '@prisma/client'
+import { UAParser } from 'ua-parser-js'
+import PQueue from 'p-queue'
 import { ALERT_THRESHOLDS, getTimeWindow } from '@/lib/config/audit-thresholds'
 
 // ✅ MEDIO #17: Utilidad para obtener hora en timezone de Colombia
@@ -26,17 +30,21 @@ const COLOMBIA_TZ = 'America/Bogota'
 function getColombiaNow(): Date {
   // Convertir UTC a Colombia (UTC-5)
   const now = new Date()
-  const colombiaTimeString = now.toLocaleString('en-US', { timeZone: COLOMBIA_TZ })
+  const colombiaTimeString = now.toLocaleString('en-US', {
+    timeZone: COLOMBIA_TZ,
+  })
   return new Date(colombiaTimeString)
 }
 
 function getColombiaHour(): number {
   const now = new Date()
-  return parseInt(now.toLocaleString('en-US', {
-    timeZone: COLOMBIA_TZ,
-    hour: 'numeric',
-    hour12: false
-  }))
+  return parseInt(
+    now.toLocaleString('en-US', {
+      timeZone: COLOMBIA_TZ,
+      hour: 'numeric',
+      hour12: false,
+    })
+  )
 }
 
 // ✅ CRÍTICO #2 RESUELTO: Queue con límite de concurrencia
@@ -117,7 +125,8 @@ export async function registrarAuditoria(params: AuditLogParams) {
     const categoria = params.categoria || determinarCategoria(params.accion)
 
     // Determinar nivel de riesgo automáticamente si no se proporciona
-    const nivelRiesgo = params.nivelRiesgo || determinarNivelRiesgo(params.accion, params.exitoso)
+    const nivelRiesgo =
+      params.nivelRiesgo || determinarNivelRiesgo(params.accion, params.exitoso)
 
     // Sanitizar detalles (eliminar datos sensibles accidentales)
     const detallesSanitizados = sanitizarDetalles(params.detalles)
@@ -156,9 +165,11 @@ export async function registrarAuditoria(params: AuditLogParams) {
     })
 
     // ✅ CRÍTICO #2 RESUELTO: Usar queue con límite de concurrencia
-    alertQueue.add(() => analizarYGenerarAlerta(log)).catch((error) => {
-      console.error('Error analizando alerta:', error)
-    })
+    alertQueue
+      .add(() => analizarYGenerarAlerta(log))
+      .catch((error) => {
+        console.error('Error analizando alerta:', error)
+      })
 
     return log
   } catch (error) {
@@ -306,7 +317,10 @@ function determinarCategoria(accion: AccionAuditoria): CategoriaAuditoria {
 /**
  * Determinar nivel de riesgo automáticamente
  */
-function determinarNivelRiesgo(accion: AccionAuditoria, exitoso?: boolean): NivelRiesgo {
+function determinarNivelRiesgo(
+  accion: AccionAuditoria,
+  exitoso?: boolean
+): NivelRiesgo {
   // Acciones críticas
   const accionesCriticas: AccionAuditoria[] = [
     'CUENTA_ELIMINADA',
@@ -381,7 +395,11 @@ function sanitizarDetalles(detalles: any): any {
 
     const resultado: any = {}
     for (const [key, value] of Object.entries(obj)) {
-      if (camposSensibles.some((campo) => key.toLowerCase().includes(campo.toLowerCase()))) {
+      if (
+        camposSensibles.some((campo) =>
+          key.toLowerCase().includes(campo.toLowerCase())
+        )
+      ) {
         resultado[key] = '[REDACTED]'
       } else if (typeof value === 'object' && value !== null) {
         resultado[key] = sanitizar(value, depth + 1)
@@ -394,9 +412,10 @@ function sanitizarDetalles(detalles: any): any {
 
   try {
     // Usar structuredClone si está disponible (Node 17+), más eficiente
-    const cloned = typeof structuredClone !== 'undefined'
-      ? structuredClone(detalles)
-      : JSON.parse(JSON.stringify(detalles))
+    const cloned =
+      typeof structuredClone !== 'undefined'
+        ? structuredClone(detalles)
+        : JSON.parse(JSON.stringify(detalles))
 
     return sanitizar(cloned)
   } catch {
@@ -421,7 +440,10 @@ async function analizarYGenerarAlerta(log: any) {
           userEmail: log.userEmail,
           accion: 'LOGIN_FALLIDO',
           timestamp: {
-            gte: new Date(Date.now() - getTimeWindow(thresholds.LOGIN_FAILURES.windowMinutes)),
+            gte: new Date(
+              Date.now() -
+                getTimeWindow(thresholds.LOGIN_FAILURES.windowMinutes)
+            ),
           },
         },
       })
@@ -451,7 +473,8 @@ async function analizarYGenerarAlerta(log: any) {
           exitoso: true,
           timestamp: {
             gte: new Date(
-              Date.now() - thresholds.UNUSUAL_LOCATION.daysToCheck * 24 * 60 * 60 * 1000
+              Date.now() -
+                thresholds.UNUSUAL_LOCATION.daysToCheck * 24 * 60 * 60 * 1000
             ),
           },
           ipGeo: { not: null },
@@ -481,7 +504,10 @@ async function analizarYGenerarAlerta(log: any) {
             ip: log.ip,
             ubicacion: `${log.ipGeo.city}, ${log.ipGeo.country}`,
             logIds: [log.id],
-            metadata: { paisAnterior: paisesAnteriores[0], paisNuevo: log.ipGeo.country },
+            metadata: {
+              paisAnterior: paisesAnteriores[0],
+              paisNuevo: log.ipGeo.country,
+            },
           })
         }
       }
@@ -489,19 +515,30 @@ async function analizarYGenerarAlerta(log: any) {
 
     // 3. Múltiples cambios rápidos en perfil/seguridad
     if (
-      ['PERFIL_ACTUALIZADO', 'PASSWORD_CAMBIADO', 'EMAIL_CAMBIADO', 'TELEFONO_CAMBIADO'].includes(
-        log.accion
-      ) &&
+      [
+        'PERFIL_ACTUALIZADO',
+        'PASSWORD_CAMBIADO',
+        'EMAIL_CAMBIADO',
+        'TELEFONO_CAMBIADO',
+      ].includes(log.accion) &&
       log.userId
     ) {
       const cambiosRecientes = await db.logAuditoria.count({
         where: {
           userId: log.userId,
           accion: {
-            in: ['PERFIL_ACTUALIZADO', 'PASSWORD_CAMBIADO', 'EMAIL_CAMBIADO', 'TELEFONO_CAMBIADO'],
+            in: [
+              'PERFIL_ACTUALIZADO',
+              'PASSWORD_CAMBIADO',
+              'EMAIL_CAMBIADO',
+              'TELEFONO_CAMBIADO',
+            ],
           },
           timestamp: {
-            gte: new Date(Date.now() - getTimeWindow(thresholds.PROFILE_CHANGES.windowMinutes)),
+            gte: new Date(
+              Date.now() -
+                getTimeWindow(thresholds.PROFILE_CHANGES.windowMinutes)
+            ),
           },
         },
       })
@@ -546,17 +583,28 @@ async function analizarYGenerarAlerta(log: any) {
 
     // 5. Descarga masiva de datos
     if (
-      ['ARCHIVO_DESCARGADO', 'FACTURA_DESCARGADA', 'COMPROBANTE_DESCARGADO'].includes(log.accion) &&
+      [
+        'ARCHIVO_DESCARGADO',
+        'FACTURA_DESCARGADA',
+        'COMPROBANTE_DESCARGADO',
+      ].includes(log.accion) &&
       log.userId
     ) {
       const descargasRecientes = await db.logAuditoria.count({
         where: {
           userId: log.userId,
           accion: {
-            in: ['ARCHIVO_DESCARGADO', 'FACTURA_DESCARGADA', 'COMPROBANTE_DESCARGADO', 'DATOS_EXPORTADOS'],
+            in: [
+              'ARCHIVO_DESCARGADO',
+              'FACTURA_DESCARGADA',
+              'COMPROBANTE_DESCARGADO',
+              'DATOS_EXPORTADOS',
+            ],
           },
           timestamp: {
-            gte: new Date(Date.now() - getTimeWindow(thresholds.DOWNLOADS.windowMinutes)),
+            gte: new Date(
+              Date.now() - getTimeWindow(thresholds.DOWNLOADS.windowMinutes)
+            ),
           },
         },
       })

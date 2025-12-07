@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { NativeSelect as Select } from '@/components/ui/select'
 import { FiltrosFacturas } from '@/hooks/use-facturas'
 
 interface FiltrosFacturasProps {
@@ -113,10 +113,10 @@ export function FiltrosFacturasComponent({
     <Card className="mb-6">
       <CardBody>
         {/* Filtros principales */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-4">
           {/* Búsqueda por número */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-slate-700">
               Buscar por número
             </label>
             <div className="relative">
@@ -127,7 +127,7 @@ export function FiltrosFacturasComponent({
                 onChange={handleBusquedaChange}
                 className="pl-10"
               />
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400">
                 search
               </span>
             </div>
@@ -135,7 +135,7 @@ export function FiltrosFacturasComponent({
 
           {/* Estado */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-slate-700">
               Estado
             </label>
             <Select value={filtros.estado || ''} onChange={handleEstadoChange}>
@@ -149,7 +149,7 @@ export function FiltrosFacturasComponent({
 
           {/* Cliente */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-slate-700">
               Cliente
             </label>
             <Select
@@ -169,10 +169,12 @@ export function FiltrosFacturasComponent({
           <div className="flex items-end">
             <Button
               variant="outline"
-              onClick={() => setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)}
+              onClick={() =>
+                setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)
+              }
               className="w-full"
             >
-              <span className="material-symbols-outlined text-lg mr-2">
+              <span className="material-symbols-outlined mr-2 text-lg">
                 {mostrarFiltrosAvanzados ? 'expand_less' : 'expand_more'}
               </span>
               Filtros avanzados
@@ -182,11 +184,11 @@ export function FiltrosFacturasComponent({
 
         {/* Filtros avanzados (colapsable) */}
         {mostrarFiltrosAvanzados && (
-          <div className="border-t border-slate-200 pt-4 mt-2">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="mt-2 border-t border-slate-200 pt-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {/* Fecha desde */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">
                   Fecha desde
                 </label>
                 <Input
@@ -202,7 +204,7 @@ export function FiltrosFacturasComponent({
 
               {/* Fecha hasta */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">
                   Fecha hasta
                 </label>
                 <Input
@@ -218,7 +220,7 @@ export function FiltrosFacturasComponent({
 
               {/* Monto mínimo */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">
                   Monto mínimo
                 </label>
                 <Input
@@ -233,7 +235,7 @@ export function FiltrosFacturasComponent({
 
               {/* Monto máximo */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">
                   Monto máximo
                 </label>
                 <Input
@@ -253,7 +255,7 @@ export function FiltrosFacturasComponent({
         {hayFiltrosActivos && (
           <div className="mt-4 flex justify-end">
             <Button variant="ghost" onClick={limpiarFiltros} size="sm">
-              <span className="material-symbols-outlined text-lg mr-1">
+              <span className="material-symbols-outlined mr-1 text-lg">
                 clear_all
               </span>
               Limpiar filtros

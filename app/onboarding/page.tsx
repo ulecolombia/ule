@@ -13,12 +13,15 @@ import { z } from 'zod'
 import { TipoDocumento } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { NativeSelect as Select } from '@/components/ui/select'
 import { Card, CardBody } from '@/components/ui/card'
 import { ProgressIndicator } from '@/components/onboarding/progress-indicator'
 import { FormFieldWrapper } from '@/components/onboarding/form-field-wrapper'
 import { useOnboardingStorage } from '@/hooks/use-onboarding-storage'
-import { departamentos, ciudadesPorDepartamento } from '@/lib/data/colombia-data'
+import {
+  departamentos,
+  ciudadesPorDepartamento,
+} from '@/lib/data/colombia-data'
 
 // Schema de validación Zod para Paso 1
 const paso1Schema = z.object({
@@ -57,18 +60,19 @@ export default function OnboardingPage() {
   const [selectedDepartamento, setSelectedDepartamento] = useState<string>('')
 
   // Hook de localStorage
-  const { value: formData, setValue: setFormData, isLoaded } = useOnboardingStorage<Paso1FormData>(
-    'onboarding-step-1',
-    {
-      nombre: '',
-      tipoDocumento: TipoDocumento.CC,
-      numeroDocumento: '',
-      telefono: '',
-      direccion: '',
-      departamento: '',
-      ciudad: '',
-    }
-  )
+  const {
+    value: formData,
+    setValue: setFormData,
+    isLoaded,
+  } = useOnboardingStorage<Paso1FormData>('onboarding-step-1', {
+    nombre: '',
+    tipoDocumento: TipoDocumento.CC,
+    numeroDocumento: '',
+    telefono: '',
+    direccion: '',
+    departamento: '',
+    ciudad: '',
+  })
 
   // React Hook Form
   const {
@@ -114,7 +118,10 @@ export default function OnboardingPage() {
   }, [watchDepartamento, selectedDepartamento, setValue])
 
   // Validar documento único
-  const checkDocument = async (tipoDocumento: TipoDocumento, numeroDocumento: string) => {
+  const checkDocument = async (
+    tipoDocumento: TipoDocumento,
+    numeroDocumento: string
+  ) => {
     if (!numeroDocumento || numeroDocumento.length < 6) return
 
     setIsCheckingDocument(true)
@@ -175,19 +182,17 @@ export default function OnboardingPage() {
     : []
 
   return (
-    <div className="min-h-screen bg-light-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-light-50 min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mb-4">
             <h1 className="text-2xl font-bold text-primary">Ule</h1>
           </div>
-          <h2 className="mb-2 text-3xl font-bold text-dark">
+          <h2 className="text-dark mb-2 text-3xl font-bold">
             Completa tu perfil
           </h2>
-          <p className="text-dark-100">
-            Paso 1 de 4: Datos Personales
-          </p>
+          <p className="text-dark-100">Paso 1 de 4: Datos Personales</p>
         </div>
 
         {/* Progress Indicator */}
@@ -233,14 +238,19 @@ export default function OnboardingPage() {
                   error={errors.tipoDocumento?.message}
                   required
                 >
-                  <Select
-                    {...register('tipoDocumento')}
-                    className="w-full"
-                  >
-                    <option value={TipoDocumento.CC}>CC - Cédula de Ciudadanía</option>
-                    <option value={TipoDocumento.CE}>CE - Cédula de Extranjería</option>
-                    <option value={TipoDocumento.PEP}>PEP - Permiso Especial de Permanencia</option>
-                    <option value={TipoDocumento.PASAPORTE}>PASAPORTE - Pasaporte</option>
+                  <Select {...register('tipoDocumento')} className="w-full">
+                    <option value={TipoDocumento.CC}>
+                      CC - Cédula de Ciudadanía
+                    </option>
+                    <option value={TipoDocumento.CE}>
+                      CE - Cédula de Extranjería
+                    </option>
+                    <option value={TipoDocumento.PEP}>
+                      PEP - Permiso Especial de Permanencia
+                    </option>
+                    <option value={TipoDocumento.PASAPORTE}>
+                      PASAPORTE - Pasaporte
+                    </option>
                   </Select>
                 </FormFieldWrapper>
 
@@ -261,9 +271,7 @@ export default function OnboardingPage() {
                     disabled={isCheckingDocument}
                   />
                   {isCheckingDocument && (
-                    <p className="mt-1 text-xs text-dark-100">
-                      Verificando...
-                    </p>
+                    <p className="text-dark-100 mt-1 text-xs">Verificando...</p>
                   )}
                 </FormFieldWrapper>
               </div>
@@ -359,7 +367,9 @@ export default function OnboardingPage() {
               <div className="flex flex-col gap-4 pt-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !!documentError || isCheckingDocument}
+                  disabled={
+                    isSubmitting || !!documentError || isCheckingDocument
+                  }
                   className="w-full"
                 >
                   {isSubmitting ? (
@@ -382,7 +392,7 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="text-center text-sm text-dark-100 hover:text-primary transition-colors"
+                  className="text-dark-100 text-center text-sm transition-colors hover:text-primary"
                 >
                   Saltar por ahora
                 </button>
@@ -392,8 +402,9 @@ export default function OnboardingPage() {
         </Card>
 
         {/* Helper Text */}
-        <p className="mt-6 text-center text-sm text-dark-100">
-          Tu información está segura y protegida. Los datos se guardan automáticamente.
+        <p className="text-dark-100 mt-6 text-center text-sm">
+          Tu información está segura y protegida. Los datos se guardan
+          automáticamente.
         </p>
       </div>
     </div>

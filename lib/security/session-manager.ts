@@ -13,7 +13,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
-import UAParser from 'ua-parser-js'
+import { UAParser } from 'ua-parser-js'
 import { logger } from '@/lib/logger'
 
 /**
@@ -62,7 +62,11 @@ async function getGeoLocation(ip: string): Promise<{
 }> {
   try {
     // Ignorar IPs locales
-    if (ip === '0.0.0.0' || ip.startsWith('192.168.') || ip.startsWith('127.')) {
+    if (
+      ip === '0.0.0.0' ||
+      ip.startsWith('192.168.') ||
+      ip.startsWith('127.')
+    ) {
       return {}
     }
 

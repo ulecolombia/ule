@@ -150,3 +150,29 @@ export const EMAIL_CONSTRAINTS = {
   MENSAJE_MIN: 10,
   MENSAJE_MAX: 2000,
 } as const
+
+/**
+ * Configuración de timeouts para operaciones
+ */
+export const TIMEOUT_CONFIG = {
+  EMAIL_SEND: 30000, // 30 segundos para envío de email
+  FILE_READ: 10000, // 10 segundos para lectura de archivo
+  API_REQUEST: 15000, // 15 segundos para requests API
+  DEFAULT: 10000, // Timeout por defecto
+} as const
+
+/**
+ * Constraints para archivos
+ */
+export const FILE_CONSTRAINTS = {
+  MAX_SIZE: 10 * 1024 * 1024, // 10MB
+  ALLOWED_TYPES: [
+    'application/pdf',
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'application/xml',
+    'text/xml',
+  ],
+  ALLOWED_EXTENSIONS: ['.pdf', '.png', '.jpg', '.jpeg', '.xml'],
+} as const

@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select } from '@/components/ui/select'
+import { NativeSelect as Select } from '@/components/ui/select'
 
 interface ModalServicioProps {
   mode: 'create' | 'edit'

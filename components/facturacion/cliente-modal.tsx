@@ -13,7 +13,7 @@ import { createClienteSchema } from '@/lib/validations/cliente'
 import { validarDocumento } from '@/hooks/use-clientes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { NativeSelect as Select } from '@/components/ui/select'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import {
   departamentos,

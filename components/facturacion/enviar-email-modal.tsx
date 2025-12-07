@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { NativeSelect as Select } from '@/components/ui/select'
 import { EmailPreview } from './email-preview'
 import {
   templatePersonalizado,
