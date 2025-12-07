@@ -3,7 +3,7 @@
  * Endpoint para crear nuevos usuarios
  */
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/password'
 import { registerSchema } from '@/lib/validations/auth'
@@ -15,16 +15,20 @@ import { isCommonPassword, isSimilarToUserInfo } from '@/lib/password-security'
  * API Route: Registro de usuarios
  * POST /api/auth/register
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     // Rate limiting: 3 registros por IP cada hora
     const ip = getClientIp(request)
-    const rateLimitResult = await rateLimit(`register:${ip}`, RATE_LIMITS.REGISTER)
+    const rateLimitResult = await rateLimit(
+      `register:${ip}`,
+      RATE_LIMITS.REGISTER
+    )
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
         {
-          message: 'Demasiados intentos de registro. Por favor intenta más tarde.',
+          message:
+            'Demasiados intentos de registro. Por favor intenta más tarde.',
         },
         {
           status: 429,
@@ -49,7 +53,10 @@ export async function POST(request: Request) {
     // Validación avanzada de contraseña
     if (isCommonPassword(password)) {
       return NextResponse.json(
-        { message: 'Esta contraseña es muy común. Por favor elige una más segura.' },
+        {
+          message:
+            'Esta contraseña es muy común. Por favor elige una más segura.',
+        },
         { status: 400 }
       )
     }

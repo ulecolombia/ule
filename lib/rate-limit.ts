@@ -23,6 +23,7 @@ export const RATE_LIMITS = {
   AUTH: { max: 5, window: 60000 }, // 5 req/min para auth
   API: { max: 100, window: 60000 }, // 100 req/min para API general
   NOTIFICACIONES: { max: 30, window: 60000 }, // 30 req/min para notificaciones
+  REGISTER: { max: 3, window: 3600000 }, // 3 registros/hora por IP
 }
 
 /**
