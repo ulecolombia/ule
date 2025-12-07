@@ -70,8 +70,8 @@ export async function GET(req: NextRequest) {
 
     // Rate limiting: 3 análisis por minuto máximo
     const rateLimitResult = await rateLimit(user.id, {
-      limit: 3,
-      interval: 60 * 1000, // 1 minuto
+      max: 3,
+      window: 60 * 1000, // 1 minuto
     })
 
     if (!rateLimitResult.success) {
