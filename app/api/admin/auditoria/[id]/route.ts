@@ -12,7 +12,7 @@ import { auditarRevisionLog } from '@/lib/audit/audit-helpers'
  * GET - Obtener detalle completo de un log
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -60,7 +60,7 @@ export async function GET(
  * PATCH - Marcar log como revisado
  */
 export async function PATCH(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
