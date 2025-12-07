@@ -9,7 +9,7 @@ import { Suspense, ReactNode } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface SuspenseWrapperProps {
-  children: ReactNode
+  children?: ReactNode
   fallback?: ReactNode
   type?: 'chart' | 'table' | 'card' | 'list' | 'default'
 }
@@ -19,10 +19,6 @@ export function SuspenseWrapper({
   fallback,
   type = 'default',
 }: SuspenseWrapperProps) {
-  if (fallback) {
-    return <Suspense fallback={fallback}>{children}</Suspense>
-  }
-
   // Fallbacks por defecto según tipo
   const defaultFallbacks: Record<string, ReactNode> = {
     chart: <ChartSkeleton />,
@@ -30,6 +26,15 @@ export function SuspenseWrapper({
     card: <CardSkeleton />,
     list: <ListSkeleton />,
     default: <DefaultSkeleton />,
+  }
+
+  // Si no hay children, solo mostrar el skeleton
+  if (!children) {
+    return <>{fallback || defaultFallbacks[type]}</>
+  }
+
+  if (fallback) {
+    return <Suspense fallback={fallback}>{children}</Suspense>
   }
 
   return <Suspense fallback={defaultFallbacks[type]}>{children}</Suspense>
@@ -43,7 +48,7 @@ function ChartSkeleton() {
     <div className="w-full space-y-3 p-6">
       <Skeleton className="h-8 w-1/3" />
       <Skeleton className="h-[400px] w-full" />
-      <div className="flex justify-center space-x-4 mt-4">
+      <div className="mt-4 flex justify-center space-x-4">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-24" />
@@ -84,7 +89,7 @@ function TableSkeleton() {
  */
 function CardSkeleton() {
   return (
-    <div className="rounded-lg border bg-white dark:bg-gray-900 p-6 space-y-4">
+    <div className="space-y-4 rounded-lg border bg-white p-6 dark:bg-gray-900">
       <div className="flex items-center space-x-4">
         <Skeleton className="h-12 w-12 rounded-full" />
         <div className="flex-1 space-y-2">
@@ -94,7 +99,7 @@ function CardSkeleton() {
       </div>
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-4/5" />
-      <div className="flex space-x-2 mt-4">
+      <div className="mt-4 flex space-x-2">
         <Skeleton className="h-10 w-32" />
         <Skeleton className="h-10 w-32" />
       </div>
@@ -109,7 +114,10 @@ function ListSkeleton() {
   return (
     <div className="space-y-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 p-3 border rounded-lg">
+        <div
+          key={i}
+          className="flex items-center space-x-4 rounded-lg border p-3"
+        >
           <Skeleton className="h-12 w-12 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
