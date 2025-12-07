@@ -96,11 +96,11 @@ export default function SeguridadPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+            <Card key={i} className="animate-pulse p-6">
+              <div className="mb-4 h-6 w-1/3 rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="h-8 w-2/3 rounded bg-gray-200 dark:bg-gray-700" />
             </Card>
           ))}
         </div>
@@ -109,32 +109,34 @@ export default function SeguridadPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold flex items-center">
-          <span className="material-symbols-outlined text-primary mr-3 text-4xl">
+        <h1 className="flex items-center text-3xl font-bold">
+          <span className="material-symbols-outlined mr-3 text-4xl text-primary">
             security
           </span>
           Dashboard de Seguridad
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
           Monitoreo en tiempo real de eventos de seguridad y auditoría
         </p>
       </div>
 
       {/* Resumen - Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Eventos</p>
-              <p className="text-3xl font-bold mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Total Eventos
+              </p>
+              <p className="mt-1 text-3xl font-bold">
                 {stats?.resumen.totalLogs.toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <span className="material-symbols-outlined text-blue-600 dark:text-blue-200 text-3xl">
+            <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900">
+              <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-200">
                 analytics
               </span>
             </div>
@@ -144,13 +146,15 @@ export default function SeguridadPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Eventos Fallidos</p>
-              <p className="text-3xl font-bold mt-1 text-red-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Eventos Fallidos
+              </p>
+              <p className="mt-1 text-3xl font-bold text-red-600">
                 {stats?.resumen.fallidos.toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-              <span className="material-symbols-outlined text-red-600 dark:text-red-200 text-3xl">
+            <div className="rounded-lg bg-red-100 p-3 dark:bg-red-900">
+              <span className="material-symbols-outlined text-3xl text-red-600 dark:text-red-200">
                 error
               </span>
             </div>
@@ -160,13 +164,15 @@ export default function SeguridadPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Requieren Revisión</p>
-              <p className="text-3xl font-bold mt-1 text-orange-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Requieren Revisión
+              </p>
+              <p className="mt-1 text-3xl font-bold text-orange-600">
                 {stats?.resumen.requierenRevision.toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
-              <span className="material-symbols-outlined text-orange-600 dark:text-orange-200 text-3xl">
+            <div className="rounded-lg bg-orange-100 p-3 dark:bg-orange-900">
+              <span className="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-200">
                 flag
               </span>
             </div>
@@ -176,13 +182,15 @@ export default function SeguridadPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Tasa de Éxito</p>
-              <p className="text-3xl font-bold mt-1 text-green-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Tasa de Éxito
+              </p>
+              <p className="mt-1 text-3xl font-bold text-green-600">
                 {stats?.resumen.tasaExito}%
               </p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-              <span className="material-symbols-outlined text-green-600 dark:text-green-200 text-3xl">
+            <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
+              <span className="material-symbols-outlined text-3xl text-green-600 dark:text-green-200">
                 check_circle
               </span>
             </div>
@@ -201,17 +209,23 @@ export default function SeguridadPage() {
         {/* TAB: Actividad */}
         <TabsContent value="actividad">
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Actividad Diaria (Últimos 30 días)</h3>
+            <h3 className="mb-4 font-semibold">
+              Actividad Diaria (Últimos 30 días)
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={stats?.actividadDiaria}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="fecha"
-                  tickFormatter={(date) => format(new Date(date), 'dd/MM', { locale: es })}
+                  tickFormatter={(date) =>
+                    format(new Date(date), 'dd/MM', { locale: es })
+                  }
                 />
                 <YAxis />
                 <Tooltip
-                  labelFormatter={(date) => format(new Date(date), "dd 'de' MMMM", { locale: es })}
+                  labelFormatter={(date) =>
+                    format(new Date(date), "dd 'de' MMMM", { locale: es })
+                  }
                 />
                 <Legend />
                 <Line
@@ -225,10 +239,10 @@ export default function SeguridadPage() {
             </ResponsiveContainer>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Top Acciones */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Top 10 Acciones</h3>
+              <h3 className="mb-4 font-semibold">Top 10 Acciones</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={stats?.porAccion} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
@@ -242,10 +256,13 @@ export default function SeguridadPage() {
 
             {/* Top IPs */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Top 10 IPs</h3>
+              <h3 className="mb-4 font-semibold">Top 10 IPs</h3>
               <div className="space-y-2">
                 {stats?.topIPs.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded bg-gray-50 p-3 dark:bg-gray-800"
+                  >
                     <span className="font-mono text-sm">{item.ip}</span>
                     <Badge>{item.total.toLocaleString()}</Badge>
                   </div>
@@ -258,16 +275,21 @@ export default function SeguridadPage() {
         {/* TAB: Alertas */}
         <TabsContent value="alertas">
           <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Alertas Pendientes ({alertas.length})</h3>
-              <Button onClick={() => window.location.href = '/admin/alertas'} variant="outline">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-semibold">
+                Alertas Pendientes ({alertas.length})
+              </h3>
+              <Button
+                onClick={() => (window.location.href = '/admin/alertas')}
+                variant="outline"
+              >
                 Ver Todas
               </Button>
             </div>
 
             {alertas.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <span className="material-symbols-outlined text-4xl mb-2">
+              <div className="py-8 text-center text-gray-500">
+                <span className="material-symbols-outlined mb-2 text-4xl">
                   check_circle
                 </span>
                 <p>No hay alertas pendientes</p>
@@ -277,34 +299,42 @@ export default function SeguridadPage() {
                 {alertas.map((alerta) => (
                   <div
                     key={alerta.id}
-                    className="flex items-start justify-between p-4 border rounded-lg"
+                    className="flex items-start justify-between rounded-lg border p-4"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="mb-2 flex items-center gap-2">
                         <Badge className={getSeveridadColor(alerta.severidad)}>
                           {alerta.severidad}
                         </Badge>
                         <Badge variant="outline">{alerta.tipo}</Badge>
                       </div>
                       <h4 className="font-semibold">{alerta.titulo}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         {alerta.descripcion}
                       </p>
                       {alerta.userEmail && (
-                        <div className="text-sm text-gray-500 mt-2">
+                        <div className="mt-2 text-sm text-gray-500">
                           Usuario: {alerta.userEmail}
                         </div>
                       )}
-                      <div className="text-xs text-gray-500 mt-2">
-                        {format(new Date(alerta.createdAt), "dd 'de' MMMM, HH:mm", { locale: es })}
+                      <div className="mt-2 text-xs text-gray-500">
+                        {format(
+                          new Date(alerta.createdAt),
+                          "dd 'de' MMMM, HH:mm",
+                          { locale: es }
+                        )}
                       </div>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => window.location.href = `/admin/alertas/${alerta.id}`}
+                      onClick={() =>
+                        (window.location.href = `/admin/alertas/${alerta.id}`)
+                      }
                     >
-                      <span className="material-symbols-outlined">chevron_right</span>
+                      <span className="material-symbols-outlined">
+                        chevron_right
+                      </span>
                     </Button>
                   </div>
                 ))}
@@ -316,19 +346,21 @@ export default function SeguridadPage() {
         {/* TAB: Usuarios */}
         <TabsContent value="usuarios">
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Top 10 Usuarios Más Activos</h3>
+            <h3 className="mb-4 font-semibold">Top 10 Usuarios Más Activos</h3>
             <div className="space-y-2">
               {stats?.topUsuarios.map((user, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex items-center justify-between rounded-lg border p-4"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
                       #{index + 1}
                     </div>
                     <div>
-                      <div className="font-semibold">{user.nombre || 'N/A'}</div>
+                      <div className="font-semibold">
+                        {user.nombre || 'N/A'}
+                      </div>
                       <div className="text-sm text-gray-500">{user.email}</div>
                     </div>
                   </div>
@@ -341,10 +373,10 @@ export default function SeguridadPage() {
 
         {/* TAB: Distribuciones */}
         <TabsContent value="distribuciones">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Por Nivel de Riesgo */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Por Nivel de Riesgo</h3>
+              <h3 className="mb-4 font-semibold">Por Nivel de Riesgo</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -356,8 +388,11 @@ export default function SeguridadPage() {
                     outerRadius={100}
                     label
                   >
-                    {stats?.porNivelRiesgo.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {stats?.porNivelRiesgo.map((_entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -368,11 +403,16 @@ export default function SeguridadPage() {
 
             {/* Por Categoría */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Por Categoría</h3>
+              <h3 className="mb-4 font-semibold">Por Categoría</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={stats?.porCategoria}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="categoria" angle={-45} textAnchor="end" height={100} />
+                  <XAxis
+                    dataKey="categoria"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="total" fill="#14b8a6" name="Total" />
