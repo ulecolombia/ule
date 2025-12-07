@@ -62,7 +62,13 @@
       "Bash(git push:*)",
       "Bash(echo:*)",
       "Bash(python3:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(git config:*)",
+      "Bash(CI=1 npx prisma migrate dev --name update_documentos_biblioteca --skip-generate)",
+      "Bash(CI=1 npx prisma migrate dev --name add_performance_indexes_calendario --skip-generate)",
+      "Bash(npm i:*)",
+      "Bash(kill:*)",
+      "Bash(CI=1 npx prisma migrate dev --name add_simulador_pensional_to_tipo_calculadora --skip-generate)"
     ],
     "deny": [],
     "ask": []
