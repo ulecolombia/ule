@@ -72,10 +72,11 @@ export async function GET(req: NextRequest) {
     // Agrupar por categoría
     const faqsPorCategoria = faqs.reduce(
       (acc, faq) => {
-        if (!acc[faq.categoria]) {
-          acc[faq.categoria] = []
+        const categoria = faq.categoria
+        if (!acc[categoria]) {
+          acc[categoria] = []
         }
-        acc[faq.categoria].push(faq)
+        acc[categoria]!.push(faq)
         return acc
       },
       {} as Record<string, typeof faqs>
