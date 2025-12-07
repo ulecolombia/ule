@@ -11,7 +11,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 if (!ANTHROPIC_API_KEY) {
   throw new Error(
     'ANTHROPIC_API_KEY no está configurada. ' +
-    'Por favor, configura esta variable de entorno en .env o .env.local'
+      'Por favor, configura esta variable de entorno en .env o .env.local'
   )
 }
 
@@ -257,11 +257,22 @@ CRÍTICO: No incluyas texto adicional fuera del JSON. Solo el objeto JSON válid
 - Incluye advertencias sobre situaciones que requieren asesoría profesional`
 
 /**
+ * Resultado del análisis tributario incluyendo análisis anterior para comparación
+ */
+export interface ResultadoAnalisisTributario {
+  reporte: ReporteTributario
+  analisisAnterior: {
+    regimenRecomendado: string
+    confianza: string
+  } | null
+}
+
+/**
  * Función principal para analizar perfil tributario
  */
 export async function analizarPerfilTributario(
   userId: string
-): Promise<ReporteTributario> {
+): Promise<ResultadoAnalisisTributario> {
   try {
     // Obtener datos completos del usuario
     const user = await prisma.user.findUnique({
@@ -345,7 +356,7 @@ Responde SOLO con el objeto JSON estructurado según las instrucciones.`
       })
       throw new Error(
         'El análisis generado tiene un formato inválido. ' +
-        'Por favor intenta nuevamente o contacta soporte.'
+          'Por favor intenta nuevamente o contacta soporte.'
       )
     }
 
@@ -357,7 +368,8 @@ Responde SOLO con el objeto JSON estructurado según las instrucciones.`
       razonesEconomicas: validationResult.data.razonesEconomicas,
       comparativaTabla: validationResult.data.comparativaTabla,
       pasosSeguir: validationResult.data.pasosSeguir,
-      consideracionesAdicionales: validationResult.data.consideracionesAdicionales,
+      consideracionesAdicionales:
+        validationResult.data.consideracionesAdicionales,
       advertencias: validationResult.data.advertencias,
       fechaAnalisis: new Date(),
     }
@@ -388,7 +400,9 @@ Responde SOLO con el objeto JSON estructurado según las instrucciones.`
     )
 
     if (error instanceof Error && error.message.includes('JSON')) {
-      throw new Error('Error al procesar análisis. La IA no generó un formato válido.')
+      throw new Error(
+        'Error al procesar análisis. La IA no generó un formato válido.'
+      )
     }
 
     throw error
@@ -415,9 +429,15 @@ function construirContextoTributario(user: Partial<User>): string {
     const ingresoAnual = ingresoMensual * 12
     const ingresoEnUVT = pesosAUvt(ingresoAnual)
 
-    partes.push(`Ingreso mensual promedio: ${ingresoMensual.toLocaleString('es-CO')}`)
-    partes.push(`Ingreso anual proyectado: ${ingresoAnual.toLocaleString('es-CO')}`)
-    partes.push(`Ingreso anual en UVT: ${ingresoEnUVT.toLocaleString('es-CO')} UVT`)
+    partes.push(
+      `Ingreso mensual promedio: ${ingresoMensual.toLocaleString('es-CO')}`
+    )
+    partes.push(
+      `Ingreso anual proyectado: ${ingresoAnual.toLocaleString('es-CO')}`
+    )
+    partes.push(
+      `Ingreso anual en UVT: ${ingresoEnUVT.toLocaleString('es-CO')} UVT`
+    )
   }
 
   if (user.numeroContratos) {
@@ -431,7 +451,8 @@ function construirContextoTributario(user: Partial<User>): string {
   // Seguridad social
   const seguridadSocial: string[] = []
   if (user.entidadSalud) seguridadSocial.push(`EPS: ${user.entidadSalud}`)
-  if (user.entidadPension) seguridadSocial.push(`Pensión: ${user.entidadPension}`)
+  if (user.entidadPension)
+    seguridadSocial.push(`Pensión: ${user.entidadPension}`)
   if (user.arl) seguridadSocial.push(`ARL: ${user.arl}`)
 
   if (seguridadSocial.length > 0) {
@@ -450,10 +471,7 @@ function construirContextoTributario(user: Partial<User>): string {
 /**
  * Obtener historial de análisis del usuario
  */
-export async function obtenerHistorialAnalisis(
-  userId: string,
-  limit = 10
-) {
+export async function obtenerHistorialAnalisis(userId: string, limit = 10) {
   const historial = await prisma.analisisTributario.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
@@ -479,7 +497,9 @@ export function compararAnalisis(
 
   const cambios: string[] = []
 
-  if (analisisAnterior.regimenRecomendado !== reporteActual.regimenRecomendado) {
+  if (
+    analisisAnterior.regimenRecomendado !== reporteActual.regimenRecomendado
+  ) {
     cambios.push(
       `La recomendación cambió de ${analisisAnterior.regimenRecomendado} a ${reporteActual.regimenRecomendado}`
     )
