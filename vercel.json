@@ -5,18 +5,6 @@
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/limpiar-exportaciones",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/recordatorios-calendario",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/limpiar-analytics",
-      "schedule": "0 3 * * *"
-    },
-    {
       "path": "/api/cron/eliminar-cuentas",
       "schedule": "0 2 * * *"
     }
