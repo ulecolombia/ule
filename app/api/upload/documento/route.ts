@@ -37,16 +37,22 @@ export async function POST(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     // Obtener archivo del form data
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const category = formData.get('category') as string || 'documents'
+    const category = (formData.get('category') as string) || 'documents'
 
     if (!file) {
-      return NextResponse.json({ error: 'Archivo no proporcionado' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Archivo no proporcionado' },
+        { status: 400 }
+      )
     }
 
     // Validar archivo con todas las comprobaciones de seguridad
@@ -86,9 +92,10 @@ export async function POST(req: NextRequest) {
         nombre: file.name,
         nombreAlmacenado: secureFilename,
         tipo: 'OTRO', // TipoDocumentoArchivo: FACTURA, RECIBO_PAGO, COMPROBANTE_PILA, OTRO
-        tipoArchivo: file.type,
+        categoria: 'OTROS', // CategoriaDocumento
+        tipoMIME: file.type,
         tamanoBytes: file.size,
-        url: `/uploads/${user.id}/${secureFilename}`,
+        rutaArchivo: `/uploads/${user.id}/${secureFilename}`,
         mes: now.getMonth() + 1, // 1-12
         anio: now.getFullYear(),
         etiquetas: [], // array vacío por defecto
@@ -140,7 +147,10 @@ export async function GET() {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     const documentos = await db.documento.findMany({
@@ -149,8 +159,8 @@ export async function GET() {
         id: true,
         nombre: true,
         nombreAlmacenado: true,
-        url: true,
-        tipoArchivo: true,
+        rutaArchivo: true,
+        tipoMIME: true,
         tamanoBytes: true,
         tipo: true,
         createdAt: true,

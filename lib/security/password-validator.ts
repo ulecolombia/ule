@@ -132,7 +132,9 @@ export function validatePassword(
 
   // 1. Validar longitud mínima (obligatorio)
   if (password.length < PASSWORD_MIN_LENGTH) {
-    errors.push(`La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
+    errors.push(
+      `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`
+    )
     return {
       valid: false,
       score: 0,
@@ -145,7 +147,9 @@ export function validatePassword(
 
   // 2. Validar longitud máxima
   if (password.length > PASSWORD_MAX_LENGTH) {
-    errors.push(`La contraseña no puede tener más de ${PASSWORD_MAX_LENGTH} caracteres`)
+    errors.push(
+      `La contraseña no puede tener más de ${PASSWORD_MAX_LENGTH} caracteres`
+    )
     return {
       valid: false,
       score: 0,
@@ -161,7 +165,9 @@ export function validatePassword(
     score += 30
   } else {
     score += Math.floor((password.length / PASSWORD_RECOMMENDED_LENGTH) * 30)
-    suggestions.push(`Usa al menos ${PASSWORD_RECOMMENDED_LENGTH} caracteres para mayor seguridad`)
+    suggestions.push(
+      `Usa al menos ${PASSWORD_RECOMMENDED_LENGTH} caracteres para mayor seguridad`
+    )
   }
 
   // 4. Verificar mayúsculas (0-20 puntos)
@@ -243,7 +249,7 @@ export function validatePassword(
 
     if (userInfo.email) {
       const emailParts = userInfo.email.toLowerCase().split('@')[0]
-      if (lowerPassword.includes(emailParts)) {
+      if (emailParts && lowerPassword.includes(emailParts)) {
         errors.push('La contraseña no debe contener tu email')
         score -= 20
       }
@@ -340,24 +346,33 @@ export async function isPasswordDifferent(
  *
  * Nota: Usa k-anonymity - solo envía los primeros 5 caracteres del hash SHA-1
  */
-export async function isPasswordCompromised(password: string): Promise<boolean> {
+export async function isPasswordCompromised(
+  password: string
+): Promise<boolean> {
   try {
     const crypto = await import('crypto')
 
     // 1. Calcular SHA-1 hash de la contraseña
-    const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
+    const hash = crypto
+      .createHash('sha1')
+      .update(password)
+      .digest('hex')
+      .toUpperCase()
 
     // 2. Tomar los primeros 5 caracteres (k-anonymity)
     const prefix = hash.substring(0, 5)
     const suffix = hash.substring(5)
 
     // 3. Consultar API de Have I Been Pwned
-    const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'ULE-App',
-      },
-    })
+    const response = await fetch(
+      `https://api.pwnedpasswords.com/range/${prefix}`,
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'ULE-App',
+        },
+      }
+    )
 
     if (!response.ok) {
       // Si el API falla, no bloqueamos al usuario (fail open)
@@ -468,7 +483,7 @@ export function getPasswordFeedback(result: PasswordValidationResult): {
     muy_fuerte: 'Muy fuerte - Excelente',
   }
 
-  const colors: Record<typeof result.strength, typeof messages> = {
+  const colors: Record<typeof result.strength, string> = {
     muy_debil: 'red',
     debil: 'orange',
     media: 'yellow',
@@ -478,7 +493,12 @@ export function getPasswordFeedback(result: PasswordValidationResult): {
 
   return {
     message: messages[result.strength],
-    color: colors[result.strength] as 'red' | 'orange' | 'yellow' | 'green' | 'emerald',
+    color: colors[result.strength] as
+      | 'red'
+      | 'orange'
+      | 'yellow'
+      | 'green'
+      | 'emerald',
     percentage: result.score,
   }
 }

@@ -1,0 +1,216 @@
+
+> ule@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 777ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to react to database changes in your app as they happen? Discover how with Pulse: https://pris.ly/tip-1-pulse
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+  ▲ Next.js 14.2.33
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /Users/luis/Desktop/Ule/node_modules/next-pwa/register.js
+> [PWA] Service worker: /Users/luis/Desktop/Ule/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./app/admin/analytics/page.tsx
+105:6  Warning: React Hook useEffect has a missing dependency: 'cargarMetricas'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/api/auth/register/route.ts
+103:5  Warning: Unexpected console statement.  no-console
+
+./app/api/biblioteca/documentos/[id]/route.ts
+68:7  Warning: Unexpected console statement.  no-console
+79:5  Warning: Unexpected console statement.  no-console
+
+./app/api/biblioteca/export/route.ts
+146:5  Warning: Unexpected console statement.  no-console
+
+./app/api/biblioteca/upload/route.ts
+173:5  Warning: Unexpected console statement.  no-console
+
+./app/api/cron/limpiar-analytics/route.ts
+52:7  Warning: Unexpected console statement.  no-console
+61:5  Warning: Unexpected console statement.  no-console
+68:5  Warning: Unexpected console statement.  no-console
+69:5  Warning: Unexpected console statement.  no-console
+70:5  Warning: Unexpected console statement.  no-console
+71:5  Warning: Unexpected console statement.  no-console
+84:5  Warning: Unexpected console statement.  no-console
+99:5  Warning: Unexpected console statement.  no-console
+114:5  Warning: Unexpected console statement.  no-console
+150:5  Warning: Unexpected console statement.  no-console
+
+./app/api/cron/limpiar-exportaciones/route.ts
+44:7  Warning: Unexpected console statement.  no-console
+51:5  Warning: Unexpected console statement.  no-console
+62:5  Warning: Unexpected console statement.  no-console
+81:11  Warning: Unexpected console statement.  no-console
+114:5  Warning: Unexpected console statement.  no-console
+
+./app/api/cron/recordatorios/route.ts
+32:7  Warning: Unexpected console statement.  no-console
+42:7  Warning: Unexpected console statement.  no-console
+46:7  Warning: Unexpected console statement.  no-console
+50:7  Warning: Unexpected console statement.  no-console
+61:7  Warning: Unexpected console statement.  no-console
+
+./app/api/cron/recordatorios-calendario/route.ts
+39:7  Warning: Unexpected console statement.  no-console
+48:5  Warning: Unexpected console statement.  no-console
+61:5  Warning: Unexpected console statement.  no-console
+
+./app/api/facturacion/emitir/route.ts
+186:5  Warning: Unexpected console statement.  no-console
+
+./app/api/pila/webhook/route.ts
+104:7  Warning: Unexpected console statement.  no-console
+
+./app/asesoria/page.tsx
+42:6  Warning: React Hook useEffect has a missing dependency: 'conversacionesHook'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/asesoria/preguntas-frecuentes/page.tsx
+56:6  Warning: React Hook useEffect has a missing dependency: 'cargarFAQs'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/facturacion/mis-servicios/page.tsx
+77:6  Warning: React Hook useEffect has a missing dependency: 'cargarServicios'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/facturacion/nueva/page.tsx
+248:7  Warning: Unexpected console statement.  no-console
+252:6  Warning: React Hook useEffect has a missing dependency: 'guardarBorradorLocal'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+283:6  Warning: React Hook useEffect has a missing dependency: 'reset'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/layout.tsx
+82:9  Warning: A font-display parameter is missing (adding `&display=optional` is recommended). See: https://nextjs.org/docs/messages/google-font-display  @next/next/google-font-display
+82:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+./app/notificaciones/page.tsx
+67:6  Warning: React Hook useEffect has a missing dependency: 'fetchNotificaciones'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/onboarding/page.tsx
+171:5  Warning: Unexpected console statement.  no-console
+
+./app/onboarding/paso-2/page.tsx
+155:5  Warning: Unexpected console statement.  no-console
+
+./app/onboarding/paso-3/page.tsx
+191:5  Warning: Unexpected console statement.  no-console
+
+./app/onboarding/paso-4/page.tsx
+189:7  Warning: Unexpected console statement.  no-console
+
+./app/pila/comprobantes/page.tsx
+39:6  Warning: React Hook useEffect has a missing dependency: 'fetchComprobantes'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/reset-password/[token]/page.tsx
+68:6  Warning: React Hook useEffect has a missing dependency: 'verificarToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/ayuda/widget-ayuda.tsx
+60:6  Warning: React Hook useEffect has a missing dependency: 'handleBuscar'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/calculadoras/simulador-pensional.tsx
+80:11  Warning: Unexpected console statement.  no-console
+
+./components/error-boundary.tsx
+42:7  Warning: Unexpected console statement.  no-console
+126:32  Warning: Unexpected console statement.  no-console
+
+./components/facturacion/autocomplete-cliente.tsx
+117:6  Warning: React Hook useEffect has a missing dependency: 'selectedCliente'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/facturacion/enviar-email-modal.tsx
+118:6  Warning: React Hook useEffect has a missing dependency: 'getTemplateData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/MainNav.tsx
+50:7  Warning: Unexpected console statement.  no-console
+
+./lib/audit/audit-service.ts
+724:5  Warning: Unexpected console statement.  no-console
+725:5  Warning: Unexpected console statement.  no-console
+726:5  Warning: Unexpected console statement.  no-console
+727:5  Warning: Unexpected console statement.  no-console
+
+./lib/auth.ts
+93:9  Warning: Unexpected console statement.  no-console
+100:9  Warning: Unexpected console statement.  no-console
+196:7  Warning: Unexpected console statement.  no-console
+225:13  Warning: Unexpected console statement.  no-console
+236:13  Warning: Unexpected console statement.  no-console
+248:7  Warning: Unexpected console statement.  no-console
+
+./lib/config/env-validator.ts
+218:3  Warning: Unexpected console statement.  no-console
+219:3  Warning: Unexpected console statement.  no-console
+220:3  Warning: Unexpected console statement.  no-console
+221:3  Warning: Unexpected console statement.  no-console
+224:3  Warning: Unexpected console statement.  no-console
+227:3  Warning: Unexpected console statement.  no-console
+230:3  Warning: Unexpected console statement.  no-console
+233:3  Warning: Unexpected console statement.  no-console
+236:3  Warning: Unexpected console statement.  no-console
+239:3  Warning: Unexpected console statement.  no-console
+240:3  Warning: Unexpected console statement.  no-console
+241:3  Warning: Unexpected console statement.  no-console
+242:3  Warning: Unexpected console statement.  no-console
+
+./lib/cron/cleanup-sessions.ts
+44:5  Warning: Unexpected console statement.  no-console
+69:7  Warning: Unexpected console statement.  no-console
+
+./lib/distributed-lock.ts
+220:5  Warning: Unexpected console statement.  no-console
+
+./lib/hooks/use-secure-storage.ts
+78:6  Warning: React Hook useEffect has missing dependencies: 'defaultValue', 'migrationKey', and 'onLoad'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./lib/logger.ts
+47:33  Warning: Unexpected console statement.  no-console
+50:9  Warning: Unexpected console statement.  no-console
+
+./lib/recordatorios-service.ts
+201:3  Warning: Unexpected console statement.  no-console
+
+./lib/sentry.ts
+9:5  Warning: Unexpected console statement.  no-console
+12:5  Warning: Unexpected console statement.  no-console
+
+./lib/services/documentos-service.ts
+124:3  Warning: Unexpected console statement.  no-console
+185:3  Warning: Unexpected console statement.  no-console
+207:5  Warning: Unexpected console statement.  no-console
+218:3  Warning: Unexpected console statement.  no-console
+
+./lib/utils/logger.ts
+87:7  Warning: Unexpected console statement.  no-console
+96:7  Warning: Unexpected console statement.  no-console
+
+./lib/utils/secure-storage.ts
+219:7  Warning: Unexpected console statement.  no-console
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+Failed to compile.
+
+./lib/privacy/data-portability.ts:17:3
+Type error: 'TipoDocumento' is declared but its value is never read.
+
+[0m [90m 15 |[39m   [33mEstadoSolicitudPortabilidad[39m[33m,[39m[0m
+[0m [90m 16 |[39m   [33mAccionPrivacidad[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 17 |[39m   [33mTipoDocumento[39m[33m,[39m[0m
+[0m [90m    |[39m   [31m[1m^[22m[39m[0m
+[0m [90m 18 |[39m   [33mTipoContrato[39m[33m,[39m[0m
+[0m [90m 19 |[39m   [33mEstadoCivil[39m[33m,[39m[0m
+[0m [90m 20 |[39m } [36mfrom[39m [32m'@prisma/client'[39m[0m
+Next.js build worker exited with code: 1 and signal: null

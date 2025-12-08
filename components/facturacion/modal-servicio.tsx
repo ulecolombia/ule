@@ -10,11 +10,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   servicioFrecuenteSchema,
-  ServicioFrecuenteData,
+  ServicioFrecuenteInput,
 } from '@/lib/validations/servicio-frecuente'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { NativeSelect as Select } from '@/components/ui/select'
 
 interface ModalServicioProps {
@@ -41,7 +40,7 @@ export function ModalServicio({
     setValue,
     reset,
     formState: { errors },
-  } = useForm<ServicioFrecuenteData>({
+  } = useForm<ServicioFrecuenteInput>({
     resolver: zodResolver(servicioFrecuenteSchema),
     defaultValues: {
       descripcion: servicio?.descripcion || '',
@@ -80,7 +79,7 @@ export function ModalServicio({
     }
   }, [aplicaIVA, setValue])
 
-  const onSubmit = async (data: ServicioFrecuenteData) => {
+  const onSubmit = async (data: ServicioFrecuenteInput) => {
     setIsSubmitting(true)
     try {
       const url =

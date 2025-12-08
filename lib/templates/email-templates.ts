@@ -42,9 +42,9 @@ INFORMACIÓN DE LA FACTURA:
 • Número de factura: ${factura.numeroFactura}
 • Fecha de emisión: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Fecha de vencimiento: ${formatDate(factura.fechaVencimiento)}` : ''}
-${factura.subtotal ? `• Subtotal: ${formatCurrency(factura.subtotal)}` : ''}
-${factura.iva ? `• IVA: ${formatCurrency(factura.iva)}` : ''}
-• Valor total: ${formatCurrency(factura.total)}
+${factura.subtotal ? `• Subtotal: ${formatCurrency(Number(factura.subtotal))}` : ''}
+${factura.iva ? `• IVA: ${formatCurrency(Number(factura.iva))}` : ''}
+• Valor total: ${formatCurrency(Number(factura.total))}
 ${factura.cufe ? `• CUFE: ${factura.cufe}` : ''}
 
 ${factura.terminosPago ? `TÉRMINOS DE PAGO:\n${factura.terminosPago}\n\n` : ''}Esta factura electrónica tiene plena validez jurídica según el Decreto 2242 de 2015 y la Resolución DIAN 000042 de 2020.
@@ -80,7 +80,7 @@ export function templateAmigable(
 • Factura: ${factura.numeroFactura}
 • Fecha: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Vencimiento: ${formatDate(factura.fechaVencimiento)}` : ''}
-• Total: ${formatCurrency(factura.total)}
+• Total: ${formatCurrency(Number(factura.total))}
 ${factura.terminosPago ? `• Términos de pago: ${factura.terminosPago}` : ''}
 
 ${factura.notas ? `📝 Nota: ${factura.notas}\n\n` : ''}Los archivos PDF y XML adjuntos son válidos ante la DIAN y puedes guardarlos para tus registros contables. ✅
@@ -121,7 +121,7 @@ DETALLES DEL PAGO PENDIENTE:
 • Número de factura: ${factura.numeroFactura}
 • Fecha de emisión: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Fecha de vencimiento: ${formatDate(factura.fechaVencimiento)}` : ''}
-• Valor a pagar: ${formatCurrency(factura.total)}
+• Valor a pagar: ${formatCurrency(Number(factura.total))}
 • Estado: ⚠️ VENCIDA
 
 Por favor, regularice este pago a la brevedad posible para evitar inconvenientes adicionales.
@@ -148,7 +148,7 @@ DETALLES DEL PAGO:
 • Número de factura: ${factura.numeroFactura}
 • Fecha de emisión: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Fecha límite de pago: ${formatDate(factura.fechaVencimiento)}` : ''}
-• Valor a pagar: ${formatCurrency(factura.total)}
+• Valor a pagar: ${formatCurrency(Number(factura.total))}
 • Días restantes: ${diasVencimiento}
 
 ${factura.terminosPago ? `Términos de pago: ${factura.terminosPago}\n\n` : ''}Por favor, realice el pago antes de la fecha límite para evitar inconvenientes.
@@ -181,7 +181,7 @@ DETALLES DE LA FACTURA ANULADA:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • Número de factura: ${factura.numeroFactura}
 • Fecha de emisión: ${formatDate(factura.fecha)}
-• Valor original: ${formatCurrency(factura.total)}
+• Valor original: ${formatCurrency(Number(factura.total))}
 • Estado: ❌ ANULADA
 ${factura.cufe ? `• CUFE: ${factura.cufe}` : ''}
 
@@ -220,7 +220,7 @@ export function templatePrimeraFactura(
 • Factura: ${factura.numeroFactura}
 • Fecha: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Vencimiento: ${formatDate(factura.fechaVencimiento)}` : ''}
-• Total: ${formatCurrency(factura.total)}
+• Total: ${formatCurrency(Number(factura.total))}
 
 📌 Información importante sobre facturas electrónicas:
 
@@ -257,7 +257,7 @@ Adjunto encontrarás la factura electrónica correspondiente a los servicios/pro
 • Número de factura: ${factura.numeroFactura}
 • Fecha de emisión: ${formatDate(factura.fecha)}
 ${factura.fechaVencimiento ? `• Fecha de vencimiento: ${formatDate(factura.fechaVencimiento)}` : ''}
-• Total: ${formatCurrency(factura.total)}
+• Total: ${formatCurrency(Number(factura.total))}
 ${factura.cufe ? `• CUFE: ${factura.cufe.slice(0, 20)}...` : ''}
 
 ${factura.terminosPago ? `Términos de pago: ${factura.terminosPago}\n\n` : ''}${factura.notas ? `Notas: ${factura.notas}\n\n` : ''}Esta factura es válida como documento electrónico según la normativa DIAN. Puedes consultar su autenticidad ingresando el CUFE en:

@@ -84,14 +84,6 @@ export function FacturaPreview({
     return subtotalItem + ivaItem
   }
 
-  // Función helper para formatear valor unitario
-  const formatearValorUnitario = (valor: number | string): number => {
-    if (typeof valor === 'string') {
-      return parseFloat(valor.replace(/\./g, '')) || 0
-    }
-    return valor || 0
-  }
-
   return (
     <div
       id="factura-preview-print"
@@ -230,7 +222,7 @@ export function FacturaPreview({
                       {item.cantidad}
                     </td>
                     <td className="py-3 text-right text-gray-600">
-                      {formatearMoneda(item.valorUnitario, false)}
+                      {formatearMoneda(Number(item.valorUnitario) || 0, false)}
                     </td>
                     <td className="py-3 text-right text-gray-600">
                       {item.iva}%

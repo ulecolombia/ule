@@ -8,7 +8,13 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { SuspenseWrapper } from '@/components/ui/suspense-wrapper'
@@ -102,6 +108,7 @@ export default function AnalyticsDashboard() {
     if ((session?.user as any)?.role === 'ADMIN') {
       cargarMetricas()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodo, session])
 
   const cargarMetricas = async () => {
@@ -123,7 +130,7 @@ export default function AnalyticsDashboard() {
     return (
       <div className="container mx-auto p-6">
         <Card className="p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
           <p className="mt-4 text-gray-600">Verificando acceso...</p>
         </Card>
       </div>
@@ -135,11 +142,11 @@ export default function AnalyticsDashboard() {
     return (
       <div className="container mx-auto p-6">
         <Card className="p-8 text-center">
-          <span className="material-symbols-outlined text-6xl text-red-500 mb-4">
+          <span className="material-symbols-outlined mb-4 text-6xl text-red-500">
             block
           </span>
-          <h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2>
-          <p className="text-gray-600 mb-4">
+          <h2 className="mb-2 text-2xl font-bold">Acceso Denegado</h2>
+          <p className="mb-4 text-gray-600">
             No tienes permisos para acceder a esta página.
           </p>
           <Button onClick={() => redirect('/dashboard')}>
@@ -255,14 +262,12 @@ export default function AnalyticsDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Métricas y uso de la plataforma
-          </p>
+          <p className="mt-1 text-gray-600">Métricas y uso de la plataforma</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -287,7 +292,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Usuarios Activos</CardDescription>
@@ -322,9 +327,7 @@ export default function AnalyticsDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
-              Usuarios que regresan
-            </p>
+            <p className="text-sm text-gray-600">Usuarios que regresan</p>
           </CardContent>
         </Card>
 
@@ -367,7 +370,7 @@ export default function AnalyticsDashboard() {
         </TabsContent>
 
         <TabsContent value="features" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Distribución de Uso por Feature</CardTitle>
@@ -392,7 +395,7 @@ export default function AnalyticsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">💰 PILA</p>
                       <p className="text-sm text-gray-600">
@@ -403,18 +406,16 @@ export default function AnalyticsDashboard() {
                       {metricas.totales.usosPILA}
                     </p>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">📄 Facturación</p>
-                      <p className="text-sm text-gray-600">
-                        Facturas emitidas
-                      </p>
+                      <p className="text-sm text-gray-600">Facturas emitidas</p>
                     </div>
                     <p className="text-2xl font-bold">
                       {metricas.totales.usosFacturacion}
                     </p>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">🤖 Asesoría IA</p>
                       <p className="text-sm text-gray-600">
@@ -451,13 +452,11 @@ export default function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Errores Recientes</CardTitle>
-              <CardDescription>
-                Últimos 20 errores sin resolver
-              </CardDescription>
+              <CardDescription>Últimos 20 errores sin resolver</CardDescription>
             </CardHeader>
             <CardContent>
               {metricas.erroresRecientes.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   🎉 ¡No hay errores sin resolver!
                 </div>
               ) : (
@@ -465,13 +464,13 @@ export default function AnalyticsDashboard() {
                   {metricas.erroresRecientes.map((error) => (
                     <div
                       key={error.id}
-                      className="border rounded-lg p-4 space-y-2"
+                      className="space-y-2 rounded-lg border p-4"
                     >
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-medium ${getSeverityColor(
+                              className={`rounded px-2 py-1 text-xs font-medium ${getSeverityColor(
                                 error.severidad
                               )}`}
                             >
@@ -483,10 +482,8 @@ export default function AnalyticsDashboard() {
                               </span>
                             )}
                           </div>
-                          <p className="font-medium text-sm">
-                            {error.mensaje}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-sm font-medium">{error.mensaje}</p>
+                          <p className="mt-1 text-xs text-gray-500">
                             {format(
                               new Date(error.timestamp),
                               "dd MMM yyyy 'a las' HH:mm",

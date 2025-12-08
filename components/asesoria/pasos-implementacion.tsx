@@ -11,8 +11,8 @@ interface PasosImplementacionProps {
 export function PasosImplementacion({ pasos }: PasosImplementacionProps) {
   return (
     <Card className="p-6">
-      <h3 className="text-xl font-semibold mb-6 flex items-center">
-        <span className="material-symbols-outlined text-primary mr-2">
+      <h3 className="mb-6 flex items-center text-xl font-semibold">
+        <span className="material-symbols-outlined mr-2 text-primary">
           checklist
         </span>
         Pasos para Implementar
@@ -22,33 +22,35 @@ export function PasosImplementacion({ pasos }: PasosImplementacionProps) {
         {pasos.map((paso) => (
           <div
             key={paso.numero}
-            className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg"
+            className="flex items-start space-x-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-900"
           >
-            <div className="flex-shrink-0 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">
               {paso.numero}
             </div>
             <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="mb-2 flex items-center space-x-2">
                 <h4 className="font-semibold">{paso.titulo}</h4>
                 <Badge
                   variant={
                     paso.prioridad === 'ALTA'
-                      ? 'destructive'
+                      ? 'danger'
                       : paso.prioridad === 'MEDIA'
-                      ? 'warning'
-                      : 'secondary'
+                        ? 'warning'
+                        : 'secondary'
                   }
                 >
                   {paso.prioridad}
                 </Badge>
                 {paso.plazo && (
                   <Badge variant="outline">
-                    <span className="material-symbols-outlined text-xs mr-1">schedule</span>
+                    <span className="material-symbols-outlined mr-1 text-xs">
+                      schedule
+                    </span>
                     {paso.plazo}
                   </Badge>
                 )}
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
+              <p className="mb-2 text-gray-600 dark:text-gray-400">
                 {paso.descripcion}
               </p>
               {paso.enlaces && paso.enlaces.length > 0 && (
@@ -59,9 +61,9 @@ export function PasosImplementacion({ pasos }: PasosImplementacionProps) {
                       href={enlace.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline flex items-center"
+                      className="flex items-center text-sm text-primary hover:underline"
                     >
-                      <span className="material-symbols-outlined text-sm mr-1">
+                      <span className="material-symbols-outlined mr-1 text-sm">
                         link
                       </span>
                       {enlace.texto}

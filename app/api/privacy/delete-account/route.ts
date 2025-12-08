@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
 /**
  * DELETE - Cancelar solicitud de eliminación
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   try {
     const session = await auth()
 

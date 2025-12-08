@@ -20,9 +20,9 @@ export {
   TipoTermino,
   TipoExportacion,
   FrecuenciaExportacion,
-  TipoEvento,
-  CategoriaEvento,
-  FrecuenciaEvento,
+  TipoEventoCalendario,
+  CategoriaEventoTributario,
+  FrecuenciaRecurrencia,
   TipoCalculadora,
   TipoInteraccionAyuda,
   CategoriaEventoAnalytics,
@@ -30,4 +30,10 @@ export {
 } from '@prisma/client'
 
 // Tipos inferidos de Prisma
-export type { User, Aporte, ConfiguracionPila, Cliente, Factura } from '@prisma/client'
+export type {
+  User,
+  Aporte,
+  ConfiguracionPila,
+  Cliente,
+  Factura,
+} from '@prisma/client'

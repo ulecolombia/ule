@@ -6,7 +6,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect as Select } from '@/components/ui/select'
@@ -18,7 +17,6 @@ import {
   type FacturaTemplateData,
 } from '@/lib/templates/email-templates'
 import {
-  formatCurrency,
   formatDate,
   isValidEmail,
   parseEmailList,
@@ -117,6 +115,7 @@ export function EnviarEmailModal({
       setActiveTab('formulario')
       setInitialized(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factura, isOpen, initialized])
 
   const handleClose = () => {

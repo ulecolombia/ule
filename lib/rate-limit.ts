@@ -93,7 +93,8 @@ export async function rateLimit(
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now()
-    for (const [key, value] of store.entries()) {
+    const entries = Array.from(store.entries())
+    for (const [key, value] of entries) {
       if (now > value.resetTime) {
         store.delete(key)
       }

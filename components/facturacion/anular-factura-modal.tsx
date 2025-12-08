@@ -8,7 +8,6 @@
 import { useState } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 interface AnularFacturaModalProps {
   isOpen: boolean
@@ -85,20 +84,16 @@ export function AnularFacturaModal({
   if (!factura) return null
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Anular Factura Electrónica"
-      size="md"
-    >
+    <Modal open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Anular Factura Electrónica</h2>
         {/* Advertencia */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
-          <span className="material-symbols-outlined text-red-600 text-2xl flex-shrink-0">
+        <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+          <span className="material-symbols-outlined flex-shrink-0 text-2xl text-red-600">
             warning
           </span>
           <div>
-            <p className="font-semibold text-red-900 mb-1">
+            <p className="mb-1 font-semibold text-red-900">
               ¿Está seguro que desea anular esta factura?
             </p>
             <p className="text-sm text-red-700">
@@ -109,20 +104,20 @@ export function AnularFacturaModal({
         </div>
 
         {/* Información de la factura */}
-        <div className="bg-slate-50 rounded-lg p-4 space-y-2">
-          <div className="flex justify-between items-start">
+        <div className="space-y-2 rounded-lg bg-slate-50 p-4">
+          <div className="flex items-start justify-between">
             <span className="text-sm text-slate-600">Número de factura:</span>
             <span className="font-mono font-semibold text-slate-900">
               {factura.numeroFactura}
             </span>
           </div>
-          <div className="flex justify-between items-start">
+          <div className="flex items-start justify-between">
             <span className="text-sm text-slate-600">Cliente:</span>
-            <span className="font-medium text-slate-900 text-right">
+            <span className="text-right font-medium text-slate-900">
               {factura.cliente.nombre}
             </span>
           </div>
-          <div className="flex justify-between items-start">
+          <div className="flex items-start justify-between">
             <span className="text-sm text-slate-600">Total:</span>
             <span className="font-bold text-slate-900">
               {formatCurrency(factura.total)}
@@ -132,9 +127,9 @@ export function AnularFacturaModal({
 
         {/* Campo de motivo */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
             Motivo de anulación *
-            <span className="text-slate-500 font-normal ml-1">
+            <span className="ml-1 font-normal text-slate-500">
               (mínimo 10 caracteres)
             </span>
           </label>
@@ -142,17 +137,17 @@ export function AnularFacturaModal({
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             placeholder="Ej: Factura emitida con error en datos del cliente..."
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+            className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500"
             rows={4}
             maxLength={500}
             disabled={isLoading}
           />
-          <div className="flex justify-between items-center mt-1">
+          <div className="mt-1 flex items-center justify-between">
             <p className="text-xs text-slate-500">
               {motivo.length} / 500 caracteres
             </p>
             {motivo.length >= 10 && (
-              <span className="text-xs text-teal-600 flex items-center gap-1">
+              <span className="flex items-center gap-1 text-xs text-teal-600">
                 <span className="material-symbols-outlined text-sm">
                   check_circle
                 </span>
@@ -164,18 +159,18 @@ export function AnularFacturaModal({
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <span className="material-symbols-outlined text-lg">error</span>
             {error}
           </div>
         )}
 
         {/* Requisitos DIAN */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-900 font-medium mb-2">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+          <p className="mb-2 text-xs font-medium text-blue-900">
             Requisitos DIAN para anulación:
           </p>
-          <ul className="text-xs text-blue-800 space-y-1 ml-4 list-disc">
+          <ul className="ml-4 list-disc space-y-1 text-xs text-blue-800">
             <li>La factura debe estar en estado EMITIDA</li>
             <li>Debe tener CUFE válido asignado</li>
             <li>No debe haber superado el plazo de anulación (5 días)</li>
@@ -196,11 +191,11 @@ export function AnularFacturaModal({
           <Button
             onClick={handleConfirmar}
             disabled={isLoading || motivo.trim().length < 10}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            className="flex-1 bg-red-600 text-white hover:bg-red-700"
           >
             {isLoading ? (
               <>
-                <span className="material-symbols-outlined animate-spin mr-2">
+                <span className="material-symbols-outlined mr-2 animate-spin">
                   progress_activity
                 </span>
                 Anulando...

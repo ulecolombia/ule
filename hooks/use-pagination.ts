@@ -20,6 +20,7 @@ export interface PaginationOptions {
 
 export interface PaginationData<T> {
   items: T[]
+  aportes?: T[]
   pagination: {
     page: number
     limit: number

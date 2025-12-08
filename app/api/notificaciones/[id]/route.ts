@@ -26,7 +26,10 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     const { id } = context.params
@@ -77,7 +80,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
  * DELETE /api/notificaciones/[id]
  * Elimina una notificación
  */
-export async function DELETE(req: NextRequest, context: RouteContext) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   try {
     const session = await auth()
 
@@ -90,7 +93,10 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     const { id } = context.params
@@ -119,7 +125,10 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       where: { id },
     })
 
-    return NextResponse.json({ success: true, message: 'Notificación eliminada' })
+    return NextResponse.json({
+      success: true,
+      message: 'Notificación eliminada',
+    })
   } catch (error) {
     logger.error(
       'Error al eliminar notificación',

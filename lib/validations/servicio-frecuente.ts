@@ -41,4 +41,7 @@ export const servicioFrecuenteSchema = z
     }
   )
 
-export type ServicioFrecuenteData = z.infer<typeof servicioFrecuenteSchema>
+// Input type (what the form uses)
+export type ServicioFrecuenteInput = z.input<typeof servicioFrecuenteSchema>
+// Output type (what we get after validation)
+export type ServicioFrecuenteData = z.output<typeof servicioFrecuenteSchema>

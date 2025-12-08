@@ -15,7 +15,7 @@ import { EstadoSolicitudPortabilidad } from '@prisma/client'
  * GET - Descargar archivo de exportación
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { filename: string } }
 ) {
   try {
@@ -120,7 +120,7 @@ export async function GET(
     )
     headers.set('Content-Length', fileBuffer.length.toString())
 
-    return new NextResponse(fileBuffer, { headers })
+    return new NextResponse(new Uint8Array(fileBuffer), { headers })
   } catch (error) {
     secureLogger.error('Error en API de descarga', error)
     return NextResponse.json(

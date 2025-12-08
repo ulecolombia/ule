@@ -6,11 +6,9 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useForm, useFieldArray, useWatch } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -30,7 +28,6 @@ import { ModalConfirmarEmision } from '@/components/facturacion/modal-confirmar-
 import { useClientes } from '@/hooks/use-clientes'
 import { useDebounce } from '@/hooks/use-debounce'
 import {
-  crearFacturaSchema,
   METODOS_PAGO,
   CrearFacturaInput,
   EmisorFacturaInput,
@@ -39,7 +36,7 @@ import { calcularTotalesFactura } from '@/lib/utils/facturacion-utils'
 
 const STORAGE_KEY = 'ule_factura_borrador'
 
-export default function NuevaFacturaPage() {
+function NuevaFacturaPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const esPlantilla = searchParams?.get('plantilla') === 'true'
@@ -62,11 +59,11 @@ export default function NuevaFacturaPage() {
   // Formulario
   const {
     register,
-    handleSubmit,
     watch,
     control,
     setValue,
     reset,
+    trigger,
     formState: { errors, isDirty },
   } = useForm<CrearFacturaInput>({
     mode: 'onSubmit', // Solo validar al enviar, no mientras escribe
@@ -79,7 +76,7 @@ export default function NuevaFacturaPage() {
           descripcion: '',
           cantidad: 1,
           unidad: 'UND',
-          valorUnitario: '',
+          valorUnitario: 0,
           aplicaIVA: false,
           porcentajeIVA: 0,
           iva: 19,
@@ -252,6 +249,7 @@ export default function NuevaFacturaPage() {
     }, 30000) // 30 segundos
 
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDirty, watchClienteId, watchItems, watchNotas, watchTerminos])
 
   /**
@@ -283,6 +281,7 @@ export default function NuevaFacturaPage() {
         limpiarBorradorLocal()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -344,7 +343,7 @@ export default function NuevaFacturaPage() {
         throw new Error(error.error || 'Error al guardar borrador')
       }
 
-      const result = await response.json()
+      await response.json()
       toast.success('Borrador guardado exitosamente')
       limpiarBorradorLocal()
 
@@ -366,8 +365,8 @@ export default function NuevaFacturaPage() {
    * Preparar emisión - valida y abre modal de confirmación
    */
   const prepararEmision = async () => {
-    // Validar formulario completo
-    const isValid = await handleSubmit(() => {})()
+    // Validar formulario completo usando trigger
+    const isValid = await trigger()
 
     if (!isValid || Object.keys(errors).length > 0) {
       toast.error('Por favor completa todos los campos requeridos')
@@ -568,11 +567,6 @@ export default function NuevaFacturaPage() {
                                 razonSocial: e.target.value,
                               })
                             }
-                            icon={
-                              <span className="material-symbols-outlined">
-                                business
-                              </span>
-                            }
                           />
                           <Input
                             label="Documento *"
@@ -585,11 +579,6 @@ export default function NuevaFacturaPage() {
                                 ...emisorOverride,
                                 documento: e.target.value,
                               })
-                            }
-                            icon={
-                              <span className="material-symbols-outlined">
-                                badge
-                              </span>
                             }
                           />
                         </div>
@@ -605,11 +594,6 @@ export default function NuevaFacturaPage() {
                               direccion: e.target.value,
                             })
                           }
-                          icon={
-                            <span className="material-symbols-outlined">
-                              location_on
-                            </span>
-                          }
                         />
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                           <Input
@@ -621,11 +605,6 @@ export default function NuevaFacturaPage() {
                                 ...emisorOverride,
                                 ciudad: e.target.value,
                               })
-                            }
-                            icon={
-                              <span className="material-symbols-outlined">
-                                location_city
-                              </span>
                             }
                           />
                           <Input
@@ -640,11 +619,6 @@ export default function NuevaFacturaPage() {
                                 telefono: e.target.value,
                               })
                             }
-                            icon={
-                              <span className="material-symbols-outlined">
-                                phone
-                              </span>
-                            }
                           />
                           <Input
                             label="Email *"
@@ -656,11 +630,6 @@ export default function NuevaFacturaPage() {
                                 ...emisorOverride,
                                 email: e.target.value,
                               })
-                            }
-                            icon={
-                              <span className="material-symbols-outlined">
-                                email
-                              </span>
                             }
                           />
                         </div>
@@ -770,11 +739,6 @@ export default function NuevaFacturaPage() {
                         valueAsDate: true,
                       })}
                       error={errors.fecha?.message}
-                      icon={
-                        <span className="material-symbols-outlined">
-                          calendar_today
-                        </span>
-                      }
                     />
 
                     {/* Método de pago */}
@@ -782,11 +746,6 @@ export default function NuevaFacturaPage() {
                       label="Método de Pago *"
                       {...register('metodoPago')}
                       error={errors.metodoPago?.message}
-                      icon={
-                        <span className="material-symbols-outlined">
-                          payments
-                        </span>
-                      }
                     >
                       {METODOS_PAGO.map((metodo) => (
                         <option key={metodo.value} value={metodo.value}>
@@ -961,5 +920,28 @@ export default function NuevaFacturaPage() {
         loading={isSubmitting}
       />
     </>
+  )
+}
+
+/**
+ * Wrapper con Suspense para useSearchParams
+ * Requerido por Next.js para static generation
+ */
+export default function NuevaFacturaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <span className="material-symbols-outlined animate-spin text-4xl text-primary">
+              progress_activity
+            </span>
+            <p className="mt-2 text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      }
+    >
+      <NuevaFacturaPageContent />
+    </Suspense>
   )
 }

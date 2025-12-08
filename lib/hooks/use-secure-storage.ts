@@ -75,6 +75,7 @@ export function useSecureStorage<T>(
     }
 
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]) // Solo ejecutar al montar
 
   // Función para actualizar valor y persistir

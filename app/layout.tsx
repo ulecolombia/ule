@@ -10,7 +10,6 @@ import Script from 'next/script'
 import './globals.css'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
-import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
 import { SWRProvider } from '@/lib/cache/swr-config'
 import { initSentry } from '@/lib/sentry'
 
@@ -80,8 +79,9 @@ export default function RootLayout({
   return (
     <html lang="es-CO" suppressHydrationWarning>
       <head>
+        {/* eslint-disable-next-line @next/next/no-page-custom-font, @next/next/google-font-display */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap"
           rel="stylesheet"
         />
         {/* PWA Manifest */}

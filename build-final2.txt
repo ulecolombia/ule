@@ -1,0 +1,40 @@
+
+> ule@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 709ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+  ▲ Next.js 14.2.33
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /Users/luis/Desktop/Ule/node_modules/next-pwa/register.js
+> [PWA] Service worker: /Users/luis/Desktop/Ule/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/privacy/data-portability.ts:118:9
+Type error: Object literal may only specify known properties, and 'numero' does not exist in type 'FacturaSelect<DefaultArgs>'.
+
+[0m [90m 116 |[39m       select[33m:[39m {[0m
+[0m [90m 117 |[39m         id[33m:[39m [36mtrue[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 118 |[39m         numero[33m:[39m [36mtrue[39m[33m,[39m[0m
+[0m [90m     |[39m         [31m[1m^[22m[39m[0m
+[0m [90m 119 |[39m         fecha[33m:[39m [36mtrue[39m[33m,[39m[0m
+[0m [90m 120 |[39m         clienteId[33m:[39m [36mtrue[39m[33m,[39m[0m
+[0m [90m 121 |[39m         subtotal[33m:[39m [36mtrue[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -14,7 +14,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts'
 
 interface GraficoFacturacionProps {
@@ -26,13 +25,22 @@ interface GraficoFacturacionProps {
 }
 
 // Tooltip personalizado
-function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
-  if (active && payload && payload.length) {
-    const value = payload[0].value as number
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    value: number
+    payload: { mes: string; total: number }
+  }>
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
+  const firstPayload = payload?.[0]
+  if (active && firstPayload) {
+    const value = firstPayload.value
     return (
-      <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-3">
+      <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
         <p className="text-sm font-medium text-slate-900">
-          {payload[0].payload.mes}
+          {firstPayload.payload.mes}
         </p>
         <p className="text-lg font-bold text-teal-600">
           {new Intl.NumberFormat('es-CO', {
@@ -62,8 +70,8 @@ export function GraficoFacturacion({
           <p className="text-sm text-slate-600">Últimos 6 meses</p>
         </CardHeader>
         <CardBody>
-          <div className="h-72 flex items-center justify-center">
-            <div className="animate-pulse w-full h-full bg-slate-100 rounded"></div>
+          <div className="flex h-72 items-center justify-center">
+            <div className="h-full w-full animate-pulse rounded bg-slate-100"></div>
           </div>
         </CardBody>
       </Card>
@@ -81,9 +89,9 @@ export function GraficoFacturacion({
           <p className="text-sm text-slate-600">Últimos 6 meses</p>
         </CardHeader>
         <CardBody>
-          <div className="h-72 flex items-center justify-center">
+          <div className="flex h-72 items-center justify-center">
             <div className="text-center">
-              <span className="material-symbols-outlined text-5xl text-slate-300 mb-2">
+              <span className="material-symbols-outlined mb-2 text-5xl text-slate-300">
                 bar_chart
               </span>
               <p className="text-slate-500">No hay datos disponibles</p>
@@ -118,11 +126,12 @@ export function GraficoFacturacion({
               <YAxis
                 stroke="#64748b"
                 style={{ fontSize: '12px' }}
-                tickFormatter={(value) =>
-                  `${(value / 1000000).toFixed(0)}M`
-                }
+                tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f1f5f9' }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: '#f1f5f9' }}
+              />
               <Bar
                 dataKey="total"
                 fill="#14B8A6"

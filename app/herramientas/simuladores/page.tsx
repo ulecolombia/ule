@@ -8,7 +8,6 @@
 import { useState, Fragment, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/Header'
 import { SimuladorRegimen } from '@/components/calculadoras/simulador-regimen'
 import { SimuladorPensional } from '@/components/calculadoras/simulador-pensional'

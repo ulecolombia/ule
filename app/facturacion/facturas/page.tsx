@@ -5,9 +5,8 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { EstadisticasDashboard } from '@/components/facturacion/estadisticas-dashboard'
@@ -63,7 +62,6 @@ export default function FacturasPage() {
   const {
     estadisticas,
     isLoading: isLoadingEstadisticas,
-    isError: isErrorEstadisticas,
     mutate: mutateEstadisticas,
   } = useEstadisticas()
 
@@ -104,9 +102,11 @@ export default function FacturasPage() {
   const handleEnviarEmail = async (
     facturaId: string,
     destinatario: string,
+    cc: string[],
     asunto: string,
     mensaje: string,
-    copiaUsuario: boolean
+    adjuntarPdf: boolean,
+    adjuntarXml: boolean
   ) => {
     try {
       const res = await fetch('/api/facturacion/enviar-email', {
@@ -115,9 +115,11 @@ export default function FacturasPage() {
         body: JSON.stringify({
           facturaId,
           destinatario,
+          cc,
           asunto,
           mensaje,
-          copiaUsuario,
+          adjuntarPdf,
+          adjuntarXml,
         }),
       })
 
@@ -135,7 +137,7 @@ export default function FacturasPage() {
     }
   }
 
-  const handleDescargarPDF = (pdfUrl: string, numeroFactura: string) => {
+  const handleDescargarPDF = (pdfUrl: string, _numeroFactura: string) => {
     // Abrir PDF en nueva pestaña
     window.open(pdfUrl, '_blank')
   }

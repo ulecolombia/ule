@@ -83,7 +83,7 @@ export async function PUT(
 
 // DELETE - Eliminar servicio (soft delete)
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

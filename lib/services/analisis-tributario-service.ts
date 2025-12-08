@@ -5,21 +5,27 @@ import { z } from 'zod'
 import { pesosAUvt } from '@/lib/constants/tributarios'
 import { logger } from '@/lib/logger'
 
-// Validar API key
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-
-if (!ANTHROPIC_API_KEY) {
-  throw new Error(
-    'ANTHROPIC_API_KEY no está configurada. ' +
-      'Por favor, configura esta variable de entorno en .env o .env.local'
-  )
-}
-
-const anthropic = new Anthropic({
-  apiKey: ANTHROPIC_API_KEY,
-})
-
 const MODEL = 'claude-3-5-sonnet-20241022'
+
+// Lazy initialization del cliente Anthropic
+let anthropicClient: Anthropic | null = null
+
+function getAnthropicClient(): Anthropic {
+  if (anthropicClient) {
+    return anthropicClient
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error(
+      'ANTHROPIC_API_KEY no está configurada. ' +
+        'Por favor, configura esta variable de entorno en .env o .env.local'
+    )
+  }
+
+  anthropicClient = new Anthropic({ apiKey })
+  return anthropicClient
+}
 
 /**
  * Wrapper con timeout para promesas
@@ -307,7 +313,7 @@ Responde SOLO con el objeto JSON estructurado según las instrucciones.`
 
     // Llamar a la IA con timeout de 30 segundos
     const respuesta = await withTimeout(
-      anthropic.messages.create({
+      getAnthropicClient().messages.create({
         model: MODEL,
         max_tokens: 4000,
         system: SYSTEM_PROMPT_TRIBUTARIO,

@@ -82,10 +82,15 @@ export async function POST(request: NextRequest) {
       pension,
       arl,
       total,
-      mes,
-      anio,
+      mes: mesInput,
+      anio: anioInput,
       nivelRiesgo,
     } = validatedData
+
+    // Usar mes/año actual si no se proporcionan
+    const now = new Date()
+    const mes = mesInput ?? now.getMonth() + 1
+    const anio = anioInput ?? now.getFullYear()
 
     // Calcular fecha límite
     const fechaLimite = calcularFechaLimite(mes, anio)

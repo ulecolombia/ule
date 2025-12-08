@@ -11,9 +11,6 @@ import {
   User,
   Briefcase,
   DollarSign,
-  FileText,
-  Building2,
-  Heart,
   Shield,
   Users,
   Loader2,
@@ -42,7 +39,7 @@ interface UserProfile {
 /**
  * Panel de contexto del usuario
  */
-export function ContextPanel({ session }: ContextPanelProps) {
+export function ContextPanel({ session: _session }: ContextPanelProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -79,11 +76,11 @@ export function ContextPanel({ session }: ContextPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-y-auto">
+    <div className="flex h-full flex-col overflow-y-auto bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="border-b border-gray-200 p-4">
         <h2 className="text-lg font-bold text-gray-900">Tu Contexto</h2>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-gray-500">
           Información que usa la IA para asesorarte
         </p>
       </div>
@@ -91,12 +88,15 @@ export function ContextPanel({ session }: ContextPanelProps) {
       {/* Contenido */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+          <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
         </div>
       ) : profile ? (
-        <div className="p-4 space-y-6">
+        <div className="space-y-6 p-4">
           {/* Información básica */}
-          <Section title="Información básica" icon={<User className="w-4 h-4" />}>
+          <Section
+            title="Información básica"
+            icon={<User className="h-4 w-4" />}
+          >
             <InfoItem label="Nombre" value={profile.nombre} />
             <InfoItem label="Email" value={profile.email} />
           </Section>
@@ -104,13 +104,13 @@ export function ContextPanel({ session }: ContextPanelProps) {
           {/* Información laboral */}
           <Section
             title="Información laboral"
-            icon={<Briefcase className="w-4 h-4" />}
+            icon={<Briefcase className="h-4 w-4" />}
           >
             <InfoItem
               label="Tipo de contrato"
               value={
                 profile.tipoContrato
-                  ? tiposContrato[profile.tipoContrato]
+                  ? (tiposContrato[profile.tipoContrato] ?? null)
                   : null
               }
             />
@@ -125,14 +125,14 @@ export function ContextPanel({ session }: ContextPanelProps) {
             />
             <InfoItem
               label="Número de contratos"
-              value={profile.numeroContratos?.toString()}
+              value={profile.numeroContratos?.toString() ?? null}
             />
           </Section>
 
           {/* Información financiera */}
           <Section
             title="Información financiera"
-            icon={<DollarSign className="w-4 h-4" />}
+            icon={<DollarSign className="h-4 w-4" />}
           >
             <InfoItem
               label="Ingreso mensual promedio"
@@ -153,7 +153,7 @@ export function ContextPanel({ session }: ContextPanelProps) {
           {/* Seguridad social */}
           <Section
             title="Seguridad social"
-            icon={<Shield className="w-4 h-4" />}
+            icon={<Shield className="h-4 w-4" />}
           >
             <InfoItem label="EPS" value={profile.entidadSalud} />
             <InfoItem label="Fondo de pensión" value={profile.entidadPension} />
@@ -163,12 +163,12 @@ export function ContextPanel({ session }: ContextPanelProps) {
           {/* Información personal */}
           <Section
             title="Información personal"
-            icon={<Users className="w-4 h-4" />}
+            icon={<Users className="h-4 w-4" />}
           >
             <InfoItem label="Estado civil" value={profile.estadoCivil} />
             <InfoItem
               label="Personas a cargo"
-              value={profile.personasACargo?.toString()}
+              value={profile.personasACargo?.toString() ?? null}
             />
           </Section>
 
@@ -176,11 +176,11 @@ export function ContextPanel({ session }: ContextPanelProps) {
           {!profile.tipoContrato ||
           !profile.profesion ||
           !profile.ingresoMensualPromedio ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-800 mb-2">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="mb-2 text-xs text-amber-800">
                 <strong>💡 Completa tu perfil</strong>
               </p>
-              <p className="text-xs text-amber-700 mb-3">
+              <p className="mb-3 text-xs text-amber-700">
                 Con más información, puedo darte respuestas más precisas y
                 personalizadas.
               </p>
@@ -216,7 +216,7 @@ function Section({
 }) {
   return (
     <div>
-      <div className="flex items-center space-x-2 mb-3">
+      <div className="mb-3 flex items-center space-x-2">
         <div className="text-indigo-600">{icon}</div>
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
       </div>
@@ -230,12 +230,10 @@ function Section({
  */
 function InfoItem({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="flex justify-between items-start text-xs">
-      <span className="text-gray-600 font-medium">{label}:</span>
-      <span className="text-gray-900 text-right ml-2">
-        {value || (
-          <span className="text-gray-400 italic">No especificado</span>
-        )}
+    <div className="flex items-start justify-between text-xs">
+      <span className="font-medium text-gray-600">{label}:</span>
+      <span className="ml-2 text-right text-gray-900">
+        {value || <span className="italic text-gray-400">No especificado</span>}
       </span>
     </div>
   )

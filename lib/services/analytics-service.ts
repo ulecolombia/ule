@@ -46,10 +46,11 @@ function sanitizeMetadata(metadata: unknown): SafeMetadata {
   }
 
   const sanitized: SafeMetadata = {}
+  const metadataRecord = metadata as Record<string, unknown>
 
   for (const key of METADATA_ALLOWED_KEYS) {
-    if (key in metadata) {
-      const value = metadata[key]
+    if (key in metadataRecord) {
+      const value = metadataRecord[key]
 
       // Solo permitir tipos primitivos
       if (
@@ -153,7 +154,10 @@ export async function trackEvent(params: EventoAnalytics) {
     // Actualizar métricas del día
     await actualizarMetricaDiaria(evento, categoria)
   } catch (error) {
-    logger.error('Error al trackear evento', error instanceof Error ? error : { error })
+    logger.error(
+      'Error al trackear evento',
+      error instanceof Error ? error : { error }
+    )
     // No fallar la request del usuario por un error de analytics
   }
 }
@@ -161,7 +165,7 @@ export async function trackEvent(params: EventoAnalytics) {
 /**
  * Actualizar métricas diarias agregadas
  */
-async function actualizarMetricaDiaria(evento: string, categoria: string) {
+async function actualizarMetricaDiaria(evento: string, _categoria: string) {
   try {
     const hoy = new Date()
     hoy.setHours(0, 0, 0, 0)
@@ -204,7 +208,10 @@ async function actualizarMetricaDiaria(evento: string, categoria: string) {
       })
     }
   } catch (error) {
-    logger.error('Error al actualizar métrica diaria', error instanceof Error ? error : { error })
+    logger.error(
+      'Error al actualizar métrica diaria',
+      error instanceof Error ? error : { error }
+    )
   }
 }
 

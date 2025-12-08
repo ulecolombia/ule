@@ -88,11 +88,17 @@ export async function generateFacturaPDF(
 
       // Número de factura en grande
       doc.fontSize(12).font('Helvetica-Bold')
-      doc.text(`No. ${factura.numeroFactura}`, 350, 90, { width: 215, align: 'right' })
+      doc.text(`No. ${factura.numeroFactura}`, 350, 90, {
+        width: 215,
+        align: 'right',
+      })
 
       // Datos de la factura
       doc.fontSize(9).font('Helvetica')
-      doc.text(`Fecha de Emisión: ${formatDate(factura.fecha)}`, 350, 108, { width: 215, align: 'right' })
+      doc.text(`Fecha de Emisión: ${formatDate(factura.fecha)}`, 350, 108, {
+        width: 215,
+        align: 'right',
+      })
 
       if (factura.fechaVencimiento) {
         doc.text(
@@ -137,35 +143,58 @@ export async function generateFacturaPDF(
       const cliente = factura.cliente
       let clienteY = 215
 
-      doc.font('Helvetica-Bold').text('Nombre:', 50, clienteY, { continued: true })
+      doc
+        .font('Helvetica-Bold')
+        .text('Nombre:', 50, clienteY, { continued: true })
       doc.font('Helvetica').text(` ${cliente.nombre}`, { continued: false })
 
       clienteY += 13
-      doc.font('Helvetica-Bold').text('Documento:', 50, clienteY, { continued: true })
-      doc.font('Helvetica').text(` ${cliente.tipoDocumento} ${cliente.numeroDocumento}`, { continued: false })
+      doc
+        .font('Helvetica-Bold')
+        .text('Documento:', 50, clienteY, { continued: true })
+      doc
+        .font('Helvetica')
+        .text(` ${cliente.tipoDocumento} ${cliente.numeroDocumento}`, {
+          continued: false,
+        })
 
       if (cliente.email) {
         clienteY += 13
-        doc.font('Helvetica-Bold').text('Email:', 50, clienteY, { continued: true })
+        doc
+          .font('Helvetica-Bold')
+          .text('Email:', 50, clienteY, { continued: true })
         doc.font('Helvetica').text(` ${cliente.email}`, { continued: false })
       }
 
       if (cliente.telefono) {
         clienteY += 13
-        doc.font('Helvetica-Bold').text('Teléfono:', 50, clienteY, { continued: true })
+        doc
+          .font('Helvetica-Bold')
+          .text('Teléfono:', 50, clienteY, { continued: true })
         doc.font('Helvetica').text(` ${cliente.telefono}`, { continued: false })
       }
 
       if (cliente.direccion) {
         clienteY += 13
-        doc.font('Helvetica-Bold').text('Dirección:', 50, clienteY, { continued: true })
-        doc.font('Helvetica').text(` ${cliente.direccion}`, { continued: false })
+        doc
+          .font('Helvetica-Bold')
+          .text('Dirección:', 50, clienteY, { continued: true })
+        doc
+          .font('Helvetica')
+          .text(` ${cliente.direccion}`, { continued: false })
       }
 
       if (cliente.ciudad) {
         clienteY += 13
-        doc.font('Helvetica-Bold').text('Ciudad:', 50, clienteY, { continued: true })
-        doc.font('Helvetica').text(` ${cliente.ciudad}${cliente.departamento ? `, ${cliente.departamento}` : ''}`, { continued: false })
+        doc
+          .font('Helvetica-Bold')
+          .text('Ciudad:', 50, clienteY, { continued: true })
+        doc
+          .font('Helvetica')
+          .text(
+            ` ${cliente.ciudad}${cliente.departamento ? `, ${cliente.departamento}` : ''}`,
+            { continued: false }
+          )
       }
 
       // ==============================================
@@ -188,10 +217,10 @@ export async function generateFacturaPDF(
 
       // Items
       doc.fillColor('#000000').font('Helvetica')
-      const items = (factura.conceptos as ConceptosFactura) || []
+      const items = (factura.conceptos as unknown as ConceptosFactura) || []
 
       items.forEach((item, index) => {
-        const y = tableTop + 22 + (index * itemHeight)
+        const y = tableTop + 22 + index * itemHeight
 
         // Alternar color de fondo
         if (index % 2 === 0) {
@@ -206,30 +235,41 @@ export async function generateFacturaPDF(
         doc.fontSize(9).text((index + 1).toString(), 55, y + 5, { width: 20 })
 
         // Descripción (truncar si es muy larga)
-        const descripcionTruncada = item.descripcion.length > 50
-          ? item.descripcion.substring(0, 47) + '...'
-          : item.descripcion
+        const descripcionTruncada =
+          item.descripcion.length > 50
+            ? item.descripcion.substring(0, 47) + '...'
+            : item.descripcion
         doc.text(descripcionTruncada, 80, y + 5, { width: 200, ellipsis: true })
 
         // Cantidad
-        doc.text(item.cantidad.toString(), 290, y + 5, { width: 45, align: 'center' })
+        doc.text(item.cantidad.toString(), 290, y + 5, {
+          width: 45,
+          align: 'center',
+        })
 
         // Valor Unitario
-        doc.text(formatCurrency(item.valorUnitario), 345, y + 5, { width: 70, align: 'right' })
+        doc.text(formatCurrency(item.valorUnitario), 345, y + 5, {
+          width: 70,
+          align: 'right',
+        })
 
         // IVA
         doc.text(`${item.iva}%`, 425, y + 5, { width: 35, align: 'center' })
 
         // Total
-        const totalItem = item.cantidad * item.valorUnitario * (1 + item.iva / 100)
-        doc.text(formatCurrency(totalItem), 470, y + 5, { width: 85, align: 'right' })
+        const totalItem =
+          item.cantidad * item.valorUnitario * (1 + item.iva / 100)
+        doc.text(formatCurrency(totalItem), 470, y + 5, {
+          width: 85,
+          align: 'right',
+        })
       })
 
       // ==============================================
       // TOTALES
       // ==============================================
 
-      const totalesY = tableTop + 27 + (items.length * itemHeight)
+      const totalesY = tableTop + 27 + items.length * itemHeight
 
       // Cuadro de totales
       doc.rect(380, totalesY, 182, 90).stroke('#E2E8F0')
@@ -238,45 +278,50 @@ export async function generateFacturaPDF(
 
       // Subtotal
       doc.text('Subtotal:', 390, totalesY + 10, { width: 90, align: 'right' })
-      doc.font('Helvetica-Bold').text(
-        formatCurrency(Number(factura.subtotal)),
-        480,
-        totalesY + 10,
-        { width: 75, align: 'right' }
-      )
+      doc
+        .font('Helvetica-Bold')
+        .text(formatCurrency(Number(factura.subtotal)), 480, totalesY + 10, {
+          width: 75,
+          align: 'right',
+        })
 
       // Descuentos (si aplica)
       if (Number(factura.totalDescuentos) > 0) {
         doc.font('Helvetica')
-        doc.text('Descuentos:', 390, totalesY + 25, { width: 90, align: 'right' })
-        doc.font('Helvetica-Bold').text(
-          `-${formatCurrency(Number(factura.totalDescuentos))}`,
-          480,
-          totalesY + 25,
-          { width: 75, align: 'right' }
-        )
+        doc.text('Descuentos:', 390, totalesY + 25, {
+          width: 90,
+          align: 'right',
+        })
+        doc
+          .font('Helvetica-Bold')
+          .text(
+            `-${formatCurrency(Number(factura.totalDescuentos))}`,
+            480,
+            totalesY + 25,
+            { width: 75, align: 'right' }
+          )
       }
 
       // IVA
       doc.font('Helvetica')
       doc.text('IVA:', 390, totalesY + 40, { width: 90, align: 'right' })
-      doc.font('Helvetica-Bold').text(
-        formatCurrency(Number(factura.totalIva)),
-        480,
-        totalesY + 40,
-        { width: 75, align: 'right' }
-      )
+      doc
+        .font('Helvetica-Bold')
+        .text(formatCurrency(Number(factura.totalIva)), 480, totalesY + 40, {
+          width: 75,
+          align: 'right',
+        })
 
       // Total
       doc.rect(380, totalesY + 60, 182, 25).fillAndStroke('#14B8A6', '#14B8A6')
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#FFFFFF')
       doc.text('TOTAL:', 390, totalesY + 67, { width: 90, align: 'right' })
-      doc.fontSize(13).text(
-        formatCurrency(Number(factura.total)),
-        480,
-        totalesY + 66,
-        { width: 75, align: 'right' }
-      )
+      doc
+        .fontSize(13)
+        .text(formatCurrency(Number(factura.total)), 480, totalesY + 66, {
+          width: 75,
+          align: 'right',
+        })
 
       doc.fillColor('#000000')
 
@@ -294,11 +339,14 @@ export async function generateFacturaPDF(
         notasY += 50
       }
 
-      if (factura.terminos) {
+      if (factura.terminosPago) {
         doc.fontSize(10).font('Helvetica-Bold')
         doc.text('Términos y Condiciones:', 50, notasY)
         doc.fontSize(9).font('Helvetica')
-        doc.text(factura.terminos, 50, notasY + 15, { width: 320, lineGap: 2 })
+        doc.text(factura.terminosPago, 50, notasY + 15, {
+          width: 320,
+          lineGap: 2,
+        })
       }
 
       // ==============================================
@@ -355,10 +403,15 @@ export async function generateFacturaPDF(
         // Si no hay CUFE (es un borrador)
         const footerY = 700
         doc.fontSize(10).font('Helvetica-Bold').fillColor('#FF6B6B')
-        doc.text('DOCUMENTO BORRADOR - NO VÁLIDO PARA EFECTOS FISCALES', 50, footerY, {
-          width: 512,
-          align: 'center',
-        })
+        doc.text(
+          'DOCUMENTO BORRADOR - NO VÁLIDO PARA EFECTOS FISCALES',
+          50,
+          footerY,
+          {
+            width: 512,
+            align: 'center',
+          }
+        )
         doc.fillColor('#000000')
       }
 
@@ -378,15 +431,15 @@ export async function generateFacturaPDF(
 export function generateFacturaXML(
   factura: FacturaCompleta & { cufe?: string }
 ): string {
-  const items = (factura.conceptos as ConceptosFactura) || []
+  const items = (factura.conceptos as unknown as ConceptosFactura) || []
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
   <cbc:UBLVersionID>UBL 2.1</cbc:UBLVersionID>
   <cbc:ID>${factura.numeroFactura}</cbc:ID>
   <cbc:UUID schemeName="CUFE-SHA384">${factura.cufe || 'PENDING'}</cbc:UUID>
-  <cbc:IssueDate>${factura.fecha.toISOString().split('T')[0]}</cbc:IssueDate>
-  <cbc:IssueTime>${factura.fecha.toISOString().split('T')[1].split('.')[0]}</cbc:IssueTime>
+  <cbc:IssueDate>${factura.fecha.toISOString().split('T')[0]!}</cbc:IssueDate>
+  <cbc:IssueTime>${factura.fecha.toISOString().split('T')[1]!.split('.')[0]!}</cbc:IssueTime>
   <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
   <cbc:DocumentCurrencyCode>COP</cbc:DocumentCurrencyCode>
 
@@ -425,7 +478,9 @@ export function generateFacturaXML(
     <cbc:PayableAmount currencyID="COP">${factura.total}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
 
-${items.map((item, index) => `  <cac:InvoiceLine>
+${items
+  .map(
+    (item, index) => `  <cac:InvoiceLine>
     <cbc:ID>${index + 1}</cbc:ID>
     <cbc:InvoicedQuantity>${item.cantidad}</cbc:InvoicedQuantity>
     <cbc:LineExtensionAmount currencyID="COP">${item.cantidad * item.valorUnitario}</cbc:LineExtensionAmount>
@@ -436,6 +491,8 @@ ${items.map((item, index) => `  <cac:InvoiceLine>
       <cbc:PriceAmount currencyID="COP">${item.valorUnitario}</cbc:PriceAmount>
     </cac:Price>
   </cac:InvoiceLine>
-`).join('\n')}
+`
+  )
+  .join('\n')}
 </Invoice>`
 }

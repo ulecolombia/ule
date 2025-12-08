@@ -13,10 +13,7 @@
  */
 
 import { db } from '@/lib/db'
-import {
-  EstadoSolicitudEliminacion,
-  AccionPrivacidad,
-} from '@prisma/client'
+import { EstadoSolicitudEliminacion, AccionPrivacidad } from '@prisma/client'
 import { secureLogger } from '@/lib/security/secure-logger'
 import { randomBytes } from 'crypto'
 
@@ -361,7 +358,10 @@ export async function obtenerSolicitudesPendientes(): Promise<
       },
     })
 
-    return solicitudes
+    // Filter out any with null fechaEjecucion (shouldn't happen given query, but TS requires)
+    return solicitudes.filter(
+      (s): s is typeof s & { fechaEjecucion: Date } => s.fechaEjecucion !== null
+    )
   } catch (error) {
     secureLogger.error('Error obteniendo solicitudes pendientes', error)
     throw error

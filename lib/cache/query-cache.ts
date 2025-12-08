@@ -54,7 +54,7 @@ class QueryCacheService {
   /**
    * Invalida cache de aportes de un usuario
    */
-  invalidateUserAportes(userId: string): void {
+  invalidateUserAportes(_userId: string): void {
     // Limpiar todas las variaciones de paginación
     // Nota: En una implementación real, podríamos usar un patrón más sofisticado
     this.userAportesCache.clear()
@@ -81,7 +81,7 @@ class QueryCacheService {
   /**
    * Invalida cache de configuración de un usuario
    */
-  invalidateUserConfig(userId: string): void {
+  invalidateUserConfig(_userId: string): void {
     this.userConfigCache.clear()
   }
 
@@ -108,7 +108,7 @@ class QueryCacheService {
   /**
    * Invalida cache de eventos de un usuario
    */
-  invalidateUserEventos(userId: string): void {
+  invalidateUserEventos(_userId: string): void {
     this.eventosCache.clear()
   }
 

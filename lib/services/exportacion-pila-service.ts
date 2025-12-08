@@ -15,7 +15,7 @@ interface FiltrosPILA {
   userId: string
   año?: number
   mes?: number
-  estado?: 'PENDIENTE' | 'PAGADO' | 'VENCIDO'
+  estado?: 'PENDIENTE' | 'PAGADO' | 'VENCIDO' | 'CANCELADO'
 }
 
 interface ExportResult {
@@ -30,15 +30,15 @@ interface ExportResult {
 export async function exportarPilaExcel(
   filtros: FiltrosPILA
 ): Promise<ExportResult> {
-  // Obtener datos de liquidaciones
-  const liquidaciones = await prisma.liquidacionPILA.findMany({
+  // Obtener datos de aportes
+  const liquidaciones = await prisma.aporte.findMany({
     where: {
       userId: filtros.userId,
-      ...(filtros.año && { ano: filtros.año }),
+      ...(filtros.año && { anio: filtros.año }),
       ...(filtros.mes && { mes: filtros.mes }),
       ...(filtros.estado && { estado: filtros.estado }),
     },
-    orderBy: [{ ano: 'desc' }, { mes: 'desc' }],
+    orderBy: [{ anio: 'desc' }, { mes: 'desc' }],
   })
 
   // Crear workbook
@@ -56,11 +56,10 @@ export async function exportarPilaExcel(
     { header: 'Periodo', key: 'periodo', width: 15 },
     { header: 'Fecha Límite', key: 'fechaLimite', width: 15 },
     { header: 'Estado', key: 'estado', width: 12 },
-    { header: 'Base Cotización', key: 'baseCotizacion', width: 18 },
+    { header: 'IBC', key: 'ibc', width: 18 },
     { header: 'Salud', key: 'salud', width: 15 },
     { header: 'Pensión', key: 'pension', width: 15 },
     { header: 'ARL', key: 'arl', width: 15 },
-    { header: 'Caja Compensación', key: 'cajaCompensacion', width: 20 },
     { header: 'Total a Pagar', key: 'total', width: 18 },
   ]
 
@@ -85,34 +84,27 @@ export async function exportarPilaExcel(
   // Agregar datos
   let totalGeneral = 0
   liquidaciones.forEach((liq) => {
-    const total =
-      liq.salud.toNumber() +
-      liq.pension.toNumber() +
-      (liq.arl?.toNumber() || 0) +
-      (liq.cajaCompensacion?.toNumber() || 0)
-
+    const total = liq.total.toNumber()
     totalGeneral += total
 
     const row = worksheet.addRow({
-      periodo: `${liq.mes.toString().padStart(2, '0')}/${liq.ano}`,
+      periodo: `${liq.mes.toString().padStart(2, '0')}/${liq.anio}`,
       fechaLimite: format(new Date(liq.fechaLimite), 'dd/MM/yyyy', {
         locale: es,
       }),
       estado: liq.estado,
-      baseCotizacion: liq.baseCotizacion.toNumber(),
+      ibc: liq.ibc.toNumber(),
       salud: liq.salud.toNumber(),
       pension: liq.pension.toNumber(),
-      arl: liq.arl?.toNumber() || 0,
-      cajaCompensacion: liq.cajaCompensacion?.toNumber() || 0,
+      arl: liq.arl.toNumber(),
       total,
     })
 
     // Formato de moneda para columnas numéricas
-    row.getCell('baseCotizacion').numFmt = '"$"#,##0'
+    row.getCell('ibc').numFmt = '"$"#,##0'
     row.getCell('salud').numFmt = '"$"#,##0'
     row.getCell('pension').numFmt = '"$"#,##0'
     row.getCell('arl').numFmt = '"$"#,##0'
-    row.getCell('cajaCompensacion').numFmt = '"$"#,##0'
     row.getCell('total').numFmt = '"$"#,##0'
 
     // Color según estado
@@ -151,16 +143,15 @@ export async function exportarPilaExcel(
       periodo: '',
       fechaLimite: '',
       estado: '',
-      baseCotizacion: '',
+      ibc: '',
       salud: '',
       pension: '',
-      arl: '',
-      cajaCompensacion: 'TOTAL GENERAL:',
+      arl: 'TOTAL GENERAL:',
       total: totalGeneral,
     })
 
     totalRow.font = { bold: true, size: 11 }
-    totalRow.getCell('cajaCompensacion').alignment = { horizontal: 'right' }
+    totalRow.getCell('arl').alignment = { horizontal: 'right' }
     totalRow.getCell('total').numFmt = '"$"#,##0'
     totalRow.fill = {
       type: 'pattern',
@@ -170,7 +161,7 @@ export async function exportarPilaExcel(
   }
 
   // Bordes para todas las celdas
-  worksheet.eachRow((row, rowNumber) => {
+  worksheet.eachRow((row, _rowNumber) => {
     row.eachCell((cell) => {
       cell.border = {
         top: { style: 'thin', color: { argb: 'E5E7EB' } },
@@ -207,14 +198,14 @@ export async function exportarPilaCSV(
   filtros: FiltrosPILA
 ): Promise<ExportResult> {
   // Obtener datos
-  const liquidaciones = await prisma.liquidacionPILA.findMany({
+  const liquidaciones = await prisma.aporte.findMany({
     where: {
       userId: filtros.userId,
-      ...(filtros.año && { ano: filtros.año }),
+      ...(filtros.año && { anio: filtros.año }),
       ...(filtros.mes && { mes: filtros.mes }),
       ...(filtros.estado && { estado: filtros.estado }),
     },
-    orderBy: [{ ano: 'desc' }, { mes: 'desc' }],
+    orderBy: [{ anio: 'desc' }, { mes: 'desc' }],
   })
 
   // Construir CSV
@@ -222,37 +213,29 @@ export async function exportarPilaCSV(
     'Periodo',
     'Fecha Limite',
     'Estado',
-    'Base Cotizacion',
+    'IBC',
     'Salud',
     'Pension',
     'ARL',
-    'Caja Compensacion',
     'Total',
   ]
 
   const rows = liquidaciones.map((liq) => {
-    const total =
-      liq.salud.toNumber() +
-      liq.pension.toNumber() +
-      (liq.arl?.toNumber() || 0) +
-      (liq.cajaCompensacion?.toNumber() || 0)
-
     return [
-      `${liq.mes.toString().padStart(2, '0')}/${liq.ano}`,
+      `${liq.mes.toString().padStart(2, '0')}/${liq.anio}`,
       format(new Date(liq.fechaLimite), 'dd/MM/yyyy', { locale: es }),
       liq.estado,
-      liq.baseCotizacion.toNumber(),
+      liq.ibc.toNumber(),
       liq.salud.toNumber(),
       liq.pension.toNumber(),
-      liq.arl?.toNumber() || 0,
-      liq.cajaCompensacion?.toNumber() || 0,
-      total,
+      liq.arl.toNumber(),
+      liq.total.toNumber(),
     ]
   })
 
   const csvContent = [
     headers.join(','),
-    ...rows.map((row) => row.join(','))
+    ...rows.map((row) => row.join(',')),
   ].join('\n')
 
   // Guardar archivo
@@ -280,10 +263,10 @@ export async function exportarPilaPDF(
   filtros: FiltrosPILA
 ): Promise<ExportResult> {
   // Obtener datos
-  const liquidaciones = await prisma.liquidacionPILA.findMany({
+  const liquidaciones = await prisma.aporte.findMany({
     where: {
       userId: filtros.userId,
-      ...(filtros.año && { ano: filtros.año }),
+      ...(filtros.año && { anio: filtros.año }),
       ...(filtros.mes && { mes: filtros.mes }),
       ...(filtros.estado && { estado: filtros.estado }),
     },
@@ -296,38 +279,32 @@ export async function exportarPilaPDF(
         },
       },
     },
-    orderBy: [{ ano: 'desc' }, { mes: 'desc' }],
+    orderBy: [{ anio: 'desc' }, { mes: 'desc' }],
   })
 
   // Construir HTML para PDF
   let totalGeneral = 0
   const rowsHTML = liquidaciones
     .map((liq) => {
-      const total =
-        liq.salud.toNumber() +
-        liq.pension.toNumber() +
-        (liq.arl?.toNumber() || 0) +
-        (liq.cajaCompensacion?.toNumber() || 0)
-
+      const total = liq.total.toNumber()
       totalGeneral += total
 
       const estadoColor =
         liq.estado === 'PAGADO'
           ? '#D1FAE5'
           : liq.estado === 'VENCIDO'
-          ? '#FEE2E2'
-          : '#FEF3C7'
+            ? '#FEE2E2'
+            : '#FEF3C7'
 
       return `
         <tr>
-          <td>${liq.mes.toString().padStart(2, '0')}/${liq.ano}</td>
+          <td>${liq.mes.toString().padStart(2, '0')}/${liq.anio}</td>
           <td>${format(new Date(liq.fechaLimite), 'dd/MM/yyyy', { locale: es })}</td>
           <td style="background-color: ${estadoColor}; text-align: center;">${liq.estado}</td>
-          <td style="text-align: right;">${formatearMoneda(liq.baseCotizacion.toNumber())}</td>
+          <td style="text-align: right;">${formatearMoneda(liq.ibc.toNumber())}</td>
           <td style="text-align: right;">${formatearMoneda(liq.salud.toNumber())}</td>
           <td style="text-align: right;">${formatearMoneda(liq.pension.toNumber())}</td>
-          <td style="text-align: right;">${formatearMoneda(liq.arl?.toNumber() || 0)}</td>
-          <td style="text-align: right;">${formatearMoneda(liq.cajaCompensacion?.toNumber() || 0)}</td>
+          <td style="text-align: right;">${formatearMoneda(liq.arl.toNumber())}</td>
           <td style="text-align: right; font-weight: bold;">${formatearMoneda(total)}</td>
         </tr>
       `
@@ -418,18 +395,17 @@ export async function exportarPilaPDF(
             <th>Periodo</th>
             <th>Fecha Límite</th>
             <th>Estado</th>
-            <th>Base Cotización</th>
+            <th>IBC</th>
             <th>Salud</th>
             <th>Pensión</th>
             <th>ARL</th>
-            <th>Caja Comp.</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
           ${rowsHTML}
           <tr class="total-row">
-            <td colspan="8" style="text-align: right;">TOTAL GENERAL:</td>
+            <td colspan="7" style="text-align: right;">TOTAL GENERAL:</td>
             <td style="text-align: right;">${formatearMoneda(totalGeneral)}</td>
           </tr>
         </tbody>

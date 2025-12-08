@@ -15,6 +15,7 @@
  */
 
 import { db } from '@/lib/db'
+import { Prisma } from '@prisma/client'
 import {
   AccionAuditoria,
   CategoriaAuditoria,
@@ -477,7 +478,7 @@ async function analizarYGenerarAlerta(log: any) {
                 thresholds.UNUSUAL_LOCATION.daysToCheck * 24 * 60 * 60 * 1000
             ),
           },
-          ipGeo: { not: null },
+          ipGeo: { not: Prisma.DbNull },
         },
         select: {
           ipGeo: true,
@@ -498,7 +499,7 @@ async function analizarYGenerarAlerta(log: any) {
             tipo: 'ACCESO_UBICACION_INUSUAL',
             severidad: thresholds.UNUSUAL_LOCATION.severidad,
             titulo: 'Acceso desde ubicación inusual',
-            descripcion: `Login desde ${log.ipGeo.city}, ${log.ipGeo.country}. Países anteriores: ${[...new Set(paisesAnteriores)].join(', ')}`,
+            descripcion: `Login desde ${log.ipGeo.city}, ${log.ipGeo.country}. Países anteriores: ${Array.from(new Set(paisesAnteriores)).join(', ')}`,
             userId: log.userId,
             userEmail: log.userEmail,
             ip: log.ip,

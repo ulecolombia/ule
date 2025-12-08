@@ -8,7 +8,6 @@ import JSZip from 'jszip'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { prisma } from '@/lib/prisma'
-import { formatearMoneda } from '@/lib/utils/format'
 import fs from 'fs'
 import path from 'path'
 
@@ -16,7 +15,13 @@ interface FiltrosFacturas {
   userId: string
   fechaInicio?: Date
   fechaFin?: Date
-  estado?: 'BORRADOR' | 'GENERADA' | 'ENVIADA' | 'PAGADA' | 'VENCIDA' | 'ANULADA'
+  estado?:
+    | 'BORRADOR'
+    | 'EMITIDA'
+    | 'PAGADA'
+    | 'VENCIDA'
+    | 'ANULADA'
+    | 'RECHAZADA'
   clienteId?: string
 }
 
@@ -104,8 +109,8 @@ export async function exportarFacturasExcel(
 
   facturas.forEach((factura) => {
     const subtotal = factura.subtotal.toNumber()
-    const iva = factura.iva.toNumber()
-    const retencion = factura.retencionFuente?.toNumber() || 0
+    const iva = factura.totalIva.toNumber()
+    const retencion = factura.totalImpuestos?.toNumber() || 0
     const total = factura.total.toNumber()
 
     subtotalGeneral += subtotal
@@ -115,14 +120,14 @@ export async function exportarFacturasExcel(
 
     const row = worksheet.addRow({
       numero: factura.numeroFactura,
-      fechaEmision: format(new Date(factura.fechaEmision), 'dd/MM/yyyy', {
+      fechaEmision: format(new Date(factura.fecha), 'dd/MM/yyyy', {
         locale: es,
       }),
-      fechaVencimiento: format(
-        new Date(factura.fechaVencimiento),
-        'dd/MM/yyyy',
-        { locale: es }
-      ),
+      fechaVencimiento: factura.fechaVencimiento
+        ? format(new Date(factura.fechaVencimiento), 'dd/MM/yyyy', {
+            locale: es,
+          })
+        : '',
       cliente: factura.cliente.nombre,
       documentoCliente: factura.cliente.numeroDocumento,
       estado: factura.estado,
@@ -161,7 +166,7 @@ export async function exportarFacturasExcel(
         fgColor: { argb: 'F3F4F6' },
       }
       estadoCell.font = { color: { argb: '6B7280' } }
-    } else if (factura.estado === 'ENVIADA') {
+    } else if (factura.estado === 'EMITIDA') {
       estadoCell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -218,7 +223,7 @@ export async function exportarFacturasExcel(
   }
 
   // Bordes para todas las celdas
-  worksheet.eachRow((row, rowNumber) => {
+  worksheet.eachRow((row, _rowNumber) => {
     row.eachCell((cell) => {
       cell.border = {
         top: { style: 'thin', color: { argb: 'E5E7EB' } },
@@ -291,20 +296,23 @@ export async function exportarFacturasCSV(
 
   const rows = facturas.map((factura) => [
     factura.numeroFactura,
-    format(new Date(factura.fechaEmision), 'dd/MM/yyyy', { locale: es }),
-    format(new Date(factura.fechaVencimiento), 'dd/MM/yyyy', { locale: es }),
+    format(new Date(factura.fecha), 'dd/MM/yyyy', { locale: es }),
+    factura.fechaVencimiento
+      ? format(new Date(factura.fechaVencimiento), 'dd/MM/yyyy', { locale: es })
+      : '',
     factura.cliente.nombre,
     factura.cliente.numeroDocumento,
     factura.estado,
     factura.subtotal.toNumber(),
-    factura.iva.toNumber(),
-    factura.retencionFuente?.toNumber() || 0,
+    factura.totalIva.toNumber(),
+    factura.totalImpuestos?.toNumber() || 0,
     factura.total.toNumber(),
   ])
 
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join(
-    '\n'
-  )
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\n')
 
   // Guardar archivo
   const fileName = `facturas_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`
@@ -349,8 +357,8 @@ export async function exportarFacturasZIP(
 
   // Agregar cada factura al ZIP
   for (const factura of facturas) {
-    if (factura.urlPdf) {
-      const pdfPath = path.join(process.cwd(), 'public', factura.urlPdf)
+    if (factura.pdfUrl) {
+      const pdfPath = path.join(process.cwd(), 'public', factura.pdfUrl)
 
       // Verificar si existe el PDF
       if (fs.existsSync(pdfPath)) {

@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
-import { calcularProximaDeclaracionRenta, formatearFechaTributaria } from '@/lib/utils/calendario-tributario'
+import {
+  calcularProximaDeclaracionRenta,
+  formatearFechaTributaria,
+} from '@/lib/utils/calendario-tributario'
 
 /**
  * GET /api/dashboard/stats
  * Obtiene estadísticas del dashboard: próximo pago PILA, facturas del mes, actividad reciente
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   let session
   try {
     session = await auth()
@@ -26,7 +29,10 @@ export async function GET(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     // Calcular próxima fecha tributaria basada en la cédula
@@ -35,70 +41,86 @@ export async function GET(req: NextRequest) {
       : null
 
     // Obtener datos en paralelo para mejor performance
-    const [proximoPagoPILA, facturasDelMes, actividadReciente, usoIA] = await Promise.all([
-      // 1. Próximo pago PILA pendiente
-      prisma.aporte.findFirst({
-        where: {
-          userId: user.id,
-          estado: 'PENDIENTE',
-          fechaLimite: {
-            gte: new Date(), // Solo pagos futuros
+    const [proximoPagoPILA, facturasDelMes, actividadReciente, usoIA] =
+      await Promise.all([
+        // 1. Próximo pago PILA pendiente
+        prisma.aporte.findFirst({
+          where: {
+            userId: user.id,
+            estado: 'PENDIENTE',
+            fechaLimite: {
+              gte: new Date(), // Solo pagos futuros
+            },
           },
-        },
-        orderBy: {
-          fechaLimite: 'asc',
-        },
-        select: {
-          id: true,
-          periodo: true,
-          total: true,
-          fechaLimite: true,
-        },
-      }),
-
-      // 2. Facturas del mes actual
-      prisma.factura.aggregate({
-        where: {
-          userId: user.id,
-          fecha: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
+          orderBy: {
+            fechaLimite: 'asc',
           },
-        },
-        _count: true,
-        _sum: {
-          total: true,
-        },
-      }),
-
-      // 3. Actividad reciente (últimas 10 acciones)
-      getActividadReciente(user.id),
-
-      // 4. Uso de IA (si existe la tabla)
-      prisma.usoIA.count({
-        where: {
-          userId: user.id,
-          fecha: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          select: {
+            id: true,
+            periodo: true,
+            total: true,
+            fechaLimite: true,
           },
-        },
-      }).catch(() => 0), // Si falla, retornar 0
-    ])
+        }),
+
+        // 2. Facturas del mes actual
+        prisma.factura.aggregate({
+          where: {
+            userId: user.id,
+            fecha: {
+              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+              lt: new Date(
+                new Date().getFullYear(),
+                new Date().getMonth() + 1,
+                1
+              ),
+            },
+          },
+          _count: true,
+          _sum: {
+            total: true,
+          },
+        }),
+
+        // 3. Actividad reciente (últimas 10 acciones)
+        getActividadReciente(user.id),
+
+        // 4. Uso de IA (si existe la tabla)
+        prisma.usoIA
+          .count({
+            where: {
+              userId: user.id,
+              fecha: {
+                gte: new Date(
+                  new Date().getFullYear(),
+                  new Date().getMonth(),
+                  1
+                ),
+              },
+            },
+          })
+          .catch(() => 0), // Si falla, retornar 0
+      ])
 
     return NextResponse.json({
-      proximoPagoPILA: proximoPagoPILA ? {
-        id: proximoPagoPILA.id,
-        periodo: proximoPagoPILA.periodo,
-        monto: Number(proximoPagoPILA.total),
-        fechaLimite: proximoPagoPILA.fechaLimite.toISOString(),
-        diasRestantes: Math.ceil(
-          (proximoPagoPILA.fechaLimite.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-        ),
-      } : null,
+      proximoPagoPILA: proximoPagoPILA
+        ? {
+            id: proximoPagoPILA.id,
+            periodo: proximoPagoPILA.periodo,
+            monto: Number(proximoPagoPILA.total),
+            fechaLimite: proximoPagoPILA.fechaLimite.toISOString(),
+            diasRestantes: Math.ceil(
+              (proximoPagoPILA.fechaLimite.getTime() - Date.now()) /
+                (1000 * 60 * 60 * 24)
+            ),
+          }
+        : null,
 
       facturasDelMes: {
         cantidad: facturasDelMes._count,
-        total: facturasDelMes._sum.total ? Number(facturasDelMes._sum.total) : 0,
+        total: facturasDelMes._sum.total
+          ? Number(facturasDelMes._sum.total)
+          : 0,
       },
 
       consultasIA: {
@@ -106,12 +128,16 @@ export async function GET(req: NextRequest) {
         total: 20, // Límite del plan
       },
 
-      proximaFechaTributaria: proximaFechaTributaria ? {
-        fecha: proximaFechaTributaria.fecha.toISOString(),
-        fechaFormateada: formatearFechaTributaria(proximaFechaTributaria.fecha),
-        descripcion: proximaFechaTributaria.descripcion,
-        diasRestantes: proximaFechaTributaria.diasRestantes,
-      } : null,
+      proximaFechaTributaria: proximaFechaTributaria
+        ? {
+            fecha: proximaFechaTributaria.fecha.toISOString(),
+            fechaFormateada: formatearFechaTributaria(
+              proximaFechaTributaria.fecha
+            ),
+            descripcion: proximaFechaTributaria.descripcion,
+            diasRestantes: proximaFechaTributaria.diasRestantes,
+          }
+        : null,
 
       actividadReciente,
     })
@@ -176,11 +202,15 @@ async function getActividadReciente(userId: string) {
       ...aportes.map((a) => ({
         id: a.id,
         tipo: 'pila' as const,
-        titulo: a.estado === 'PAGADO' ? 'Pago PILA confirmado' : 'PILA calculada',
+        titulo:
+          a.estado === 'PAGADO' ? 'Pago PILA confirmado' : 'PILA calculada',
         descripcion: `${a.periodo} - $${Number(a.total).toLocaleString('es-CO')}`,
         fecha: a.createdAt,
         icono: 'account_balance',
-        color: a.estado === 'PAGADO' ? 'text-success-text-light' : 'text-warning-text-light',
+        color:
+          a.estado === 'PAGADO'
+            ? 'text-success-text-light'
+            : 'text-warning-text-light',
       })),
     ]
       .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())

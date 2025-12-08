@@ -6,8 +6,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { crearFacturaSchema, guardarBorradorSchema } from '@/lib/validations/factura'
-import { calcularTotalesFactura, generarNumeroFactura, generarCUFE } from '@/lib/utils/facturacion-utils'
+import {
+  crearFacturaSchema,
+  guardarBorradorSchema,
+} from '@/lib/validations/factura'
+import {
+  calcularTotalesFactura,
+  generarNumeroFactura,
+  generarCUFE,
+  extraerNumeroDeFactura,
+} from '@/lib/utils/facturacion-utils'
 import { z } from 'zod'
 
 /**
@@ -132,8 +140,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar que el cliente existe y pertenece al usuario
+    let cliente = null
     if (validatedData.clienteId) {
-      const cliente = await db.cliente.findFirst({
+      cliente = await db.cliente.findFirst({
         where: {
           id: validatedData.clienteId,
           userId: user.id,
@@ -151,8 +160,19 @@ export async function POST(req: NextRequest) {
     // Calcular totales
     const totales = calcularTotalesFactura(validatedData.items || [])
 
+    // Obtener última factura del usuario para generar el siguiente número
+    const ultimaFactura = await db.factura.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      select: { numeroFactura: true },
+    })
+
+    const ultimoNumero = ultimaFactura?.numeroFactura
+      ? extraerNumeroDeFactura(ultimaFactura.numeroFactura)
+      : 0
+
     // Generar número de factura
-    const numeroFactura = await generarNumeroFactura(user.id, 'ULE')
+    const numeroFactura = generarNumeroFactura(ultimoNumero, 'ULE')
 
     // Generar CUFE solo si es EMITIDA
     let cufe: string | undefined
@@ -173,14 +193,22 @@ export async function POST(req: NextRequest) {
         numeroFactura,
         fecha: validatedData.fecha || new Date(),
         metodoPago: validatedData.metodoPago,
+        // Información desnormalizada del cliente
+        clienteNombre: cliente?.nombre || 'Cliente sin nombre',
+        clienteDocumento: cliente?.numeroDocumento || 'Sin documento',
+        clienteEmail: cliente?.email,
+        clienteTelefono: cliente?.telefono,
+        clienteDireccion: cliente?.direccion,
+        clienteCiudad: cliente?.ciudad,
+        // Items y totales
         conceptos: validatedData.items || [],
         subtotal: totales.subtotal,
-        iva: totales.totalIva,
+        totalIva: totales.totalIva,
         total: totales.total,
         estado: validatedData.estado || 'BORRADOR',
         cufe,
         notas: validatedData.notas || null,
-        terminos: validatedData.terminos || null,
+        terminosPago: validatedData.terminos || null,
       },
       include: {
         cliente: {

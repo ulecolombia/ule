@@ -51,7 +51,9 @@ export default function NotificacionesPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Filtros
-  const [filtroEstado, setFiltroEstado] = useState<'todas' | 'no-leidas'>('todas')
+  const [filtroEstado, setFiltroEstado] = useState<'todas' | 'no-leidas'>(
+    'todas'
+  )
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function NotificacionesPage() {
     if (status === 'authenticated') {
       fetchNotificaciones()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, filtroEstado, currentPage])
 
   const fetchNotificaciones = async () => {
@@ -92,9 +95,7 @@ export default function NotificacionesPage() {
       setUnreadCount(data.unreadCount)
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Error al cargar notificaciones'
+        err instanceof Error ? err.message : 'Error al cargar notificaciones'
       )
     } finally {
       setLoading(false)
@@ -115,9 +116,7 @@ export default function NotificacionesPage() {
 
       // Actualizar localmente
       setNotificaciones((prev) =>
-        prev.map((n) =>
-          n.id === notificacionId ? { ...n, leido: true } : n
-        )
+        prev.map((n) => (n.id === notificacionId ? { ...n, leido: true } : n))
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
 
@@ -138,9 +137,7 @@ export default function NotificacionesPage() {
       }
 
       // Actualizar localmente
-      setNotificaciones((prev) =>
-        prev.filter((n) => n.id !== notificacionId)
-      )
+      setNotificaciones((prev) => prev.filter((n) => n.id !== notificacionId))
 
       toast.success('Notificación eliminada')
     } catch (err) {
@@ -169,8 +166,11 @@ export default function NotificacionesPage() {
   if (status === 'loading' || loading) {
     return (
       <>
-        <Header userName={session?.user?.name} userEmail={session?.user?.email} />
-        <div className="min-h-screen bg-light-50 p-6">
+        <Header
+          userName={session?.user?.name}
+          userEmail={session?.user?.email}
+        />
+        <div className="bg-light-50 min-h-screen p-6">
           <div className="mx-auto max-w-4xl">
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -191,14 +191,14 @@ export default function NotificacionesPage() {
   return (
     <>
       <Header userName={session.user.name} userEmail={session.user.email} />
-      <div className="min-h-screen bg-light-50 p-6">
+      <div className="bg-light-50 min-h-screen p-6">
         <div className="mx-auto max-w-4xl">
           <Breadcrumbs />
 
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-dark">Notificaciones</h1>
+              <h1 className="text-dark text-3xl font-bold">Notificaciones</h1>
               <p className="text-dark-100 mt-1">
                 {unreadCount > 0
                   ? `Tienes ${unreadCount} notificación${unreadCount !== 1 ? 'es' : ''} sin leer`
@@ -223,7 +223,7 @@ export default function NotificacionesPage() {
           <Card className="mb-6">
             <CardBody className="py-3">
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-dark">Mostrar:</span>
+                <span className="text-dark text-sm font-medium">Mostrar:</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
@@ -279,11 +279,11 @@ export default function NotificacionesPage() {
           {notificaciones.length === 0 ? (
             <Card>
               <CardBody className="py-12 text-center">
-                <span className="material-symbols-outlined mb-3 text-6xl text-dark-100">
+                <span className="material-symbols-outlined text-dark-100 mb-3 text-6xl">
                   notifications_off
                 </span>
                 <p className="text-dark">No hay notificaciones</p>
-                <p className="text-sm text-dark-100 mt-1">
+                <p className="text-dark-100 mt-1 text-sm">
                   {filtroEstado === 'no-leidas'
                     ? 'No tienes notificaciones sin leer'
                     : 'Aquí aparecerán tus notificaciones importantes'}
@@ -296,7 +296,9 @@ export default function NotificacionesPage() {
                 <Card
                   key={notif.id}
                   className={`transition-all ${
-                    !notif.leido ? 'border-l-4 border-primary bg-blue-50/50' : ''
+                    !notif.leido
+                      ? 'border-l-4 border-primary bg-blue-50/50'
+                      : ''
                   }`}
                 >
                   <CardBody>
@@ -315,7 +317,7 @@ export default function NotificacionesPage() {
                         </span>
                       </div>
 
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <h3
@@ -325,10 +327,10 @@ export default function NotificacionesPage() {
                             >
                               {notif.titulo}
                             </h3>
-                            <p className="text-sm text-dark-100 mt-1">
+                            <p className="text-dark-100 mt-1 text-sm">
                               {notif.mensaje}
                             </p>
-                            <p className="text-xs text-dark-100 mt-2">
+                            <p className="text-dark-100 mt-2 text-xs">
                               {new Date(notif.fechaEnvio).toLocaleDateString(
                                 'es-CO',
                                 {
@@ -351,7 +353,7 @@ export default function NotificacionesPage() {
                         </div>
 
                         {/* Acciones */}
-                        <div className="flex gap-2 mt-3">
+                        <div className="mt-3 flex gap-2">
                           {!notif.leido && (
                             <button
                               onClick={() => marcarComoLeida(notif.id)}
@@ -386,7 +388,7 @@ export default function NotificacionesPage() {
             <Card className="mt-6">
               <CardBody className="py-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-dark-100">
+                  <p className="text-dark-100 text-sm">
                     Página {pagination.page} de {pagination.totalPages} (
                     {pagination.total} total)
                   </p>
@@ -395,7 +397,7 @@ export default function NotificacionesPage() {
                     <button
                       onClick={() => setCurrentPage((p) => p - 1)}
                       disabled={!pagination.hasPrevious}
-                      className="flex items-center gap-1 rounded-lg bg-light-100 px-3 py-2 text-sm font-medium text-dark transition-colors hover:bg-light-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-light-100 text-dark hover:bg-light-200 flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <span className="material-symbols-outlined text-sm">
                         chevron_left
@@ -405,7 +407,7 @@ export default function NotificacionesPage() {
                     <button
                       onClick={() => setCurrentPage((p) => p + 1)}
                       disabled={!pagination.hasMore}
-                      className="flex items-center gap-1 rounded-lg bg-light-100 px-3 py-2 text-sm font-medium text-dark transition-colors hover:bg-light-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-light-100 text-dark hover:bg-light-200 flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Siguiente
                       <span className="material-symbols-outlined text-sm">

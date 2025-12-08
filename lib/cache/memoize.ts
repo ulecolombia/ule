@@ -96,7 +96,8 @@ export class LRUCache<K, V> {
     let oldestTimestamp = Infinity
     let lowestHits = Infinity
 
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries())
+    for (const [key, entry] of entries) {
       // Priorizar por hits, luego por timestamp
       if (
         entry.hits < lowestHits ||
@@ -127,7 +128,8 @@ export class LRUCache<K, V> {
     let totalHits = 0
     let expiredCount = 0
 
-    for (const entry of this.cache.values()) {
+    const values = Array.from(this.cache.values())
+    for (const entry of values) {
       totalHits += entry.hits
       if (this.isExpired(entry)) {
         expiredCount++
@@ -147,7 +149,8 @@ export class LRUCache<K, V> {
    * Limpia entradas expiradas
    */
   cleanup(): void {
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries())
+    for (const [key, entry] of entries) {
       if (this.isExpired(entry)) {
         this.cache.delete(key)
       }

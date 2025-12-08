@@ -37,7 +37,6 @@ export async function GET(req: NextRequest) {
     const clientes = await prisma.cliente.findMany({
       where: {
         userId: user.id,
-        activo: true,
         OR: [
           {
             nombre: {
@@ -46,7 +45,7 @@ export async function GET(req: NextRequest) {
             },
           },
           {
-            documento: {
+            numeroDocumento: {
               contains: query,
               mode: 'insensitive',
             },
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         nombre: true,
-        documento: true,
+        numeroDocumento: true,
         tipoDocumento: true,
         email: true,
         telefono: true,

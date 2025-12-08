@@ -114,6 +114,7 @@ export function AutocompleteCliente({
         setSelectedCliente(cliente)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClienteId, clientes, clientesFrecuentes])
 
   const handleSelect = useCallback(
@@ -151,8 +152,13 @@ export function AutocompleteCliente({
         break
       case 'Enter':
         e.preventDefault()
-        if (focusedIndex >= 0 && focusedIndex < displayClientes.length) {
-          handleSelect(displayClientes[focusedIndex])
+        const selectedCliente = displayClientes[focusedIndex]
+        if (
+          focusedIndex >= 0 &&
+          focusedIndex < displayClientes.length &&
+          selectedCliente
+        ) {
+          handleSelect(selectedCliente)
         }
         break
       case 'Escape':

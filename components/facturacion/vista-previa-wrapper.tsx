@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -90,12 +90,9 @@ export function VistaPreviaWrapper({
     }
 
     const itemsHTML = (data.items || [])
-      .map((item, index) => {
+      .map((item) => {
         const itemCalc = calcularTotalesItem(item)
-        const valorUnitario =
-          typeof item.valorUnitario === 'string'
-            ? parseFloat(item.valorUnitario.replace(/\./g, '')) || 0
-            : item.valorUnitario || 0
+        const valorUnitario = Number(item.valorUnitario) || 0
 
         return `
         <tr style="border-bottom: 1px solid #e5e7eb;">

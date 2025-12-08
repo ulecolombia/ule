@@ -22,7 +22,6 @@
 import { useState } from 'react'
 import {
   UseFormRegister,
-  UseFieldArrayReturn,
   Control,
   UseFormWatch,
   UseFormSetValue,
@@ -34,8 +33,8 @@ import { formatearMoneda } from '@/lib/utils/facturacion-utils'
 interface ItemsTableProps {
   fields: any[]
   register: UseFormRegister<any>
-  append: UseFieldArrayReturn['append']
-  remove: UseFieldArrayReturn['remove']
+  append: (value: any) => void
+  remove: (index?: number | number[]) => void
   watch: UseFormWatch<any>
   setValue: UseFormSetValue<any>
   errors?: any
@@ -131,12 +130,6 @@ export function ItemsTable({
 
     const ivaAmount = subtotal * (porcentaje / 100)
     return subtotal + ivaAmount
-  }
-
-  // Formatear número con puntos de miles
-  const formatearNumero = (valor: string): string => {
-    const numero = valor.replace(/\D/g, '')
-    return numero.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
   }
 
   return (

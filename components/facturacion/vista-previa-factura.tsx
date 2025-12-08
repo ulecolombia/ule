@@ -261,13 +261,7 @@ export function VistaPreviaFactura({
                         {item.unidad || 'UND'}
                       </td>
                       <td className="p-3 text-right align-top">
-                        {formatCurrency(
-                          typeof item.valorUnitario === 'string'
-                            ? parseFloat(
-                                item.valorUnitario.replace(/\./g, '')
-                              ) || 0
-                            : item.valorUnitario || 0
-                        )}
+                        {formatCurrency(Number(item.valorUnitario) || 0)}
                       </td>
                       <td className="p-3 text-center align-top">
                         {itemCalc.porcentajeIVA > 0

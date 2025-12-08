@@ -20,7 +20,7 @@ const cookiePreferencesSchema = z.object({
 /**
  * GET - Obtener preferencias de cookies del usuario
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth()
 

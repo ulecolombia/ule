@@ -11,13 +11,7 @@
  */
 
 import { db } from '@/lib/db'
-import {
-  EstadoSolicitudPortabilidad,
-  AccionPrivacidad,
-  TipoDocumento,
-  TipoContrato,
-  EstadoCivil,
-} from '@prisma/client'
+import { EstadoSolicitudPortabilidad, AccionPrivacidad } from '@prisma/client'
 import { secureLogger } from '@/lib/security/secure-logger'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
@@ -118,11 +112,11 @@ export async function exportarDatosUsuario(
       where: { userId },
       select: {
         id: true,
-        numero: true,
+        numeroFactura: true,
         fecha: true,
         clienteId: true,
         subtotal: true,
-        iva: true,
+        totalIva: true,
         total: true,
         estado: true,
         createdAt: true,
@@ -163,9 +157,9 @@ export async function exportarDatosUsuario(
         id: true,
         nombre: true,
         tipo: true,
-        tipoArchivo: true,
+        tipoMIME: true,
         tamanoBytes: true,
-        url: true,
+        rutaArchivo: true,
         mes: true,
         anio: true,
         createdAt: true,
@@ -185,9 +179,9 @@ export async function exportarDatosUsuario(
             id: true,
             rol: true,
             contenido: true,
-            createdAt: true,
+            timestamp: true,
           },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { timestamp: 'asc' },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -199,13 +193,13 @@ export async function exportarDatosUsuario(
       select: {
         id: true,
         titulo: true,
-        descripcion: true,
+        mensaje: true,
         tipo: true,
-        fecha: true,
-        activo: true,
+        fechaEnvio: true,
+        enviado: true,
         createdAt: true,
       },
-      orderBy: { fecha: 'desc' },
+      orderBy: { fechaEnvio: 'desc' },
     })
 
     // 8. CONSENTIMIENTOS
@@ -427,10 +421,7 @@ export async function obtenerEstadoExportacion(solicitudId: string) {
     }
 
     // Verificar si el archivo expiró
-    if (
-      solicitud.archivoExpira &&
-      new Date() > solicitud.archivoExpira
-    ) {
+    if (solicitud.archivoExpira && new Date() > solicitud.archivoExpira) {
       return {
         ...solicitud,
         estado: 'EXPIRADO',

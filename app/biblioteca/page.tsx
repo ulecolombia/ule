@@ -9,7 +9,6 @@ import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/Header'
-import { formatearMoneda } from '@/lib/calculadora-pila'
 
 // ============================================
 // INTERFACES
@@ -44,7 +43,7 @@ interface Estadisticas {
 // ============================================
 
 export default function BibliotecaPage() {
-  const { data: session } = useSession()
+  const { data: _session } = useSession()
   const [documentos, setDocumentos] = useState<Documento[]>([])
   const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
@@ -251,38 +250,6 @@ export default function BibliotecaPage() {
     setSelectedDocs(new Set())
   }
 
-  const handleDeleteSingle = async (docId: string, docName: string) => {
-    if (
-      !confirm(
-        `¿Estás seguro que quieres eliminar "${docName}"?\n\nUna vez eliminado, no podrás recuperar el documento.`
-      )
-    ) {
-      return
-    }
-
-    setDeleting(true)
-
-    try {
-      const response = await fetch(`/api/biblioteca/documentos/${docId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar documento')
-      }
-
-      toast.success('Documento eliminado exitosamente')
-      await fetchDocumentos()
-    } catch (error) {
-      console.error('Error al eliminar documento:', error)
-      toast.error(
-        error instanceof Error ? error.message : 'Error al eliminar documento'
-      )
-    } finally {
-      setDeleting(false)
-    }
-  }
-
   const handleDeleteSelected = async () => {
     if (selectedDocs.size === 0) return
 
@@ -429,19 +396,6 @@ export default function BibliotecaPage() {
     const nombreMes = meses[mesNum - 1] || mes
 
     return `${nombreMes} ${anio}`
-  }
-
-  // Iconos por tipo
-  const getIcono = (tipo: string) => {
-    const iconos: Record<string, string> = {
-      COMPROBANTE_PILA: '💰',
-      FACTURA_EMITIDA: '📄',
-      FACTURA_RECIBIDA: '🧾',
-      CERTIFICADO: '📜',
-      CONTRATO: '📋',
-      OTRO: '📎',
-    }
-    return iconos[tipo] || '📁'
   }
 
   // Color por categoría
@@ -761,7 +715,8 @@ export default function BibliotecaPage() {
             ) : (
               <div className="space-y-4">
                 {periodos.map((periodo) => {
-                  const docs = documentosPorPeriodo[periodo]
+                  const docs = documentosPorPeriodo[periodo] ?? []
+                  if (docs.length === 0) return null
 
                   return (
                     <div

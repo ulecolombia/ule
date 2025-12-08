@@ -7,7 +7,6 @@
 import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
 import { readFile } from 'fs/promises'
-import { join } from 'path'
 import { emailLogger } from '@/lib/utils/logger'
 import {
   validateFilePath,

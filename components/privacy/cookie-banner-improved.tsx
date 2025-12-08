@@ -129,35 +129,33 @@ export function CookieBannerImproved() {
   return (
     <>
       {/* Banner Principal */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-500">
-        <Card className="max-w-4xl mx-auto p-6 shadow-2xl border-2">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div className="animate-in slide-in-from-bottom fixed bottom-0 left-0 right-0 z-50 p-4 duration-500">
+        <Card className="mx-auto max-w-4xl border-2 p-6 shadow-2xl">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
             {/* Icono */}
-            <div className="flex-shrink-0 text-4xl">
-              🍪
-            </div>
+            <div className="flex-shrink-0 text-4xl">🍪</div>
 
             {/* Contenido */}
             <div className="flex-1">
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="mb-2 text-lg font-semibold">
                 Usamos cookies para mejorar tu experiencia
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Utilizamos cookies esenciales para el funcionamiento de la plataforma,
-                y cookies opcionales para analítica y personalización. Puedes elegir
-                qué cookies aceptar.
+                Utilizamos cookies esenciales para el funcionamiento de la
+                plataforma, y cookies opcionales para analítica y
+                personalización. Puedes elegir qué cookies aceptar.
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                Al hacer clic en &quot;Aceptar todas&quot;, aceptas el almacenamiento de cookies
-                en tu dispositivo. Consulta nuestra{' '}
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                Al hacer clic en &quot;Aceptar todas&quot;, aceptas el
+                almacenamiento de cookies en tu dispositivo. Consulta nuestra{' '}
                 <a
                   href="/politica-cookies"
                   target="_blank"
                   className="text-primary hover:underline"
                 >
                   Política de Cookies
-                </a>
-                {' '}y{' '}
+                </a>{' '}
+                y{' '}
                 <a
                   href="/politica-privacidad"
                   target="_blank"
@@ -170,11 +168,8 @@ export function CookieBannerImproved() {
             </div>
 
             {/* Botones */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <Button
-                onClick={handleAcceptAll}
-                className="w-full sm:w-auto"
-              >
+            <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+              <Button onClick={handleAcceptAll} className="w-full sm:w-auto">
                 Aceptar todas
               </Button>
               <Button
@@ -198,7 +193,7 @@ export function CookieBannerImproved() {
 
       {/* Modal de Configuración */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Preferencias de Cookies</DialogTitle>
             <DialogDescription>
@@ -212,23 +207,25 @@ export function CookieBannerImproved() {
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3">
                   <Checkbox
+                    label=""
                     checked={true}
+                    onChange={() => {}}
                     disabled
                     className="mt-1"
                   />
                   <div>
                     <h4 className="font-semibold">Cookies Esenciales</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                       Necesarias para el funcionamiento básico de la plataforma.
                       No se pueden desactivar.
                     </p>
                     <div className="mt-2 text-xs text-gray-500">
-                      <strong>Ejemplos:</strong> Sesión de usuario, autenticación,
-                      preferencias de idioma.
+                      <strong>Ejemplos:</strong> Sesión de usuario,
+                      autenticación, preferencias de idioma.
                     </div>
                   </div>
                 </div>
-                <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                <span className="rounded bg-gray-200 px-2 py-1 text-xs dark:bg-gray-700">
                   Siempre activas
                 </span>
               </div>
@@ -238,21 +235,22 @@ export function CookieBannerImproved() {
             <div className="space-y-2 border-t pt-4">
               <div className="flex items-start space-x-3">
                 <Checkbox
+                  label=""
                   checked={preferences.analiticas}
-                  onCheckedChange={(checked) =>
-                    setPreferences({ ...preferences, analiticas: !!checked })
+                  onChange={(checked) =>
+                    setPreferences({ ...preferences, analiticas: checked })
                   }
                   className="mt-1"
                 />
                 <div>
                   <h4 className="font-semibold">Cookies Analíticas</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Nos ayudan a entender cómo usas la plataforma para mejorarla.
-                    Los datos son anónimos y agregados.
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Nos ayudan a entender cómo usas la plataforma para
+                    mejorarla. Los datos son anónimos y agregados.
                   </p>
                   <div className="mt-2 text-xs text-gray-500">
-                    <strong>Ejemplos:</strong> Google Analytics, estadísticas de uso,
-                    páginas más visitadas.
+                    <strong>Ejemplos:</strong> Google Analytics, estadísticas de
+                    uso, páginas más visitadas.
                   </div>
                 </div>
               </div>
@@ -262,15 +260,16 @@ export function CookieBannerImproved() {
             <div className="space-y-2 border-t pt-4">
               <div className="flex items-start space-x-3">
                 <Checkbox
+                  label=""
                   checked={preferences.marketing}
-                  onCheckedChange={(checked) =>
-                    setPreferences({ ...preferences, marketing: !!checked })
+                  onChange={(checked) =>
+                    setPreferences({ ...preferences, marketing: checked })
                   }
                   className="mt-1"
                 />
                 <div>
                   <h4 className="font-semibold">Cookies de Marketing</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Permiten mostrar publicidad relevante y medir la efectividad
                     de campañas.
                   </p>
@@ -286,20 +285,22 @@ export function CookieBannerImproved() {
             <div className="space-y-2 border-t pt-4">
               <div className="flex items-start space-x-3">
                 <Checkbox
+                  label=""
                   checked={preferences.personalizacion}
-                  onCheckedChange={(checked) =>
-                    setPreferences({ ...preferences, personalizacion: !!checked })
+                  onChange={(checked) =>
+                    setPreferences({ ...preferences, personalizacion: checked })
                   }
                   className="mt-1"
                 />
                 <div>
                   <h4 className="font-semibold">Cookies de Personalización</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Permiten recordar tus preferencias y personalizar tu experiencia.
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Permiten recordar tus preferencias y personalizar tu
+                    experiencia.
                   </p>
                   <div className="mt-2 text-xs text-gray-500">
-                    <strong>Ejemplos:</strong> Tema oscuro/claro, configuración de
-                    dashboard, preferencias de notificaciones.
+                    <strong>Ejemplos:</strong> Tema oscuro/claro, configuración
+                    de dashboard, preferencias de notificaciones.
                   </div>
                 </div>
               </div>
@@ -307,16 +308,11 @@ export function CookieBannerImproved() {
           </div>
 
           {/* Botones */}
-          <div className="flex flex-col sm:flex-row gap-2 justify-end border-t pt-4">
-            <Button
-              onClick={() => setShowSettings(false)}
-              variant="outline"
-            >
+          <div className="flex flex-col justify-end gap-2 border-t pt-4 sm:flex-row">
+            <Button onClick={() => setShowSettings(false)} variant="outline">
               Cancelar
             </Button>
-            <Button onClick={handleSaveCustom}>
-              Guardar Preferencias
-            </Button>
+            <Button onClick={handleSaveCustom}>Guardar Preferencias</Button>
           </div>
         </DialogContent>
       </Dialog>

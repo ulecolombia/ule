@@ -71,11 +71,17 @@ export async function emitirFactura(facturaData: {
     throw new Error('Número de factura requerido')
   }
 
-  if (!facturaData.clienteNombre || facturaData.clienteNombre.trim().length === 0) {
+  if (
+    !facturaData.clienteNombre ||
+    facturaData.clienteNombre.trim().length === 0
+  ) {
     throw new Error('Nombre del cliente requerido')
   }
 
-  if (!facturaData.clienteDocumento || facturaData.clienteDocumento.trim().length === 0) {
+  if (
+    !facturaData.clienteDocumento ||
+    facturaData.clienteDocumento.trim().length === 0
+  ) {
     throw new Error('Documento del cliente requerido')
   }
 
@@ -150,7 +156,7 @@ export async function emitirFactura(facturaData: {
  * En producción, consulta el estado en el proveedor o directamente en DIAN
  */
 export async function consultarEstadoFactura(
-  facturaId: string,
+  _facturaId: string,
   cufe: string
 ): Promise<ConsultarEstadoResponse> {
   // Simular tiempo de consulta
@@ -182,7 +188,7 @@ export async function consultarEstadoFactura(
  * - No debe tener más de X días (varía según normativa)
  */
 export async function anularFactura(
-  facturaId: string,
+  _facturaId: string,
   cufe: string,
   motivo: string
 ): Promise<AnularFacturaResponse> {
@@ -209,7 +215,8 @@ export async function anularFactura(
   return {
     success: true,
     fechaAnulacion: new Date(),
-    mensaje: 'Factura anulada exitosamente en DIAN. El cliente será notificado.',
+    mensaje:
+      'Factura anulada exitosamente en DIAN. El cliente será notificado.',
   }
 }
 
@@ -217,7 +224,10 @@ export async function anularFactura(
  * MOCK - Simula descarga de representación gráfica (PDF)
  * En producción, descarga el PDF del proveedor
  */
-export async function descargarPDF(facturaId: string, cufe: string): Promise<string> {
+export async function descargarPDF(
+  facturaId: string,
+  cufe: string
+): Promise<string> {
   await delay(randomInRange(500, 1000))
 
   // En producción, retorna URL firmada de S3/GCS con el PDF
@@ -228,7 +238,10 @@ export async function descargarPDF(facturaId: string, cufe: string): Promise<str
  * MOCK - Simula descarga de XML (UBL 2.1)
  * En producción, descarga el XML del proveedor
  */
-export async function descargarXML(facturaId: string, cufe: string): Promise<string> {
+export async function descargarXML(
+  facturaId: string,
+  cufe: string
+): Promise<string> {
   await delay(randomInRange(500, 1000))
 
   // En producción, retorna URL firmada de S3/GCS con el XML
@@ -240,7 +253,7 @@ export async function descargarXML(facturaId: string, cufe: string): Promise<str
  * En producción, el proveedor se encarga del envío
  */
 export async function enviarFacturaPorEmail(
-  facturaId: string,
+  _facturaId: string,
   email: string
 ): Promise<{ success: boolean; mensaje: string }> {
   await delay(randomInRange(1000, 2000))
@@ -259,7 +272,7 @@ export async function enviarFacturaPorEmail(
  * MOCK - Simula consulta de límite de facturación
  * Algunos proveedores tienen límites según el plan contratado
  */
-export async function consultarLimiteFacturacion(userId: string): Promise<{
+export async function consultarLimiteFacturacion(_userId: string): Promise<{
   limite: number
   usado: number
   disponible: number

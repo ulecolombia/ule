@@ -53,17 +53,22 @@ function simpleHash(str: string): string {
  * Todo esto se hashea con SHA-384 y se convierte a hexadecimal
  */
 export function generateCUFE(data: CUFEData): string {
+  // Validar fecha
+  if (!data.fecha) {
+    throw new Error('Fecha es requerida para generar CUFE')
+  }
+
   // Formatear fecha: YYYYMMDD
   const fechaFormateada = data.fecha
     .toISOString()
-    .split('T')[0]
+    .split('T')[0]!
     .replace(/-/g, '')
 
   // Formatear hora: HHMMSS
   const horaFormateada = data.fecha
     .toISOString()
-    .split('T')[1]
-    .split('.')[0]
+    .split('T')[1]!
+    .split('.')[0]!
     .replace(/:/g, '')
 
   // Construir cadena base según especificación DIAN
@@ -127,11 +132,16 @@ export function parseCUFE(cufe: string): {
  * Similar al CUFE pero para documentos soporte (compras)
  */
 export function generateCUDE(data: CUFEData): string {
+  // Validar fecha
+  if (!data.fecha) {
+    throw new Error('Fecha es requerida para generar CUDE')
+  }
+
   // El CUDE se genera de forma similar al CUFE
   // pero con un prefijo diferente en la cadena base
   const fechaFormateada = data.fecha
     .toISOString()
-    .split('T')[0]
+    .split('T')[0]!
     .replace(/-/g, '')
 
   const cadenaBase = [

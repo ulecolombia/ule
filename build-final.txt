@@ -1,0 +1,48 @@
+
+> ule@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 786ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+  ▲ Next.js 14.2.33
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /Users/luis/Desktop/Ule/node_modules/next-pwa/register.js
+> [PWA] Service worker: /Users/luis/Desktop/Ule/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./components/calculadoras/simulador-pensional.tsx
+80:11  Warning: Unexpected console statement.  no-console
+
+./components/layout/MainNav.tsx
+50:7  Warning: Unexpected console statement.  no-console
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+Failed to compile.
+
+./lib/privacy/data-portability.ts:17:3
+Type error: 'TipoContrato' is declared but its value is never read.
+
+[0m [90m 15 |[39m   [33mEstadoSolicitudPortabilidad[39m[33m,[39m[0m
+[0m [90m 16 |[39m   [33mAccionPrivacidad[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 17 |[39m   [33mTipoContrato[39m[33m,[39m[0m
+[0m [90m    |[39m   [31m[1m^[22m[39m[0m
+[0m [90m 18 |[39m   [33mEstadoCivil[39m[33m,[39m[0m
+[0m [90m 19 |[39m } [36mfrom[39m [32m'@prisma/client'[39m[0m
+[0m [90m 20 |[39m [36mimport[39m { secureLogger } [36mfrom[39m [32m'@/lib/security/secure-logger'[39m[0m
+Next.js build worker exited with code: 1 and signal: null

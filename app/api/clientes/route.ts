@@ -8,6 +8,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { createClienteSchema } from '@/lib/validations/cliente'
 import { z } from 'zod'
+import { RegimenTributario } from '@prisma/client'
 
 /**
  * GET /api/clientes
@@ -147,10 +148,16 @@ export async function POST(req: NextRequest) {
         direccion: validatedData.direccion,
         ciudad: validatedData.ciudad,
         departamento: validatedData.departamento,
-        razonSocial: validatedData.razonSocial,
-        nombreComercial: validatedData.nombreComercial,
-        regimenTributario: validatedData.regimenTributario,
-        responsabilidadFiscal: validatedData.responsabilidadFiscal,
+        // Campos adicionales para empresas (NIT)
+        razonSocial: (validatedData as Record<string, unknown>).razonSocial as
+          | string
+          | undefined,
+        nombreComercial: (validatedData as Record<string, unknown>)
+          .nombreComercial as string | undefined,
+        regimenTributario: (validatedData as Record<string, unknown>)
+          .regimenTributario as RegimenTributario | undefined,
+        responsabilidadFiscal: (validatedData as Record<string, unknown>)
+          .responsabilidadFiscal as string | undefined,
       },
       include: {
         _count: {

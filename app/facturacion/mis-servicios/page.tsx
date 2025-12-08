@@ -74,6 +74,7 @@ export default function MisServiciosPage() {
 
   useEffect(() => {
     cargarServicios()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
   // Handlers
@@ -301,7 +302,7 @@ export default function MisServiciosPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <Badge variant="primary">
+                              <Badge variant="info">
                                 {servicio.vecesUtilizado}
                               </Badge>
                             </td>

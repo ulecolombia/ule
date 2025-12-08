@@ -8,8 +8,7 @@
 import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createClienteSchema } from '@/lib/validations/cliente'
+import { createClienteSchema, ClienteFormData } from '@/lib/validations/cliente'
 import { validarDocumento } from '@/hooks/use-clientes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +46,6 @@ export function ClienteModal({
 
   // Schema dinámico basado en tipo de documento
   const schema = createClienteSchema(tipoDocumentoActual)
-  type ClienteFormData = z.infer<typeof schema>
 
   const {
     register,
@@ -203,7 +201,6 @@ export function ClienteModal({
                 label="Tipo de Documento *"
                 error={errors.tipoDocumento?.message}
                 {...register('tipoDocumento')}
-                icon={<span className="material-symbols-outlined">badge</span>}
               >
                 <option value="CC">CC - Cédula de Ciudadanía</option>
                 <option value="CE">CE - Cédula de Extranjería</option>
@@ -229,11 +226,6 @@ export function ClienteModal({
                     documentoError ||
                     undefined
                   }
-                  icon={
-                    <span className="material-symbols-outlined">
-                      fingerprint
-                    </span>
-                  }
                   {...register('numeroDocumento')}
                 />
                 {isValidatingDocumento && (
@@ -255,7 +247,6 @@ export function ClienteModal({
                   esEmpresa ? 'Ej: Empresa S.A.S.' : 'Ej: Juan Pérez García'
                 }
                 error={errors.nombre?.message}
-                icon={<span className="material-symbols-outlined">person</span>}
                 {...register('nombre')}
               />
             </div>
@@ -273,7 +264,6 @@ export function ClienteModal({
                 type="email"
                 placeholder="ejemplo@correo.com"
                 error={errors.email?.message}
-                icon={<span className="material-symbols-outlined">email</span>}
                 {...register('email')}
               />
 
@@ -283,7 +273,6 @@ export function ClienteModal({
                 type="tel"
                 placeholder="3001234567"
                 error={errors.telefono?.message}
-                icon={<span className="material-symbols-outlined">phone</span>}
                 {...register('telefono')}
               />
 
@@ -292,7 +281,6 @@ export function ClienteModal({
                 label="Dirección"
                 placeholder="Calle 123 # 45-67"
                 error={errors.direccion?.message}
-                icon={<span className="material-symbols-outlined">home</span>}
                 {...register('direccion')}
               />
 
@@ -313,9 +301,6 @@ export function ClienteModal({
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Selecciona un departamento"
-                      icon={
-                        <span className="material-symbols-outlined">map</span>
-                      }
                     />
                   )}
                 />
@@ -348,11 +333,6 @@ export function ClienteModal({
                           : 'Primero selecciona un departamento'
                       }
                       disabled={!departamento}
-                      icon={
-                        <span className="material-symbols-outlined">
-                          location_city
-                        </span>
-                      }
                     />
                   )}
                 />
@@ -377,11 +357,6 @@ export function ClienteModal({
                   label="Nombre Comercial"
                   placeholder="Ej: Mi Tienda"
                   error={errors.nombreComercial?.message}
-                  icon={
-                    <span className="material-symbols-outlined">
-                      storefront
-                    </span>
-                  }
                   {...register('nombreComercial')}
                 />
 
@@ -390,11 +365,6 @@ export function ClienteModal({
                   label="Régimen Tributario"
                   error={errors.regimenTributario?.message}
                   {...register('regimenTributario')}
-                  icon={
-                    <span className="material-symbols-outlined">
-                      account_balance
-                    </span>
-                  }
                 >
                   <option value="">Selecciona un régimen</option>
                   <option value="SIMPLIFICADO">Simplificado</option>
@@ -408,11 +378,6 @@ export function ClienteModal({
                   label="Responsabilidad Fiscal"
                   error={errors.responsabilidadFiscal?.message}
                   {...register('responsabilidadFiscal')}
-                  icon={
-                    <span className="material-symbols-outlined">
-                      description
-                    </span>
-                  }
                 >
                   <option value="">Selecciona una responsabilidad</option>
                   <option value="O-13">O-13 - Gran Contribuyente</option>

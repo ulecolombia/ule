@@ -40,24 +40,26 @@ export function DisclaimerBanner({
   return (
     <Alert variant="warning" className={`${variants[variant]} ${className}`}>
       <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-3 flex-1">
+        <div className="flex flex-1 items-start space-x-3">
           <span className={`material-symbols-outlined ${iconColors[variant]}`}>
             {icons[variant]}
           </span>
           <div className="flex-1">
             <AlertDescription className="text-sm">
-              <strong>Importante:</strong> Esta plataforma ofrece orientación educativa
-              automatizada mediante inteligencia artificial. No constituye asesoría tributaria,
-              contable o legal profesional certificada. Para casos complejos o decisiones
-              importantes, consulta con un contador público, abogado tributarista u otro
-              profesional certificado que pueda analizar tu situación específica.
+              <strong>Importante:</strong> Esta plataforma ofrece orientación
+              educativa automatizada mediante inteligencia artificial. No
+              constituye asesoría tributaria, contable o legal profesional
+              certificada. Para casos complejos o decisiones importantes,
+              consulta con un contador público, abogado tributarista u otro
+              profesional certificado que pueda analizar tu situación
+              específica.
               {showContactButton && (
                 <>
                   {' '}
                   <Button
-                    variant="link"
-                    className="p-0 h-auto font-semibold underline inline"
-                    onClick={() => window.location.href = '/contacto'}
+                    variant="ghost"
+                    className="inline h-auto p-0 font-semibold underline"
+                    onClick={() => (window.location.href = '/contacto')}
                   >
                     Solicitar asesoría profesional
                   </Button>
@@ -68,7 +70,7 @@ export function DisclaimerBanner({
         </div>
         <button
           onClick={() => setIsVisible(false)}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-4 transition-colors"
+          className="ml-4 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
           aria-label="Cerrar"
         >
           <span className="material-symbols-outlined">close</span>

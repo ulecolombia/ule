@@ -8,13 +8,14 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { createClienteSchema } from '@/lib/validations/cliente'
 import { z } from 'zod'
+import { RegimenTributario } from '@prisma/client'
 
 /**
  * GET /api/clientes/[id]
  * Obtiene un cliente específico con sus facturas recientes
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -141,7 +142,8 @@ export async function PUT(
       }
     }
 
-    // Actualizar
+    // Actualizar - cast para campos opcionales de empresa
+    const dataAsRecord = validatedData as Record<string, unknown>
     const clienteActualizado = await db.cliente.update({
       where: { id: params.id },
       data: {
@@ -153,10 +155,13 @@ export async function PUT(
         direccion: validatedData.direccion,
         ciudad: validatedData.ciudad,
         departamento: validatedData.departamento,
-        razonSocial: validatedData.razonSocial,
-        nombreComercial: validatedData.nombreComercial,
-        regimenTributario: validatedData.regimenTributario,
-        responsabilidadFiscal: validatedData.responsabilidadFiscal,
+        // Campos adicionales para empresas (NIT)
+        razonSocial: (dataAsRecord.razonSocial as string) || undefined,
+        nombreComercial: (dataAsRecord.nombreComercial as string) || undefined,
+        regimenTributario:
+          (dataAsRecord.regimenTributario as RegimenTributario) || undefined,
+        responsabilidadFiscal:
+          (dataAsRecord.responsabilidadFiscal as string) || undefined,
         updatedAt: new Date(),
       },
       include: {
@@ -199,7 +204,7 @@ export async function PUT(
  * Elimina un cliente (solo si no tiene facturas)
  */
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

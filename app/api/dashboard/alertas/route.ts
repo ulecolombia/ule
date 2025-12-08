@@ -20,7 +20,7 @@ interface Alerta {
  * GET /api/dashboard/alertas
  * Obtiene alertas importantes para el usuario
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth()
 
@@ -33,7 +33,10 @@ export async function GET(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      )
     }
 
     const alertas: Alerta[] = []
@@ -59,7 +62,8 @@ export async function GET(req: NextRequest) {
 
     if (pagoProximo) {
       const diasRestantes = Math.ceil(
-        (pagoProximo.fechaLimite.getTime() - ahora.getTime()) / (1000 * 60 * 60 * 24)
+        (pagoProximo.fechaLimite.getTime() - ahora.getTime()) /
+          (1000 * 60 * 60 * 24)
       )
 
       alertas.push({
@@ -77,7 +81,8 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Verificar perfil incompleto
-    const perfilIncompleto = !user.tipoDocumento || !user.numeroDocumento || !user.tipoContrato
+    const perfilIncompleto =
+      !user.tipoDocumento || !user.numeroDocumento || !user.tipoContrato
 
     if (perfilIncompleto) {
       alertas.push({
@@ -98,8 +103,16 @@ export async function GET(req: NextRequest) {
     // 3. Verificar si hay facturas del mes anterior sin emitir (alerta informativa)
     const mesAnterior = new Date()
     mesAnterior.setMonth(mesAnterior.getMonth() - 1)
-    const inicioMesAnterior = new Date(mesAnterior.getFullYear(), mesAnterior.getMonth(), 1)
-    const finMesAnterior = new Date(mesAnterior.getFullYear(), mesAnterior.getMonth() + 1, 0)
+    const inicioMesAnterior = new Date(
+      mesAnterior.getFullYear(),
+      mesAnterior.getMonth(),
+      1
+    )
+    const finMesAnterior = new Date(
+      mesAnterior.getFullYear(),
+      mesAnterior.getMonth() + 1,
+      0
+    )
 
     const facturasDelMesAnterior = await prisma.factura.count({
       where: {

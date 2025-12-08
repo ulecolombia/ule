@@ -15,7 +15,7 @@ import { logger } from '@/lib/logger'
 const ALGORITHM = 'aes-256-gcm' as const
 const IV_LENGTH = 16 // bytes para el initialization vector
 const AUTH_TAG_LENGTH = 16 // bytes para el authentication tag
-const SALT_LENGTH = 32 // bytes para el salt
+// const SALT_LENGTH = 32 // bytes para el salt (para uso futuro)
 
 /**
  * Obtiene la clave de encriptación desde variables de entorno
@@ -104,6 +104,10 @@ export function decrypt(encryptedData: string): string {
     }
 
     const [ivHex, authTagHex, encrypted] = parts
+
+    if (!ivHex || !authTagHex || !encrypted) {
+      throw new Error('Datos de encriptación incompletos')
+    }
 
     // Convertir de hex a Buffer
     const iv = Buffer.from(ivHex, 'hex')

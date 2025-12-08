@@ -76,16 +76,29 @@ export async function limpiarLogsAntiguos() {
 
         // ✅ Batch delete de 1000 registros a la vez
         while (hasMore) {
-          const deleted = await db.logAuditoria.deleteMany({
+          // Find records first
+          const toDelete = await db.logAuditoria.findMany({
             where: {
               categoria: politica.categoria,
               timestamp: { lt: fechaLimite },
             },
+            select: { id: true },
             take: BATCH_SIZE,
           })
 
+          if (toDelete.length === 0) {
+            hasMore = false
+            break
+          }
+
+          const deleted = await db.logAuditoria.deleteMany({
+            where: {
+              id: { in: toDelete.map((r) => r.id) },
+            },
+          })
+
           deletedTotal += deleted.count
-          hasMore = deleted.count === BATCH_SIZE
+          hasMore = toDelete.length === BATCH_SIZE
 
           // ✅ Delay de 100ms entre batches para no saturar DB
           if (hasMore) {
@@ -105,7 +118,9 @@ export async function limpiarLogsAntiguos() {
 
     const totalEliminados = resultados.reduce((sum, r) => sum + r.eliminados, 0)
 
-    secureLogger.info(`Limpieza completada. Total eliminados: ${totalEliminados}`)
+    secureLogger.info(
+      `Limpieza completada. Total eliminados: ${totalEliminados}`
+    )
 
     return { totalEliminados, detalles: resultados }
   } catch (error) {
@@ -154,7 +169,8 @@ export async function obtenerEstadisticasRetencion() {
       diasRetencion: politica.diasRetencion,
       totalLogs: total,
       logsAEliminar: aEliminar,
-      porcentajeAEliminar: total > 0 ? ((aEliminar / total) * 100).toFixed(2) : 0,
+      porcentajeAEliminar:
+        total > 0 ? ((aEliminar / total) * 100).toFixed(2) : 0,
     })
   }
 

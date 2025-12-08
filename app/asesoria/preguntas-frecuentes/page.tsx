@@ -27,11 +27,16 @@ const CATEGORIA_ICONS: Record<string, string> = {
 }
 
 const CATEGORIA_COLORS: Record<string, string> = {
-  SEGURIDAD_SOCIAL: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  FACTURACION_ELECTRONICA: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  REGIMEN_TRIBUTARIO: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  OBLIGACIONES_CONTABLES: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  CONSTITUCION_EMPRESA: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  SEGURIDAD_SOCIAL:
+    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  FACTURACION_ELECTRONICA:
+    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  REGIMEN_TRIBUTARIO:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  OBLIGACIONES_CONTABLES:
+    'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  CONSTITUCION_EMPRESA:
+    'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
   GENERAL: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
 }
 
@@ -53,6 +58,7 @@ export default function PreguntasFrecuentesPage() {
 
   useEffect(() => {
     cargarFAQs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoriaActiva, busqueda])
 
   const cargarFAQs = async () => {
@@ -96,20 +102,20 @@ export default function PreguntasFrecuentesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
           Preguntas Frecuentes
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Encuentra respuestas rápidas a las preguntas más comunes sobre tributación
-          y contabilidad en Colombia
+          Encuentra respuestas rápidas a las preguntas más comunes sobre
+          tributación y contabilidad en Colombia
         </p>
       </div>
 
       {/* Búsqueda */}
-      <Card className="p-4 mb-6">
+      <Card className="mb-6 p-4">
         <div className="relative">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             search
@@ -147,24 +153,26 @@ export default function PreguntasFrecuentesPage() {
 
       {/* Lista de FAQs */}
       {isLoading ? (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <span className="material-symbols-outlined animate-spin text-4xl text-primary">
             progress_activity
           </span>
-          <p className="text-gray-500 mt-2">Cargando preguntas...</p>
+          <p className="mt-2 text-gray-500">Cargando preguntas...</p>
         </div>
       ) : Object.keys(faqs).length === 0 ? (
         <Card className="p-12 text-center">
-          <span className="material-symbols-outlined text-5xl text-gray-400 mb-4">
+          <span className="material-symbols-outlined mb-4 text-5xl text-gray-400">
             search_off
           </span>
-          <p className="text-gray-600 dark:text-gray-400">No se encontraron preguntas</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            No se encontraron preguntas
+          </p>
         </Card>
       ) : (
         <div className="space-y-8">
           {Object.entries(faqs).map(([categoria, preguntas]) => (
             <div key={categoria}>
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="mb-4 flex items-center space-x-3">
                 <span className="material-symbols-outlined text-2xl text-primary">
                   {CATEGORIA_ICONS[categoria]}
                 </span>
@@ -174,29 +182,29 @@ export default function PreguntasFrecuentesPage() {
                 <Badge variant="secondary">{preguntas.length}</Badge>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {preguntas.map((faq) => (
                   <Card
                     key={faq.id}
-                    className="p-4 hover:shadow-lg transition-all cursor-pointer group"
+                    className="group cursor-pointer p-4 transition-all hover:shadow-lg"
                     onClick={() => handleClickPregunta(faq)}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-start space-x-2 mb-2">
-                          <span className="material-symbols-outlined text-primary mt-0.5 group-hover:scale-110 transition-transform">
+                        <div className="mb-2 flex items-start space-x-2">
+                          <span className="material-symbols-outlined mt-0.5 text-primary transition-transform group-hover:scale-110">
                             help
                           </span>
-                          <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                          <h3 className="font-semibold text-gray-900 transition-colors group-hover:text-primary dark:text-white">
                             {faq.pregunta}
                           </h3>
                         </div>
                         {faq.descripcionCorta && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 ml-7">
+                          <p className="ml-7 text-sm text-gray-600 dark:text-gray-400">
                             {faq.descripcionCorta}
                           </p>
                         )}
-                        <div className="flex items-center space-x-3 mt-3 ml-7">
+                        <div className="ml-7 mt-3 flex items-center space-x-3">
                           <Badge
                             variant="outline"
                             className={CATEGORIA_COLORS[categoria]}
@@ -204,8 +212,8 @@ export default function PreguntasFrecuentesPage() {
                             {CATEGORIAS[categoria as keyof typeof CATEGORIAS]}
                           </Badge>
                           {faq.vecesConsultada > 0 && (
-                            <span className="text-xs text-gray-500 flex items-center">
-                              <span className="material-symbols-outlined text-xs mr-1">
+                            <span className="flex items-center text-xs text-gray-500">
+                              <span className="material-symbols-outlined mr-1 text-xs">
                                 visibility
                               </span>
                               {faq.vecesConsultada} consultas
@@ -213,7 +221,7 @@ export default function PreguntasFrecuentesPage() {
                           )}
                         </div>
                       </div>
-                      <span className="material-symbols-outlined text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all">
+                      <span className="material-symbols-outlined text-gray-400 transition-all group-hover:translate-x-1 group-hover:text-primary">
                         arrow_forward
                       </span>
                     </div>
@@ -226,15 +234,14 @@ export default function PreguntasFrecuentesPage() {
       )}
 
       {/* CTA Final */}
-      <Card className="mt-12 p-8 bg-gradient-to-r from-primary/10 to-primary/5 text-center">
-        <h3 className="text-xl font-semibold mb-2">¿No encontraste tu pregunta?</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+      <Card className="mt-12 bg-gradient-to-r from-primary/10 to-primary/5 p-8 text-center">
+        <h3 className="mb-2 text-xl font-semibold">
+          ¿No encontraste tu pregunta?
+        </h3>
+        <p className="mb-4 text-gray-600 dark:text-gray-400">
           Pregúntale directamente a nuestro asesor con IA
         </p>
-        <Button
-          size="lg"
-          onClick={() => router.push('/asesoria')}
-        >
+        <Button size="lg" onClick={() => router.push('/asesoria')}>
           <span className="material-symbols-outlined mr-2">chat</span>
           Iniciar Chat
         </Button>

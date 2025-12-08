@@ -32,7 +32,7 @@ import { db } from '@/lib/db'
  *   ]
  * }
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth()
 
@@ -168,7 +168,6 @@ export async function GET(req: NextRequest) {
     for (let i = 5; i >= 0; i--) {
       const fecha = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const key = `${fecha.getFullYear()}-${fecha.getMonth()}`
-      const label = mesesAbreviados[fecha.getMonth()]
       facturacionPorMes.set(key, 0)
     }
 
@@ -187,7 +186,7 @@ export async function GET(req: NextRequest) {
     for (let i = 5; i >= 0; i--) {
       const fecha = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const key = `${fecha.getFullYear()}-${fecha.getMonth()}`
-      const label = mesesAbreviados[fecha.getMonth()]
+      const label = mesesAbreviados[fecha.getMonth()] ?? ''
       const total = facturacionPorMes.get(key) || 0
       facturacionMensual.push({ mes: label, total })
     }

@@ -20,8 +20,9 @@ export const formatCurrency = formatearMoneda
 /**
  * Formatea una fecha a formato colombiano
  */
-export function formatearFecha(fecha: Date): string {
-  return fecha.toLocaleDateString('es-CO', {
+export function formatearFecha(fecha: Date | string): string {
+  const date = typeof fecha === 'string' ? new Date(fecha) : fecha
+  return date.toLocaleDateString('es-CO', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -34,11 +35,23 @@ export const formatDate = formatearFecha
 /**
  * Formatea una fecha con hora
  */
-export function formatearFechaHora(fecha: Date): string {
-  return fecha.toLocaleDateString('es-CO', {
+export function formatearFechaHora(fecha: Date | string): string {
+  const date = typeof fecha === 'string' ? new Date(fecha) : fecha
+  return date.toLocaleDateString('es-CO', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/**
+ * Formatea solo la hora de una fecha
+ */
+export function formatTime(fecha: Date | string): string {
+  const date = typeof fecha === 'string' ? new Date(fecha) : fecha
+  return date.toLocaleTimeString('es-CO', {
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -166,6 +179,8 @@ export const TIMEOUT_CONFIG = {
  */
 export const FILE_CONSTRAINTS = {
   MAX_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_SIZE_BYTES: 10 * 1024 * 1024, // 10MB
+  MAX_SIZE_MB: 10, // 10MB
   ALLOWED_TYPES: [
     'application/pdf',
     'image/png',

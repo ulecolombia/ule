@@ -28,7 +28,7 @@ export default function ClientesPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const [limit] = useState(10)
   const [search, setSearch] = useState('')
   const [tipoDocumento, setTipoDocumento] = useState('TODOS')
   const [searchDebounced, setSearchDebounced] = useState('')
@@ -359,7 +359,7 @@ export default function ClientesPage() {
                               {cliente.ciudad || '—'}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <Badge variant="primary">
+                              <Badge variant="info">
                                 {cliente._count.facturas}
                               </Badge>
                             </td>

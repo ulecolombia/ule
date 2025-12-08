@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback, Fragment } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -13,7 +13,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './calendario-styles.css'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ModalEvento } from '@/components/calendario/modal-evento'
 import { ListaProximosEventos } from '@/components/calendario/lista-proximos-eventos'
 import { Header } from '@/components/layout/Header'

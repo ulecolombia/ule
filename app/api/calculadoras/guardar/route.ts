@@ -16,8 +16,8 @@ const guardarCalculoSchema = z.object({
     'SIMULADOR_REGIMEN',
     'CONVERSOR_UVT',
   ]),
-  inputs: z.any(),
-  resultados: z.any(),
+  inputs: z.record(z.any()),
+  resultados: z.record(z.any()),
   notas: z.string().optional(),
 })
 

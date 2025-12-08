@@ -21,23 +21,13 @@ const createPrismaClient = () => {
   const client = new PrismaClient()
 
   // Campos sensibles del modelo User
-  const userSensitiveFields = [
-    'numeroDocumento',
-    'telefono',
-    'twoFactorSecret',
-  ]
-
-  // Campos sensibles del modelo Cliente
-  const clienteSensitiveFields = [
-    'numeroDocumento',
-    'telefono',
-  ]
+  const userSensitiveFields = ['numeroDocumento', 'telefono', 'twoFactorSecret']
 
   // Agregar middleware de encriptación para User
   client.$use(createEncryptionMiddleware(userSensitiveFields))
 
   // TODO: Agregar middleware para Cliente cuando sea necesario
-  // client.$use(createEncryptionMiddleware(clienteSensitiveFields))
+  // Campos sensibles de Cliente: ['numeroDocumento', 'telefono']
 
   return client
 }

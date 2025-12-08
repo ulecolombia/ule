@@ -120,7 +120,7 @@ export async function PUT(
  * DELETE - Eliminar evento
  */
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

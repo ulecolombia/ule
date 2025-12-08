@@ -19,11 +19,15 @@ const isUpstashConfigured = !!(
 )
 
 if (!isUpstashConfigured) {
-  console.warn('⚠️  Upstash Redis no configurado - Usando modo MOCK para desarrollo')
+  console.warn(
+    '⚠️  Upstash Redis no configurado - Usando modo MOCK para desarrollo'
+  )
   console.warn('⚠️  Rate limiting está DESHABILITADO')
   console.warn('⚠️  Configura Upstash para habilitar rate limiting:')
   console.warn('    1. Crear cuenta en https://upstash.com')
-  console.warn('    2. Agregar UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN a .env')
+  console.warn(
+    '    2. Agregar UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN a .env'
+  )
 }
 
 // Instancia de Redis (singleton) - solo si está configurado
@@ -36,7 +40,7 @@ const redis = isUpstashConfigured
 
 // Mock para desarrollo sin Upstash
 const createMockRateLimit = () => ({
-  limit: async (identifier: string) => ({
+  limit: async (_identifier: string) => ({
     success: true,
     limit: 999,
     remaining: 999,
@@ -242,10 +246,14 @@ export async function checkSuspiciousIPRateLimit(
       blocked: !result.success,
     }
   } catch (error) {
-    logger.error('Error al verificar rate limit de IP sospechosa', error as Error, {
-      context: 'rate-limit.checkSuspiciousIPRateLimit',
-      ip,
-    })
+    logger.error(
+      'Error al verificar rate limit de IP sospechosa',
+      error as Error,
+      {
+        context: 'rate-limit.checkSuspiciousIPRateLimit',
+        ip,
+      }
+    )
 
     return {
       success: true,
@@ -277,10 +285,14 @@ export async function checkPasswordResetRateLimit(
       blocked: !result.success,
     }
   } catch (error) {
-    logger.error('Error al verificar rate limit de reset password', error as Error, {
-      context: 'rate-limit.checkPasswordResetRateLimit',
-      identifier,
-    })
+    logger.error(
+      'Error al verificar rate limit de reset password',
+      error as Error,
+      {
+        context: 'rate-limit.checkPasswordResetRateLimit',
+        identifier,
+      }
+    )
 
     return {
       success: true,
@@ -443,6 +455,15 @@ export async function resetRateLimit(
   prefix: string,
   identifier: string
 ): Promise<void> {
+  if (!redis) {
+    logger.warn('Redis no disponible para reset', {
+      context: 'rate-limit.resetRateLimit',
+      prefix,
+      identifier,
+    })
+    return
+  }
+
   try {
     const key = `${prefix}:${identifier}`
     await redis.del(key)
@@ -473,11 +494,24 @@ export async function markIPAsSuspicious(
   reason: string,
   durationMinutes: number = 60
 ): Promise<void> {
+  if (!redis) {
+    logger.warn('Redis no disponible para marcar IP', {
+      context: 'rate-limit.markIPAsSuspicious',
+      ip,
+      reason,
+    })
+    return
+  }
+
   try {
     const key = `suspicious_ip:${ip}`
     const expirySeconds = durationMinutes * 60
 
-    await redis.setex(key, expirySeconds, JSON.stringify({ reason, timestamp: Date.now() }))
+    await redis.setex(
+      key,
+      expirySeconds,
+      JSON.stringify({ reason, timestamp: Date.now() })
+    )
 
     logger.warn('IP marcada como sospechosa', {
       context: 'rate-limit.markIPAsSuspicious',
@@ -501,6 +535,10 @@ export async function markIPAsSuspicious(
  * @returns true si la IP está marcada como sospechosa
  */
 export async function isIPSuspicious(ip: string): Promise<boolean> {
+  if (!redis) {
+    return false // No hay Redis, asumir que no es sospechosa
+  }
+
   try {
     const key = `suspicious_ip:${ip}`
     const result = await redis.get(key)
@@ -522,7 +560,10 @@ export async function isIPSuspicious(ip: string): Promise<boolean> {
  * @param reset - Timestamp de reset (en ms)
  * @returns Objeto con minutos y segundos restantes
  */
-export function getTimeUntilReset(reset: number): { minutes: number; seconds: number } {
+export function getTimeUntilReset(reset: number): {
+  minutes: number
+  seconds: number
+} {
   const now = Date.now()
   const diff = Math.max(0, reset - now)
   const totalSeconds = Math.ceil(diff / 1000)
@@ -540,7 +581,10 @@ export function getTimeUntilReset(reset: number): { minutes: number; seconds: nu
  * @param action - Acción que se intentó realizar (ej: "login", "recuperación de contraseña")
  * @returns Mensaje formateado
  */
-export function formatRateLimitError(result: RateLimitResult, action: string): string {
+export function formatRateLimitError(
+  result: RateLimitResult,
+  action: string
+): string {
   const { minutes, seconds } = getTimeUntilReset(result.reset)
 
   let timeMessage: string

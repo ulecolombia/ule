@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import archiver from 'archiver'
-import { Readable } from 'stream'
 import fs from 'fs'
 import path from 'path'
 
@@ -15,7 +14,7 @@ import path from 'path'
  * POST /api/biblioteca/export
  * Genera un archivo ZIP con todos los documentos del usuario
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await auth()
 
@@ -78,10 +77,11 @@ export async function POST(req: NextRequest) {
     const categorias: Record<string, typeof documentos> = {}
 
     documentos.forEach((doc) => {
-      if (!categorias[doc.categoria]) {
-        categorias[doc.categoria] = []
+      const cat = doc.categoria
+      if (!categorias[cat]) {
+        categorias[cat] = []
       }
-      categorias[doc.categoria].push(doc)
+      categorias[cat]!.push(doc)
     })
 
     // Agregar archivos al ZIP
@@ -148,7 +148,7 @@ Generado por ULE - Sistema de gestión para trabajadores independientes.
     )
 
     // Retornar el archivo ZIP
-    return new NextResponse(zipBuffer, {
+    return new NextResponse(new Uint8Array(zipBuffer), {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="documentos-${new Date().toISOString().split('T')[0]}.zip"`,

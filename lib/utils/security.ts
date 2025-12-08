@@ -92,7 +92,9 @@ export async function validateFile(filePath: string): Promise<{
 
     // Verificar extensión
     const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
-    const allowedExts = FILE_CONSTRAINTS.ALLOWED_EXTENSIONS.map((e) => e.toLowerCase())
+    const allowedExts = FILE_CONSTRAINTS.ALLOWED_EXTENSIONS.map((e) =>
+      e.toLowerCase()
+    )
 
     if (!allowedExts.includes(ext)) {
       return {
@@ -191,7 +193,8 @@ class SimpleRateLimiter {
    */
   private cleanup(): void {
     const now = Date.now()
-    for (const [identifier, timestamps] of this.requests.entries()) {
+    const entries = Array.from(this.requests.entries())
+    for (const [identifier, timestamps] of entries) {
       const recent = timestamps.filter(
         (timestamp) => now - timestamp < this.windowMs
       )

@@ -11,7 +11,7 @@ import { db } from '@/lib/db'
  * GET /api/clientes/stats
  * Obtiene estadísticas de clientes del usuario
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth()
 

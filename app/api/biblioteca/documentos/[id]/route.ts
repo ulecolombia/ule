@@ -14,7 +14,7 @@ import path from 'path'
  * Elimina un documento (archivo físico + registro DB)
  */
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

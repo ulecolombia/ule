@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface UseInfiniteScrollProps {
   loadMore: () => void
@@ -48,9 +48,10 @@ export function useInfiniteScroll({
     }
 
     // Usar refs para evitar recrear el observer
-    observerRef.current = new IntersectionObserver(([entry]) => {
+    observerRef.current = new IntersectionObserver((entries) => {
+      const entry = entries[0]
       if (
-        entry.isIntersecting &&
+        entry?.isIntersecting &&
         hasMoreRef.current &&
         !isLoadingRef.current
       ) {

@@ -57,6 +57,7 @@ export function WidgetAyuda() {
         clearTimeout(debounceTimerRef.current)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busqueda])
 
   const handleBuscar = async () => {
@@ -98,7 +99,7 @@ export function WidgetAyuda() {
       {/* Botón flotante */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl"
         aria-label="Ayuda"
       >
         <span className="material-symbols-outlined text-2xl">
@@ -108,15 +109,15 @@ export function WidgetAyuda() {
 
       {/* Panel de ayuda */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col">
+        <Card className="fixed bottom-24 right-6 z-50 flex h-[500px] w-96 flex-col shadow-2xl">
           {/* Header */}
-          <div className="p-4 border-b bg-primary text-white rounded-t-lg">
-            <h3 className="font-bold text-lg">Centro de Ayuda</h3>
+          <div className="rounded-t-lg border-b bg-primary p-4 text-white">
+            <h3 className="text-lg font-bold">Centro de Ayuda</h3>
             <p className="text-sm opacity-90">¿En qué podemos ayudarte?</p>
           </div>
 
           {/* Búsqueda */}
-          <div className="p-4 border-b">
+          <div className="border-b p-4">
             <div className="flex space-x-2">
               <Input
                 placeholder="Buscar en ayuda..."
@@ -125,9 +126,9 @@ export function WidgetAyuda() {
                 onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
                 disabled={isSearching}
               />
-              <Button onClick={handleBuscar} size="icon" disabled={isSearching}>
+              <Button onClick={handleBuscar} size="sm" disabled={isSearching}>
                 {isSearching ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                 ) : (
                   <span className="material-symbols-outlined">search</span>
                 )}
@@ -139,15 +140,17 @@ export function WidgetAyuda() {
           <ScrollArea className="flex-1 p-4">
             {resultados.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-gray-500">Resultados</h4>
+                <h4 className="text-sm font-semibold text-gray-500">
+                  Resultados
+                </h4>
                 {resultados.map((resultado, index) => (
                   <Link
                     key={index}
                     href={resultado.url}
-                    className="block p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="block rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
                   >
-                    <h5 className="font-medium text-sm">{resultado.titulo}</h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <h5 className="text-sm font-medium">{resultado.titulo}</h5>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                       {resultado.descripcion}
                     </p>
                   </Link>
@@ -156,7 +159,7 @@ export function WidgetAyuda() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-500 mb-3">
+                  <h4 className="mb-3 text-sm font-semibold text-gray-500">
                     Artículos Populares
                   </h4>
                   <div className="space-y-2">
@@ -164,9 +167,9 @@ export function WidgetAyuda() {
                       <Link
                         key={index}
                         href={articulo.url}
-                        className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className="flex items-center rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
-                        <span className="material-symbols-outlined text-primary mr-2">
+                        <span className="material-symbols-outlined mr-2 text-primary">
                           article
                         </span>
                         <span className="text-sm">{articulo.titulo}</span>
@@ -176,33 +179,33 @@ export function WidgetAyuda() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-500 mb-3">
+                  <h4 className="mb-3 text-sm font-semibold text-gray-500">
                     Acceso Rápido
                   </h4>
                   <div className="space-y-2">
                     <Link
                       href="/ayuda"
-                      className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className="flex items-center rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <span className="material-symbols-outlined text-primary mr-2">
+                      <span className="material-symbols-outlined mr-2 text-primary">
                         library_books
                       </span>
                       <span className="text-sm">Centro de Ayuda Completo</span>
                     </Link>
                     <Link
                       href="/ayuda#glosario"
-                      className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className="flex items-center rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <span className="material-symbols-outlined text-primary mr-2">
+                      <span className="material-symbols-outlined mr-2 text-primary">
                         book
                       </span>
                       <span className="text-sm">Glosario de Términos</span>
                     </Link>
                     <Link
                       href="/ayuda#videos"
-                      className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className="flex items-center rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <span className="material-symbols-outlined text-primary mr-2">
+                      <span className="material-symbols-outlined mr-2 text-primary">
                         play_circle
                       </span>
                       <span className="text-sm">Video Tutoriales</span>
@@ -214,8 +217,8 @@ export function WidgetAyuda() {
           </ScrollArea>
 
           {/* Footer */}
-          <div className="p-4 border-t bg-gray-50 dark:bg-gray-900 rounded-b-lg">
-            <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+          <div className="rounded-b-lg border-t bg-gray-50 p-4 dark:bg-gray-900">
+            <p className="text-center text-xs text-gray-600 dark:text-gray-400">
               ¿No encuentras lo que buscas?{' '}
               <Link href="/contacto" className="text-primary hover:underline">
                 Contáctanos

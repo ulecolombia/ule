@@ -24,19 +24,21 @@ import { Card } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PasswordStrengthIndicator } from '@/components/auth/password-strength-indicator'
 
-const resetPasswordSchema = z.object({
-  password: z
-    .string()
-    .min(8, 'Mínimo 8 caracteres')
-    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
-    .regex(/[a-z]/, 'Debe contener al menos una minúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número')
-    .regex(/[^a-zA-Z0-9]/, 'Debe contener al menos un carácter especial'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contraseñas no coinciden',
-  path: ['confirmPassword'],
-})
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Mínimo 8 caracteres')
+      .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
+      .regex(/[a-z]/, 'Debe contener al menos una minúscula')
+      .regex(/[0-9]/, 'Debe contener al menos un número')
+      .regex(/[^a-zA-Z0-9]/, 'Debe contener al menos un carácter especial'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  })
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
 
@@ -65,11 +67,14 @@ export default function ResetPasswordPage({
 
   useEffect(() => {
     verificarToken()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.token])
 
   const verificarToken = async () => {
     try {
-      const response = await fetch(`/api/auth/password-reset/verify/${params.token}`)
+      const response = await fetch(
+        `/api/auth/password-reset/verify/${params.token}`
+      )
       const data = await response.json()
 
       setIsValid(data.valid)
@@ -112,7 +117,6 @@ export default function ResetPasswordPage({
       setTimeout(() => {
         router.push('/login')
       }, 3000)
-
     } catch (error) {
       console.error('Error:', error)
       setError('Error de conexión. Intenta de nuevo')
@@ -123,10 +127,12 @@ export default function ResetPasswordPage({
 
   if (isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <Card className="w-full max-w-md p-8 text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Verificando token...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-gray-600 dark:text-gray-400">
+            Verificando token...
+          </p>
         </Card>
       </div>
     )
@@ -134,17 +140,25 @@ export default function ResetPasswordPage({
 
   if (!isValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
         <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+            <svg
+              className="h-8 w-8 text-red-600 dark:text-red-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold mb-3">Token Inválido</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {error}
-          </p>
+          <h2 className="mb-3 text-2xl font-bold">Token Inválido</h2>
+          <p className="mb-6 text-gray-600 dark:text-gray-400">{error}</p>
           <Button
             onClick={() => router.push('/forgot-password')}
             className="w-full"
@@ -158,17 +172,27 @@ export default function ResetPasswordPage({
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
         <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+            <svg
+              className="h-8 w-8 text-green-600 dark:text-green-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold mb-3">¡Contraseña Actualizada!</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Tu contraseña ha sido actualizada exitosamente.
-            Serás redirigido al inicio de sesión...
+          <h2 className="mb-3 text-2xl font-bold">¡Contraseña Actualizada!</h2>
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
+            Tu contraseña ha sido actualizada exitosamente. Serás redirigido al
+            inicio de sesión...
           </p>
         </Card>
       </div>
@@ -176,22 +200,32 @@ export default function ResetPasswordPage({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
       <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <svg
+              className="h-8 w-8 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
             </svg>
           </div>
           <h1 className="text-2xl font-bold">Nueva Contraseña</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
             Ingresa tu nueva contraseña segura
           </p>
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="error" className="mb-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -207,14 +241,14 @@ export default function ResetPasswordPage({
               className={errors.password ? 'border-red-500' : ''}
             />
             {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           {/* Indicador de fortaleza */}
-          {password && (
-            <PasswordStrengthIndicator password={password} />
-          )}
+          {password && <PasswordStrengthIndicator password={password} />}
 
           <div>
             <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
@@ -226,7 +260,9 @@ export default function ResetPasswordPage({
               className={errors.confirmPassword ? 'border-red-500' : ''}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 

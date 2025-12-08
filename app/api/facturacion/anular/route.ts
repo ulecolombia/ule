@@ -103,6 +103,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Validar que tenga fecha de emisión
+    if (!factura.fechaEmision) {
+      return NextResponse.json(
+        {
+          error: 'Factura sin fecha de emisión',
+          message: 'Esta factura no tiene fecha de emisión registrada.',
+        },
+        { status: 400 }
+      )
+    }
+
     // Validar que no esté vencido el plazo de anulación (ejemplo: 5 días)
     const diasDesdeEmision = Math.floor(
       (new Date().getTime() - factura.fechaEmision.getTime()) /

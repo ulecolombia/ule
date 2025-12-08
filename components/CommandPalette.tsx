@@ -161,7 +161,7 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-dark/50 pt-[10vh]"
+      className="bg-dark/50 fixed inset-0 z-50 flex items-start justify-center pt-[10vh]"
       onClick={close}
     >
       <div
@@ -170,8 +170,8 @@ export function CommandPalette() {
         onKeyDown={handleKeyDown}
       >
         {/* Input de búsqueda */}
-        <div className="flex items-center border-b border-light-200 px-4 py-3">
-          <span className="material-symbols-outlined mr-3 text-dark-100">
+        <div className="border-light-200 flex items-center border-b px-4 py-3">
+          <span className="material-symbols-outlined text-dark-100 mr-3">
             search
           </span>
           <input
@@ -180,12 +180,12 @@ export function CommandPalette() {
             placeholder="Buscar facturas, clientes, páginas..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-dark placeholder-dark-100 outline-none"
+            className="text-dark placeholder-dark-100 flex-1 bg-transparent outline-none"
           />
           {loading && (
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
           )}
-          <kbd className="ml-3 rounded bg-light-100 px-2 py-1 text-xs text-dark-100">
+          <kbd className="bg-light-100 text-dark-100 ml-3 rounded px-2 py-1 text-xs">
             ESC
           </kbd>
         </div>
@@ -194,17 +194,17 @@ export function CommandPalette() {
         <div className="max-h-[60vh] overflow-y-auto">
           {query.length < 2 && (
             <div className="p-8 text-center">
-              <span className="material-symbols-outlined mb-2 text-5xl text-dark-100">
+              <span className="material-symbols-outlined text-dark-100 mb-2 text-5xl">
                 search
               </span>
-              <p className="text-sm text-dark-100">
+              <p className="text-dark-100 text-sm">
                 Escribe al menos 2 caracteres para buscar
               </p>
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-dark-100">
-                <kbd className="rounded bg-light-100 px-2 py-1">↑</kbd>
-                <kbd className="rounded bg-light-100 px-2 py-1">↓</kbd>
+              <div className="text-dark-100 mt-4 flex items-center justify-center gap-2 text-xs">
+                <kbd className="bg-light-100 rounded px-2 py-1">↑</kbd>
+                <kbd className="bg-light-100 rounded px-2 py-1">↓</kbd>
                 <span>para navegar</span>
-                <kbd className="rounded bg-light-100 px-2 py-1">Enter</kbd>
+                <kbd className="bg-light-100 rounded px-2 py-1">Enter</kbd>
                 <span>para seleccionar</span>
               </div>
             </div>
@@ -214,69 +214,71 @@ export function CommandPalette() {
             <>
               {resultadosPlanos.length === 0 ? (
                 <div className="p-8 text-center">
-                  <span className="material-symbols-outlined mb-2 text-5xl text-dark-100">
+                  <span className="material-symbols-outlined text-dark-100 mb-2 text-5xl">
                     search_off
                   </span>
-                  <p className="text-sm text-dark-100">
+                  <p className="text-dark-100 text-sm">
                     No se encontraron resultados para &quot;{query}&quot;
                   </p>
                 </div>
               ) : (
                 <div className="py-2">
-                  {(Object.keys(LABELS_CATEGORIA) as Array<keyof typeof LABELS_CATEGORIA>).map(
-                    (categoria) => {
-                      const items = resultados[categoria]
-                      if (!items || items.length === 0) return null
+                  {(
+                    Object.keys(LABELS_CATEGORIA) as Array<
+                      keyof typeof LABELS_CATEGORIA
+                    >
+                  ).map((categoria) => {
+                    const items = resultados[categoria]
+                    if (!items || items.length === 0) return null
 
-                      return (
-                        <div key={categoria} className="mb-2">
-                          <div className="px-4 py-2">
-                            <p className="text-xs font-semibold uppercase text-dark-100">
-                              {LABELS_CATEGORIA[categoria]}
-                            </p>
-                          </div>
-                          {items.map((item, idx) => {
-                            const globalIndex = resultadosPlanos.findIndex(
-                              (r) => r.id === item.id && r.tipo === item.tipo
-                            )
-                            const isSelected = globalIndex === selectedIndex
-
-                            return (
-                              <button
-                                key={`${item.tipo}-${item.id}`}
-                                onClick={() => navegar(item.ruta)}
-                                onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
-                                  isSelected
-                                    ? 'bg-primary/10 border-l-4 border-primary'
-                                    : 'hover:bg-light-50 border-l-4 border-transparent'
-                                }`}
-                              >
-                                <span
-                                  className={`material-symbols-outlined ${COLORS_CATEGORIA[categoria]}`}
-                                >
-                                  {item.icono}
-                                </span>
-                                <div className="flex-1">
-                                  <p className="font-medium text-dark">
-                                    {item.titulo}
-                                  </p>
-                                  <p className="text-sm text-dark-100">
-                                    {item.descripcion}
-                                  </p>
-                                </div>
-                                {isSelected && (
-                                  <span className="material-symbols-outlined text-primary">
-                                    arrow_forward
-                                  </span>
-                                )}
-                              </button>
-                            )
-                          })}
+                    return (
+                      <div key={categoria} className="mb-2">
+                        <div className="px-4 py-2">
+                          <p className="text-dark-100 text-xs font-semibold uppercase">
+                            {LABELS_CATEGORIA[categoria]}
+                          </p>
                         </div>
-                      )
-                    }
-                  )}
+                        {items.map((item, _idx) => {
+                          const globalIndex = resultadosPlanos.findIndex(
+                            (r) => r.id === item.id && r.tipo === item.tipo
+                          )
+                          const isSelected = globalIndex === selectedIndex
+
+                          return (
+                            <button
+                              key={`${item.tipo}-${item.id}`}
+                              onClick={() => navegar(item.ruta)}
+                              onMouseEnter={() => setSelectedIndex(globalIndex)}
+                              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
+                                isSelected
+                                  ? 'border-l-4 border-primary bg-primary/10'
+                                  : 'hover:bg-light-50 border-l-4 border-transparent'
+                              }`}
+                            >
+                              <span
+                                className={`material-symbols-outlined ${COLORS_CATEGORIA[categoria]}`}
+                              >
+                                {item.icono}
+                              </span>
+                              <div className="flex-1">
+                                <p className="text-dark font-medium">
+                                  {item.titulo}
+                                </p>
+                                <p className="text-dark-100 text-sm">
+                                  {item.descripcion}
+                                </p>
+                              </div>
+                              {isSelected && (
+                                <span className="material-symbols-outlined text-primary">
+                                  arrow_forward
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </>
@@ -284,11 +286,11 @@ export function CommandPalette() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-light-200 px-4 py-2 text-xs text-dark-100">
+        <div className="border-light-200 text-dark-100 flex items-center justify-between border-t px-4 py-2 text-xs">
           <div className="flex items-center gap-4">
             <span>
-              <kbd className="rounded bg-light-100 px-2 py-1">Ctrl</kbd> +{' '}
-              <kbd className="rounded bg-light-100 px-2 py-1">K</kbd> para abrir
+              <kbd className="bg-light-100 rounded px-2 py-1">Ctrl</kbd> +{' '}
+              <kbd className="bg-light-100 rounded px-2 py-1">K</kbd> para abrir
             </span>
           </div>
           {resultadosPlanos.length > 0 && (

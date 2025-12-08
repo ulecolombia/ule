@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     // ==========================================
     // 2. LIMPIAR ERRORES ANTIGUOS
     // ==========================================
-    const erroresEliminados = await prisma.analyticsError.deleteMany({
+    const erroresEliminados = await prisma.errorLog.deleteMany({
       where: {
         timestamp: {
           lt: fechaCorteErrores,
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
     // ==========================================
     // 3. LIMPIAR MÉTRICAS DIARIAS ANTIGUAS
     // ==========================================
-    const metricasEliminadas = await prisma.analyticsDiario.deleteMany({
+    const metricasEliminadas = await prisma.metricaDiaria.deleteMany({
       where: {
         fecha: {
           lt: fechaCorteMetricas,

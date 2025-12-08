@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/asesoria/sidebar'
@@ -39,6 +39,7 @@ export default function AsesoriaPage() {
   // Cargar conversaciones al montar
   useEffect(() => {
     conversacionesHook.cargarConversaciones()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Responsive: cerrar paneles en móvil

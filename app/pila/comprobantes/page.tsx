@@ -36,6 +36,7 @@ export default function ComprobantesPage() {
 
   useEffect(() => {
     fetchComprobantes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchComprobantes = async () => {

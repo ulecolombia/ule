@@ -16,7 +16,7 @@ const clienteBaseSchema = z.object({
     .max(200, 'Máximo 200 caracteres')
     .trim(),
 
-  tipoDocumento: z.enum(['CC', 'CE', 'NIT', 'PASAPORTE', 'TI', 'DIE'], {
+  tipoDocumento: z.enum(['CC', 'CE', 'NIT', 'PASAPORTE', 'TI', 'RC', 'DIE'], {
     required_error: 'Selecciona un tipo de documento',
     invalid_type_error: 'Tipo de documento inválido',
   }),
@@ -85,14 +85,7 @@ const clienteEmpresaSchema = clienteBaseSchema.extend({
     .transform((val) => (val === '' ? undefined : val)),
 
   regimenTributario: z
-    .enum([
-      'SIMPLIFICADO',
-      'COMUN',
-      'SIMPLE',
-      'ORDINARIO',
-      'ESPECIAL',
-      'NO_RESPONSABLE',
-    ])
+    .enum(['SIMPLE', 'ORDINARIO', 'ESPECIAL', 'NO_DECLARANTE'])
     .optional()
     .or(z.literal(''))
     .transform((val) => (val === '' ? undefined : val)),
@@ -157,7 +150,7 @@ export const calcularDigitoVerificacionNIT = (nit: string): number => {
 
   let suma = 0
   for (let i = 0; i < nitSinDV.length; i++) {
-    suma += parseInt(nitSinDV[i]) * pesos[i + offset]
+    suma += parseInt(nitSinDV[i]!) * pesos[i + offset]!
   }
 
   const residuo = suma % 11
@@ -181,8 +174,8 @@ export const validarDigitoVerificacionNIT = (nitCompleto: string): boolean => {
     return false
   }
 
-  const nit = partes[0]
-  const dvIngresado = parseInt(partes[1])
+  const nit = partes[0]!
+  const dvIngresado = parseInt(partes[1]!)
 
   try {
     const dvCalculado = calcularDigitoVerificacionNIT(nit)

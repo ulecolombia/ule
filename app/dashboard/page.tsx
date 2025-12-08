@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Card, CardBody } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
 
 interface ProximoPagoPILA {
@@ -133,7 +132,6 @@ export default function DashboardPage() {
 
   const proximoPagoPILA = stats.proximoPagoPILA
   const facturasDelMes = stats.facturasDelMes
-  const consultasIA = stats.consultasIA
   const proximaFechaTributaria = stats.proximaFechaTributaria
   const actividadReciente = stats.actividadReciente
 

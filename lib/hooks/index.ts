@@ -5,7 +5,18 @@
 
 // Hooks de utilidad general
 export { useAnalytics } from './use-analytics'
-export { useCachedData } from './use-cached-data'
+export {
+  useFacturas,
+  useClientes,
+  useComprobantes,
+  useAportes,
+  useEventosCalendario,
+  usePerfil,
+  useEstadisticasDashboard,
+  useConversaciones,
+  useNotificaciones,
+  useExportaciones,
+} from './use-cached-data'
 export { useInfiniteScroll } from './use-infinite-scroll'
 export { usePagination } from './use-pagination'
 
