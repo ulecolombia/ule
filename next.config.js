@@ -42,38 +42,39 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'none'",
-              "upgrade-insecure-requests",
+              'upgrade-insecure-requests',
             ].join('; '),
           },
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            value: 'on',
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '1; mode=block',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin',
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
-          }
-        ]
+            value:
+              'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+        ],
       },
       // Cache para assets estáticos
       {
@@ -141,9 +142,12 @@ const nextConfig = {
   // Compiler optimizations
   compiler: {
     // Remover console.log en producción
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
   },
 
   // Experimental features
@@ -157,6 +161,32 @@ const nextConfig = {
       '@radix-ui/react-tabs',
       '@radix-ui/react-accordion',
       '@radix-ui/react-tooltip',
+    ],
+  },
+
+  // Exclude large files from serverless function output
+  outputFileTracingExcludes: {
+    '*': [
+      '.git/**',
+      '.next/cache/**',
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+      'node_modules/esbuild',
+      'node_modules/webpack/**',
+      'node_modules/terser/**',
+      'node_modules/uglify-js/**',
+      '.husky/**',
+      'docs/**',
+      'scripts/**',
+      '**/*.md',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      'jest.config.js',
+      'jest.setup.js',
+      'prisma/migrations/**',
     ],
   },
 }

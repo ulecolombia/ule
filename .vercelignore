@@ -1,0 +1,52 @@
+# Vercel Ignore File
+# Exclude files that inflate serverless function size
+
+# Git
+.git
+
+# Next.js cache
+.next/cache
+
+# Development files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test files
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+jest.config.js
+jest.setup.js
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Husky
+.husky
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Prisma migrations (keep schema but not migration history)
+prisma/migrations
+
+# Scripts not needed in production
+scripts
