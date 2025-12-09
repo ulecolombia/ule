@@ -16,8 +16,12 @@ export default auth(async (req) => {
 
   // Permitir acceso a rutas de auth sin autenticación
   if (path.startsWith('/login') || path.startsWith('/registro')) {
-    // Si ya está autenticado, redirigir al dashboard con mensaje
+    // Si ya está autenticado, redirigir según estado de perfil
     if (session) {
+      // Si perfil incompleto, ir a onboarding
+      if (session.user?.perfilCompleto === false) {
+        return NextResponse.redirect(new URL('/onboarding', req.url))
+      }
       const redirectUrl = new URL('/dashboard', req.url)
       redirectUrl.searchParams.set('message', 'already-authenticated')
       return NextResponse.redirect(redirectUrl)
@@ -27,9 +31,12 @@ export default auth(async (req) => {
 
   // Permitir acceso a onboarding siempre que esté autenticado
   if (path.startsWith('/onboarding')) {
-    // Solo verificar autenticación, no perfil completo
     if (!session) {
       return NextResponse.redirect(new URL('/login', req.url))
+    }
+    // Si ya completó el perfil, redirigir al dashboard
+    if (session.user?.perfilCompleto === true) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     return NextResponse.next()
   }
@@ -39,14 +46,16 @@ export default auth(async (req) => {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // Verificar perfil completo solo para rutas que realmente lo requieren
-  // Facturación hace su propia validación de campos tributarios específicos
-  const rutasCriticas = ['/pila', '/archivo']
-  const esRutaCritica = rutasCriticas.some((ruta) => path.startsWith(ruta))
+  // IMPORTANTE: Redirigir usuarios con perfil incompleto a onboarding
+  // Excepto para rutas que permiten completar el perfil
+  const rutasPermitidasSinPerfil = ['/perfil', '/api']
+  const esRutaPermitida = rutasPermitidasSinPerfil.some((ruta) =>
+    path.startsWith(ruta)
+  )
 
-  if (esRutaCritica && session.user?.perfilCompleto === false) {
-    const redirectUrl = new URL('/dashboard', req.url)
-    redirectUrl.searchParams.set('message', 'incomplete-profile')
+  if (!esRutaPermitida && session.user?.perfilCompleto === false) {
+    const redirectUrl = new URL('/onboarding', req.url)
+    redirectUrl.searchParams.set('message', 'complete-profile')
     return NextResponse.redirect(redirectUrl)
   }
 
