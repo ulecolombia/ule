@@ -131,6 +131,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   swcMinify: true,
 
+  // Output standalone para Vercel - reduce drásticamente el tamaño de funciones
+  output: 'standalone',
+
   // Optimización de imágenes
   images: {
     domains: ['localhost'],

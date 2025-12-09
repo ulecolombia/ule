@@ -1,6 +1,7 @@
 {
-  "buildCommand": "rm -rf .next/cache && npm run build",
+  "buildCommand": "rm -rf .next/cache .next/trace && npm run build",
   "framework": "nextjs",
+  "installCommand": "npm ci --ignore-scripts && npx prisma generate",
   "crons": [
     {
       "path": "/api/cron/recordatorios",
