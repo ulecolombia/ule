@@ -16,12 +16,9 @@ export default auth(async (req) => {
 
   // Permitir acceso a rutas de auth sin autenticación
   if (path.startsWith('/login') || path.startsWith('/registro')) {
-    // Si ya está autenticado, redirigir según estado de perfil
-    if (session) {
-      // Si perfil incompleto, ir a onboarding
-      if (session.user?.perfilCompleto === false) {
-        return NextResponse.redirect(new URL('/onboarding', req.url))
-      }
+    // Si ya está autenticado Y tiene perfil completo, redirigir a dashboard
+    // Pero permitir acceso a login si perfil incompleto (para cerrar sesión/cambiar cuenta)
+    if (session && session.user?.perfilCompleto === true) {
       const redirectUrl = new URL('/dashboard', req.url)
       redirectUrl.searchParams.set('message', 'already-authenticated')
       return NextResponse.redirect(redirectUrl)
