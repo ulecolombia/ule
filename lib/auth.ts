@@ -131,101 +131,110 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      * Esto asegura que el usuario exista en la BD cuando JWT intente obtener perfilCompleto
      */
     async signIn({ user, account }) {
+      console.log(
+        `[Ule Auth signIn] Provider: ${account?.provider}, Email: ${user.email}`
+      )
+
       // Solo procesar OAuth (Google/Apple)
       if (account?.provider && account.provider !== 'credentials') {
-        const { db } = await import('@/lib/db')
+        // Validar que tenemos email
+        if (!user.email) {
+          console.error('[Ule Auth] OAuth user sin email - denegando acceso')
+          return false
+        }
 
         try {
-          // Verificar si el usuario ya existe
-          const existingUser = await db.user.findUnique({
-            where: { email: user.email! },
+          const { db } = await import('@/lib/db')
+          const email = user.email.toLowerCase().trim()
+
+          // Usar upsert para crear o actualizar en una sola operación
+          await db.user.upsert({
+            where: { email },
+            update: {
+              name: user.name || undefined,
+              image: user.image || undefined,
+              emailVerified: new Date(),
+            },
+            create: {
+              email: email,
+              name: user.name || email.split('@')[0] || 'Usuario',
+              image: user.image ?? null,
+              role: 'USER',
+              perfilCompleto: false,
+              emailVerified: new Date(),
+            },
           })
 
-          if (!existingUser && user.email) {
-            // Crear nuevo usuario desde OAuth
-            const email = user.email
-            const defaultName = email.split('@')[0] || 'Usuario'
-            const userName: string = user.name || defaultName
-
-            await db.user.create({
-              data: {
-                email: email,
-                name: userName,
-                image: user.image ?? null,
-                role: 'USER',
-                perfilCompleto: false,
-                emailVerified: new Date(),
-              },
-            })
-            console.log(
-              `[Ule Auth] Nuevo usuario OAuth creado desde ${account.provider}`
-            )
-          } else if (existingUser && user.email) {
-            // Actualizar información del usuario existente
-            await db.user.update({
-              where: { email: user.email },
-              data: {
-                name: user.name ?? existingUser.name,
-                image: user.image ?? existingUser.image,
-                emailVerified: new Date(),
-              },
-            })
-            console.log(
-              `[Ule Auth] Usuario OAuth actualizado desde ${account.provider}`
-            )
-          }
+          console.log(`[Ule Auth] Usuario OAuth procesado: ${email}`)
         } catch (error) {
-          console.error(
-            '[Ule Auth] Error al crear/actualizar usuario OAuth:',
-            error
-          )
-          return false // Denegar login si hay error
+          // Log el error pero NO denegar el login
+          // El usuario podrá entrar, solo que sin datos de BD
+          console.error('[Ule Auth] Error en BD (continuando):', error)
         }
       }
 
-      return true // Permitir login
+      return true // Siempre permitir login OAuth
     },
 
     /**
      * Callback JWT: Agregar campos custom al token
-     * ✅ ALTO #10: Cachear permisos de admin para evitar queries en cada request
-     * ✅ FIX: Para usuarios OAuth, obtener perfilCompleto desde la BD
+     * Para OAuth: obtener datos del usuario desde la BD (incluyendo el ID correcto)
      */
     async jwt({ token, user, trigger, session, account }) {
-      // En el primer login, agregar datos del usuario al token
-      if (user) {
-        token.id = user.id
-        token.role = (user as User).role
-        token.isAdmin = (user as User).isAdmin || false
-        token.isSuperAdmin = (user as User).isSuperAdmin || false
+      // Primer login - configurar token
+      if (user && user.email) {
+        console.log(`[Ule Auth jwt] Configurando token para: ${user.email}`)
 
-        // Para usuarios OAuth, perfilCompleto no viene en el objeto user
-        // Necesitamos obtenerlo de la BD
+        // Para OAuth, necesitamos obtener el ID y datos de nuestra BD
         if (account?.provider && account.provider !== 'credentials') {
-          // OAuth user - fetch from database
-          const { db } = await import('@/lib/db')
-          const dbUser = await db.user.findUnique({
-            where: { email: user.email! },
-            select: {
-              perfilCompleto: true,
-              role: true,
-              isAdmin: true,
-              isSuperAdmin: true,
-            },
-          })
+          try {
+            const { db } = await import('@/lib/db')
+            const dbUser = await db.user.findUnique({
+              where: { email: user.email.toLowerCase().trim() },
+              select: {
+                id: true,
+                perfilCompleto: true,
+                role: true,
+                isAdmin: true,
+                isSuperAdmin: true,
+              },
+            })
 
-          if (dbUser) {
-            token.perfilCompleto = dbUser.perfilCompleto
-            token.role = dbUser.role
-            token.isAdmin = dbUser.isAdmin || false
-            token.isSuperAdmin = dbUser.isSuperAdmin || false
-          } else {
-            // Usuario nuevo OAuth - perfilCompleto será false
+            if (dbUser) {
+              // Usar el ID de nuestra BD, no el de OAuth
+              token.id = dbUser.id
+              token.perfilCompleto = dbUser.perfilCompleto
+              token.role = dbUser.role
+              token.isAdmin = dbUser.isAdmin || false
+              token.isSuperAdmin = dbUser.isSuperAdmin || false
+              console.log(
+                `[Ule Auth jwt] OAuth user - perfilCompleto: ${dbUser.perfilCompleto}`
+              )
+            } else {
+              // Usuario no encontrado en BD (raro, pero manejamos)
+              token.id = user.id
+              token.perfilCompleto = false
+              token.role = 'USER'
+              token.isAdmin = false
+              token.isSuperAdmin = false
+              console.log('[Ule Auth jwt] OAuth user no encontrado en BD')
+            }
+          } catch (error) {
+            console.error('[Ule Auth jwt] Error obteniendo usuario:', error)
+            // Defaults seguros
+            token.id = user.id
             token.perfilCompleto = false
+            token.role = 'USER'
+            token.isAdmin = false
+            token.isSuperAdmin = false
           }
         } else {
-          // Credentials user - ya viene con perfilCompleto
+          // Credentials user - datos vienen del authorize()
+          token.id = user.id
           token.perfilCompleto = (user as User).perfilCompleto
+          token.role = (user as User).role
+          token.isAdmin = (user as User).isAdmin || false
+          token.isSuperAdmin = (user as User).isSuperAdmin || false
         }
       }
 
