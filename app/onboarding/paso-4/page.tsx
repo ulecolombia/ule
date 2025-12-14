@@ -180,10 +180,13 @@ export default function OnboardingPaso4() {
         entidadPension: paso3Data?.entidadPension,
         fechaAfiliacionPension: paso3Data?.fechaAfiliacionPension || undefined,
         arl: paso3Data?.arl || undefined,
-        nivelRiesgoARL: paso3Data?.nivelRiesgoARL
-          ? parseInt(paso3Data.nivelRiesgoARL)
+        // Convertir nivel de riesgo de romano (I, II, III, IV, V) a número (1-5)
+        nivelRiesgoARL: paso3Data?.nivelRiesgo
+          ? { I: 1, II: 2, III: 3, IV: 4, V: 5 }[
+              paso3Data.nivelRiesgo as string
+            ]
           : undefined,
-        fechaAfiliacionARL: paso3Data?.fechaAfiliacionARL || undefined,
+        fechaAfiliacionARL: paso3Data?.fechaAfiliacionArl || undefined,
 
         // Paso 4
         estadoCivil: data.estadoCivil,
@@ -308,9 +311,9 @@ export default function OnboardingPaso4() {
       format: (value) =>
         value ? new Date(value).toLocaleDateString('es-CO') : 'No especificada',
     },
-    { key: 'arl', label: 'ARL' },
+    { key: 'arl', label: 'ARL', format: (value) => value || 'No especificada' },
     {
-      key: 'nivelRiesgoARL',
+      key: 'nivelRiesgo',
       label: 'Nivel de riesgo',
       format: (value) => (value ? `Nivel ${value}` : 'No especificado'),
     },
@@ -554,23 +557,29 @@ export default function OnboardingPaso4() {
               variant="outline"
               onClick={() => router.push('/onboarding/paso-3')}
               disabled={isSubmitting}
-              className="flex-1"
+              className="inline-flex flex-1 items-center justify-center"
             >
-              <span className="material-symbols-outlined mr-2">arrow_back</span>
+              <span className="material-symbols-outlined mr-2 text-xl leading-none">
+                arrow_back
+              </span>
               Anterior
             </Button>
 
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex flex-1 items-center justify-center"
+            >
               {isSubmitting ? (
                 <>
-                  <span className="material-symbols-outlined mr-2 animate-spin">
+                  <span className="material-symbols-outlined mr-2 animate-spin text-xl leading-none">
                     sync
                   </span>
                   Guardando...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined mr-2">
+                  <span className="material-symbols-outlined mr-2 text-xl leading-none">
                     check_circle
                   </span>
                   Completar Perfil
