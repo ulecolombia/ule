@@ -1,6 +1,6 @@
 /**
  * ULE - PÁGINA PRINCIPAL
- * Redirecciona automáticamente a login o dashboard
+ * Redirecciona automáticamente según estado del usuario
  */
 
 import { redirect } from 'next/navigation'
@@ -9,11 +9,16 @@ import { auth } from '@/lib/auth'
 export default async function HomePage() {
   const session = await auth()
 
-  // Si el usuario está autenticado, redirigir a dashboard
+  // Si el usuario está autenticado
   if (session?.user) {
-    redirect('/dashboard')
+    // Si perfil completo → dashboard
+    if (session.user.perfilCompleto === true) {
+      redirect('/dashboard')
+    }
+    // Si perfil incompleto → onboarding
+    redirect('/onboarding')
   }
 
-  // Si no está autenticado, redirigir a login
+  // Si no está autenticado → login
   redirect('/login')
 }
