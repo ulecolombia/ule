@@ -8,7 +8,8 @@ import { auth } from '@/lib/auth'
 
 /**
  * Layout para páginas de autenticación
- * Redirige al dashboard si ya está autenticado
+ * Redirige al dashboard solo si ya completó el perfil
+ * Permite acceso si perfil incompleto (para cerrar sesión/cambiar cuenta)
  */
 export default async function AuthLayout({
   children,
@@ -17,8 +18,9 @@ export default async function AuthLayout({
 }) {
   const session = await auth()
 
-  // Si ya está autenticado, redirigir al dashboard
-  if (session) {
+  // Solo redirigir si está autenticado Y tiene perfil completo
+  // Permitir acceso si perfil incompleto (para cerrar sesión/cambiar cuenta)
+  if (session?.user?.perfilCompleto === true) {
     redirect('/dashboard')
   }
 
