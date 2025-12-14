@@ -127,6 +127,66 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     /**
+     * Callback signIn: Crear/actualizar usuario OAuth ANTES del JWT callback
+     * Esto asegura que el usuario exista en la BD cuando JWT intente obtener perfilCompleto
+     */
+    async signIn({ user, account }) {
+      // Solo procesar OAuth (Google/Apple)
+      if (account?.provider && account.provider !== 'credentials') {
+        const { db } = await import('@/lib/db')
+
+        try {
+          // Verificar si el usuario ya existe
+          const existingUser = await db.user.findUnique({
+            where: { email: user.email! },
+          })
+
+          if (!existingUser && user.email) {
+            // Crear nuevo usuario desde OAuth
+            const email = user.email
+            const defaultName = email.split('@')[0] || 'Usuario'
+            const userName: string = user.name || defaultName
+
+            await db.user.create({
+              data: {
+                email: email,
+                name: userName,
+                image: user.image ?? null,
+                role: 'USER',
+                perfilCompleto: false,
+                emailVerified: new Date(),
+              },
+            })
+            console.log(
+              `[Ule Auth] Nuevo usuario OAuth creado desde ${account.provider}`
+            )
+          } else if (existingUser && user.email) {
+            // Actualizar información del usuario existente
+            await db.user.update({
+              where: { email: user.email },
+              data: {
+                name: user.name ?? existingUser.name,
+                image: user.image ?? existingUser.image,
+                emailVerified: new Date(),
+              },
+            })
+            console.log(
+              `[Ule Auth] Usuario OAuth actualizado desde ${account.provider}`
+            )
+          }
+        } catch (error) {
+          console.error(
+            '[Ule Auth] Error al crear/actualizar usuario OAuth:',
+            error
+          )
+          return false // Denegar login si hay error
+        }
+      }
+
+      return true // Permitir login
+    },
+
+    /**
      * Callback JWT: Agregar campos custom al token
      * ✅ ALTO #10: Cachear permisos de admin para evitar queries en cada request
      * ✅ FIX: Para usuarios OAuth, obtener perfilCompleto desde la BD
@@ -220,62 +280,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     /**
-     * Evento: Usuario inició sesión
+     * Evento: Usuario inició sesión (solo logging)
      */
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       console.log(`[Ule Auth] Usuario ${user.email} inició sesión`)
-
-      // Si es OAuth (Google/Apple), crear o actualizar usuario en BD
-      if (account?.provider && account.provider !== 'credentials') {
-        const { db } = await import('@/lib/db')
-
-        try {
-          // Verificar si el usuario ya existe
-          const existingUser = await db.user.findUnique({
-            where: { email: user.email! },
-          })
-
-          if (!existingUser && user.email) {
-            // Crear nuevo usuario desde OAuth
-            const email = user.email
-            const defaultName = email.split('@')[0] || 'Usuario'
-            const userName: string = user.name || defaultName
-
-            await db.user.create({
-              data: {
-                email: email,
-                name: userName,
-                image: user.image ?? null,
-                role: 'USER',
-                perfilCompleto: false,
-                // No password para usuarios OAuth
-                emailVerified: new Date(), // Confiar en el proveedor OAuth
-              },
-            })
-            console.log(
-              `[Ule Auth] Nuevo usuario creado desde ${account.provider}`
-            )
-          } else if (existingUser && user.email) {
-            // Actualizar información del usuario existente
-            await db.user.update({
-              where: { email: user.email },
-              data: {
-                name: user.name ?? existingUser.name,
-                image: user.image ?? existingUser.image,
-                emailVerified: new Date(),
-              },
-            })
-            console.log(
-              `[Ule Auth] Usuario actualizado desde ${account.provider}`
-            )
-          }
-        } catch (error) {
-          console.error(
-            '[Ule Auth] Error al crear/actualizar usuario OAuth:',
-            error
-          )
-        }
-      }
     },
 
     /**
