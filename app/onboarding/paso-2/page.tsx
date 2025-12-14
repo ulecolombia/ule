@@ -14,7 +14,6 @@ import { TipoContrato } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardBody } from '@/components/ui/card'
-import { RadioCard } from '@/components/ui/radio-card'
 import { MoneyInput } from '@/components/ui/currency-input'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { TooltipProvider, InfoTooltip } from '@/components/ui/tooltip'
@@ -25,10 +24,9 @@ import { PROFESIONES_COMUNES } from '@/lib/data/profesiones'
 import { CODIGOS_CIIU } from '@/lib/data/codigos-ciiu'
 
 // Schema de validación Zod para Paso 2
+// tipoContrato siempre es OPS (único tipo válido para independientes)
 const paso2Schema = z.object({
-  tipoContrato: z.nativeEnum(TipoContrato, {
-    required_error: 'Selecciona un tipo de contrato',
-  }),
+  tipoContrato: z.enum([TipoContrato.OPS]),
   profesion: z
     .string()
     .min(3, 'La profesión debe tener al menos 3 caracteres')
@@ -56,28 +54,9 @@ const STEPS = [
   { number: 4, title: 'Confirmación' },
 ]
 
-const TIPOS_CONTRATO = [
-  {
-    value: TipoContrato.OPS,
-    label: 'OPS',
-    description: 'Contrato por servicios específicos sin vínculo laboral',
-  },
-  {
-    value: TipoContrato.DIRECTO,
-    label: 'Contrato Directo',
-    description: 'Contrato con vínculo laboral directo',
-  },
-  {
-    value: TipoContrato.TERMINO_FIJO,
-    label: 'Término Fijo',
-    description: 'Contrato con fecha de finalización definida',
-  },
-  {
-    value: TipoContrato.TERMINO_INDEFINIDO,
-    label: 'Término Indefinido',
-    description: 'Contrato sin fecha de finalización',
-  },
-]
+// OPS es el único tipo de contrato para trabajadores independientes en Ule
+// Los otros tipos (Directo, Término Fijo, Indefinido) no aplican porque
+// en esos casos el empleador liquida la seguridad social
 
 const DEFAULT_VALUES: Paso2FormData = {
   tipoContrato: TipoContrato.OPS,
@@ -218,52 +197,39 @@ export default function OnboardingPaso2Page() {
           <Card>
             <CardBody className="p-6 sm:p-8">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Tipo de Contrato */}
-                <div>
-                  <div className="mb-3 flex items-center gap-2">
-                    <label className="text-dark text-sm font-medium">
-                      Tipo de Contrato
-                      <span className="text-error ml-1">*</span>
-                    </label>
-                    <InfoTooltip
-                      content="Selecciona el tipo de relación contractual que tienes actualmente"
-                      side="right"
-                    />
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {TIPOS_CONTRATO.map((tipo) => (
-                      <Controller
-                        key={tipo.value}
-                        name="tipoContrato"
-                        control={control}
-                        render={({ field }) => (
-                          <RadioCard
-                            name="tipoContrato"
-                            value={tipo.value}
-                            label={tipo.label}
-                            description={tipo.description}
-                            selected={field.value === tipo.value}
-                            onChange={field.onChange}
-                            icon={
-                              <span className="material-symbols-outlined text-base">
-                                description
-                              </span>
-                            }
-                          />
-                        )}
-                      />
-                    ))}
-                  </div>
-
-                  {errors.tipoContrato && (
-                    <p className="text-error mt-2 flex items-center gap-1 text-sm">
-                      <span className="material-symbols-outlined text-base">
-                        error
+                {/* Tipo de Contrato - Informativo (siempre OPS) */}
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <span className="material-symbols-outlined text-primary">
+                        description
                       </span>
-                      {errors.tipoContrato.message}
-                    </p>
-                  )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-dark font-semibold">
+                          Tipo de Contrato
+                        </h3>
+                        <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                          OPS
+                        </span>
+                      </div>
+                      <p className="text-dark-100 mt-1 text-sm font-medium">
+                        Orden de Prestación de Servicios
+                      </p>
+                      <p className="text-dark-200 mt-2 text-sm">
+                        Contrato por servicios específicos sin vínculo laboral.
+                        Como trabajador independiente, eres responsable de
+                        liquidar tu propia seguridad social.
+                      </p>
+                    </div>
+                  </div>
+                  {/* Campo oculto para mantener el valor en el formulario */}
+                  <input
+                    type="hidden"
+                    {...register('tipoContrato')}
+                    value={TipoContrato.OPS}
+                  />
                 </div>
 
                 {/* Profesión */}
