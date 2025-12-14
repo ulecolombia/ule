@@ -29,7 +29,7 @@ describe('Cumplimiento de Ley 1581 de 2012', () => {
     const user = await db.user.create({
       data: {
         email: testUserEmail,
-        nombre: 'Usuario Test',
+        name: 'Usuario Test',
         passwordHash: 'hash-test',
         emailVerified: new Date(),
       },
@@ -171,8 +171,7 @@ describe('Cumplimiento de Ley 1581 de 2012', () => {
       expect(solicitud?.fechaEjecucion).toBeDefined()
 
       // Verificar que la fecha de ejecución es aproximadamente 30 días después
-      const diff =
-        solicitud!.fechaEjecucion!.getTime() - new Date().getTime()
+      const diff = solicitud!.fechaEjecucion!.getTime() - new Date().getTime()
       const dias = diff / (1000 * 60 * 60 * 24)
 
       expect(dias).toBeGreaterThan(29)
@@ -276,7 +275,7 @@ describe('Cumplimiento de Ley 1581 de 2012', () => {
         await db.user.create({
           data: {
             email: `test2-${Date.now()}@test.com`,
-            nombre: 'Usuario Test 2',
+            name: 'Usuario Test 2',
             passwordHash: 'hash',
             emailVerified: new Date(),
           },

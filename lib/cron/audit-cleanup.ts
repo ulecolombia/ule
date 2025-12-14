@@ -1,4 +1,7 @@
-import { limpiarLogsAntiguos, obtenerEstadisticasRetencion } from '@/lib/audit/retention-service'
+import {
+  limpiarLogsAntiguos,
+  obtenerEstadisticasRetencion,
+} from '@/lib/audit/retention-service'
 import { secureLogger } from '@/lib/security/secure-logger'
 import { db } from '@/lib/db'
 
@@ -50,16 +53,19 @@ async function enviarReporteLimpieza(reporte: any) {
       where: {
         OR: [{ isAdmin: true }, { isSuperAdmin: true }],
       },
-      select: { email: true, nombre: true },
+      select: { email: true, name: true },
     })
 
     // TODO: Implementar envío de email cuando el servicio esté disponible
     // Por ahora solo registramos en logs
-    secureLogger.info(`Reporte de limpieza generado para ${admins.length} administradores`, {
-      fecha: reporte.fecha.toLocaleDateString('es-CO'),
-      logsEliminados: reporte.logsEliminados,
-      administradores: admins.map(a => a.email),
-    })
+    secureLogger.info(
+      `Reporte de limpieza generado para ${admins.length} administradores`,
+      {
+        fecha: reporte.fecha.toLocaleDateString('es-CO'),
+        logsEliminados: reporte.logsEliminados,
+        administradores: admins.map((a) => a.email),
+      }
+    )
 
     /* Cuando el servicio de email esté disponible, usar este código:
     for (const admin of admins) {
@@ -89,15 +95,18 @@ async function notificarErrorLimpieza(error: any) {
   try {
     const admins = await db.user.findMany({
       where: { isSuperAdmin: true },
-      select: { email: true, nombre: true },
+      select: { email: true, name: true },
     })
 
     // TODO: Implementar envío de email cuando el servicio esté disponible
-    secureLogger.error(`Error crítico en limpieza de logs. Notificando a ${admins.length} super-admins`, {
-      error: error.message || 'Error desconocido',
-      fecha: new Date().toLocaleString('es-CO'),
-      administradores: admins.map(a => a.email),
-    })
+    secureLogger.error(
+      `Error crítico en limpieza de logs. Notificando a ${admins.length} super-admins`,
+      {
+        error: error.message || 'Error desconocido',
+        fecha: new Date().toLocaleString('es-CO'),
+        administradores: admins.map((a) => a.email),
+      }
+    )
 
     /* Cuando el servicio de email esté disponible, usar este código:
     for (const admin of admins) {

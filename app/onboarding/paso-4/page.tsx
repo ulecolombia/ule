@@ -155,8 +155,11 @@ export default function OnboardingPaso4() {
 
       // Combine all data from 4 steps
       const completeData = {
-        // Paso 1
-        nombre: paso1Data?.nombre,
+        // Paso 1 - Campos de nombre separados
+        primerNombre: paso1Data?.primerNombre,
+        segundoNombre: paso1Data?.segundoNombre || null,
+        primerApellido: paso1Data?.primerApellido,
+        segundoApellido: paso1Data?.segundoApellido,
         tipoDocumento: paso1Data?.tipoDocumento,
         numeroDocumento: paso1Data?.numeroDocumento,
         telefono: paso1Data?.telefono,
@@ -250,7 +253,10 @@ export default function OnboardingPaso4() {
 
   // Summary fields configurations
   const paso1Fields: SummaryField[] = [
-    { key: 'nombre', label: 'Nombre completo' },
+    { key: 'primerNombre', label: 'Primer Nombre' },
+    { key: 'segundoNombre', label: 'Segundo Nombre', format: (v) => v || '—' },
+    { key: 'primerApellido', label: 'Primer Apellido' },
+    { key: 'segundoApellido', label: 'Segundo Apellido' },
     {
       key: 'tipoDocumento',
       label: 'Documento',

@@ -50,7 +50,11 @@ export async function exportarDatosUsuario(
       select: {
         id: true,
         email: true,
-        nombre: true,
+        name: true,
+        primerNombre: true,
+        segundoNombre: true,
+        primerApellido: true,
+        segundoApellido: true,
         tipoDocumento: true,
         numeroDocumento: true, // Viene encriptado
         telefono: true, // Viene encriptado

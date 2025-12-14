@@ -220,8 +220,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             requiresTwoFactor: true,
-            message:
-              'Ingresa el código de autenticación de dos factores',
+            message: 'Ingresa el código de autenticación de dos factores',
           },
           { status: 200 }
         )
@@ -337,7 +336,7 @@ export async function POST(req: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        nombre: user.nombre,
+        name: user.name,
         twoFactorEnabled: user.twoFactorEnabled,
       },
     })
@@ -353,9 +352,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json(
-      { error: 'Error en el servidor' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error en el servidor' }, { status: 500 })
   }
 }

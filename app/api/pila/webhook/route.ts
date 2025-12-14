@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         periodo: formatearPeriodo(aporte.mes, aporte.anio),
         fechaPago: resultadoPago.fechaPago!,
         usuario: {
-          nombre: aporte.user.nombre || 'Usuario',
+          nombre: aporte.user.name || 'Usuario',
           documento: aporte.user.numeroDocumento || 'N/A',
           tipoDocumento: aporte.user.tipoDocumento || 'CC',
         },

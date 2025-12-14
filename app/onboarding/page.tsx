@@ -24,7 +24,23 @@ import {
 
 // Schema de validación Zod para Paso 1
 const paso1Schema = z.object({
-  nombre: z.string().min(3, 'Mínimo 3 caracteres'),
+  primerNombre: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(50, 'Máximo 50 caracteres'),
+  segundoNombre: z
+    .string()
+    .max(50, 'Máximo 50 caracteres')
+    .optional()
+    .or(z.literal('')),
+  primerApellido: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(50, 'Máximo 50 caracteres'),
+  segundoApellido: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(50, 'Máximo 50 caracteres'),
   tipoDocumento: z.nativeEnum(TipoDocumento, {
     required_error: 'Tipo de documento requerido',
   }),
@@ -52,7 +68,10 @@ const STEPS = [
 ]
 
 const DEFAULT_VALUES: Paso1FormData = {
-  nombre: '',
+  primerNombre: '',
+  segundoNombre: '',
+  primerApellido: '',
+  segundoApellido: '',
   tipoDocumento: TipoDocumento.CC,
   numeroDocumento: '',
   telefono: '',
@@ -201,23 +220,78 @@ export default function OnboardingPage() {
         <Card>
           <CardBody className="p-6 sm:p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Nombre Completo */}
-              <FormFieldWrapper
-                label="Nombre Completo"
-                icon={
-                  <span className="material-symbols-outlined text-base">
-                    person
-                  </span>
-                }
-                error={errors.nombre?.message}
-                required
-              >
-                <Input
-                  {...register('nombre')}
-                  type="text"
-                  placeholder="Juan Carlos González Pérez"
-                />
-              </FormFieldWrapper>
+              {/* Nombres */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                <FormFieldWrapper
+                  label="Primer Nombre"
+                  icon={
+                    <span className="material-symbols-outlined text-base">
+                      person
+                    </span>
+                  }
+                  error={errors.primerNombre?.message}
+                  required
+                >
+                  <Input
+                    {...register('primerNombre')}
+                    type="text"
+                    placeholder="Juan"
+                  />
+                </FormFieldWrapper>
+
+                <FormFieldWrapper
+                  label="Segundo Nombre"
+                  icon={
+                    <span className="material-symbols-outlined text-base">
+                      person
+                    </span>
+                  }
+                  error={errors.segundoNombre?.message}
+                >
+                  <Input
+                    {...register('segundoNombre')}
+                    type="text"
+                    placeholder="Carlos (opcional)"
+                  />
+                </FormFieldWrapper>
+              </div>
+
+              {/* Apellidos */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                <FormFieldWrapper
+                  label="Primer Apellido"
+                  icon={
+                    <span className="material-symbols-outlined text-base">
+                      badge
+                    </span>
+                  }
+                  error={errors.primerApellido?.message}
+                  required
+                >
+                  <Input
+                    {...register('primerApellido')}
+                    type="text"
+                    placeholder="González"
+                  />
+                </FormFieldWrapper>
+
+                <FormFieldWrapper
+                  label="Segundo Apellido"
+                  icon={
+                    <span className="material-symbols-outlined text-base">
+                      badge
+                    </span>
+                  }
+                  error={errors.segundoApellido?.message}
+                  required
+                >
+                  <Input
+                    {...register('segundoApellido')}
+                    type="text"
+                    placeholder="Pérez"
+                  />
+                </FormFieldWrapper>
+              </div>
 
               {/* Tipo y Número de Documento */}
               <div className="grid gap-6 sm:grid-cols-2">

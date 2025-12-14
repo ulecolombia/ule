@@ -275,7 +275,7 @@ export async function resetPassword(
     // TODO: Enviar email de confirmación
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, nombre: true },
+      select: { email: true, name: true },
     })
 
     if (user) {

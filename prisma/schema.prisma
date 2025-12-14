@@ -19,8 +19,14 @@ model User {
   email         String    @unique
   emailVerified DateTime? @map("email_verified")
   password      String? // Hash bcrypt (opcional para OAuth)
-  name          String // Mantener compatibilidad con NextAuth
-  nombre        String? // Nombre completo del usuario
+  name          String // Mantener compatibilidad con NextAuth (nombre completo derivado)
+
+  // Campos de nombre separados (onboarding paso 1)
+  primerNombre   String?  @map("primer_nombre")
+  segundoNombre  String?  @map("segundo_nombre") // Opcional
+  primerApellido String?  @map("primer_apellido")
+  segundoApellido String? @map("segundo_apellido")
+
   image         String? // Para futura implementación de avatares
   role          Role      @default(USER)
 

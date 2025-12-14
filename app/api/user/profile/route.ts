@@ -17,8 +17,11 @@ import { secureLogger } from '@/lib/security/secure-logger'
 
 // Schema completo para onboarding (POST)
 const updateProfileSchema = z.object({
-  // Paso 1
-  nombre: z.string(),
+  // Paso 1 - Campos de nombre separados
+  primerNombre: z.string().min(2, 'Mínimo 2 caracteres'),
+  segundoNombre: z.string().nullable().optional(),
+  primerApellido: z.string().min(2, 'Mínimo 2 caracteres'),
+  segundoApellido: z.string().min(2, 'Mínimo 2 caracteres'),
   tipoDocumento: z.nativeEnum(TipoDocumento),
   numeroDocumento: z.string(),
   telefono: z.string(),
@@ -50,7 +53,10 @@ const updateProfileSchema = z.object({
 
 // Schemas por sección para edición (PUT)
 const datosPersonalesSchema = z.object({
-  nombre: z.string().min(3, 'Mínimo 3 caracteres'),
+  primerNombre: z.string().min(2, 'Mínimo 2 caracteres'),
+  segundoNombre: z.string().nullable().optional(),
+  primerApellido: z.string().min(2, 'Mínimo 2 caracteres'),
+  segundoApellido: z.string().min(2, 'Mínimo 2 caracteres'),
   telefono: z.string().length(10, 'Debe tener 10 dígitos'),
   direccion: z.string().min(5, 'Dirección muy corta'),
   departamento: z.string().min(1, 'Selecciona un departamento'),
@@ -117,7 +123,11 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         email: true,
-        nombre: true,
+        name: true,
+        primerNombre: true,
+        segundoNombre: true,
+        primerApellido: true,
+        segundoApellido: true,
         tipoDocumento: true,
         numeroDocumento: true,
         telefono: true,
@@ -200,7 +210,10 @@ export async function POST(req: NextRequest) {
     // Sanitizar inputs sensibles
     const sanitizedData = {
       ...validatedData,
-      nombre: validatedData.nombre.replace(/[<>]/g, ''),
+      primerNombre: validatedData.primerNombre.replace(/[<>]/g, ''),
+      segundoNombre: validatedData.segundoNombre?.replace(/[<>]/g, '') || null,
+      primerApellido: validatedData.primerApellido.replace(/[<>]/g, ''),
+      segundoApellido: validatedData.segundoApellido.replace(/[<>]/g, ''),
       numeroDocumento: validatedData.numeroDocumento.replace(/\D/g, ''),
       telefono: validatedData.telefono.replace(/[^\d+]/g, ''),
       direccion: validatedData.direccion.replace(/[<>]/g, ''),
@@ -208,6 +221,16 @@ export async function POST(req: NextRequest) {
       departamento: validatedData.departamento.replace(/[<>]/g, ''),
       profesion: validatedData.profesion.replace(/[<>]/g, ''),
     }
+
+    // Generar nombre completo para compatibilidad con NextAuth
+    const nombreCompleto = [
+      sanitizedData.primerNombre,
+      sanitizedData.segundoNombre,
+      sanitizedData.primerApellido,
+      sanitizedData.segundoApellido,
+    ]
+      .filter(Boolean)
+      .join(' ')
 
     // Convertir nivel de riesgo de string a number si existe
     const nivelRiesgo = validatedData.nivelRiesgoARL
@@ -218,7 +241,11 @@ export async function POST(req: NextRequest) {
     const updatedUser = await db.user.update({
       where: { email: session.user.email },
       data: {
-        nombre: sanitizedData.nombre,
+        name: nombreCompleto, // Para compatibilidad con NextAuth
+        primerNombre: sanitizedData.primerNombre,
+        segundoNombre: sanitizedData.segundoNombre,
+        primerApellido: sanitizedData.primerApellido,
+        segundoApellido: sanitizedData.segundoApellido,
         tipoDocumento: sanitizedData.tipoDocumento,
         numeroDocumento: sanitizedData.numeroDocumento, // Se encripta automáticamente
         telefono: sanitizedData.telefono, // Se encripta automáticamente
@@ -261,7 +288,9 @@ export async function POST(req: NextRequest) {
       message: 'Perfil completado exitosamente',
       user: {
         id: updatedUser.id,
-        nombre: updatedUser.nombre,
+        name: updatedUser.name,
+        primerNombre: updatedUser.primerNombre,
+        primerApellido: updatedUser.primerApellido,
         perfilCompleto: updatedUser.perfilCompleto,
       },
     })
@@ -344,7 +373,11 @@ export async function PUT(req: NextRequest) {
       select: {
         id: true,
         email: true,
-        nombre: true,
+        name: true,
+        primerNombre: true,
+        segundoNombre: true,
+        primerApellido: true,
+        segundoApellido: true,
         tipoDocumento: true,
         numeroDocumento: true,
         telefono: true,

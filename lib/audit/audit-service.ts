@@ -96,10 +96,10 @@ export async function registrarAuditoria(params: AuditLogParams) {
     if (params.userId) {
       const user = await db.user.findUnique({
         where: { id: params.userId },
-        select: { email: true, nombre: true, name: true },
+        select: { email: true, name: true },
       })
       userEmail = user?.email
-      userName = user?.nombre || user?.name
+      userName = user?.name
     }
 
     // Parsear user agent
@@ -718,7 +718,7 @@ async function notificarAlerta(alerta: any) {
       where: {
         OR: [{ isAdmin: true }, { isSuperAdmin: true }],
       },
-      select: { id: true, email: true, nombre: true, name: true },
+      select: { id: true, email: true, name: true },
     })
 
     console.log(`🚨 [ALERTA] ${alerta.severidad}: ${alerta.titulo}`)

@@ -116,8 +116,8 @@ Recuerda: Tu objetivo es educar e informar, no tomar decisiones por el usuario.`
 function construirContextoUsuario(usuario: Partial<User>): string {
   const partes: string[] = []
 
-  if (usuario.nombre) {
-    partes.push(`Nombre: ${usuario.nombre}`)
+  if (usuario.name) {
+    partes.push(`Nombre: ${usuario.name}`)
   }
 
   if (usuario.tipoContrato) {

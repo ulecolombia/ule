@@ -422,7 +422,7 @@ function construirContextoTributario(user: Partial<User>): string {
   const partes: string[] = []
 
   // Información personal
-  if (user.nombre) partes.push(`Nombre: ${user.nombre}`)
+  if (user.name) partes.push(`Nombre: ${user.name}`)
   if (user.profesion) partes.push(`Profesión: ${user.profesion}`)
 
   // Información laboral

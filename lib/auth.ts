@@ -147,17 +147,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const { db } = await import('@/lib/db')
           const email = user.email.toLowerCase().trim()
 
+          // Extraer nombre y apellido del nombre completo de OAuth
+          const nombreCompleto = user.name || email.split('@')[0] || 'Usuario'
+          const partes = nombreCompleto.trim().split(/\s+/)
+          const primerNombre = partes[0] || nombreCompleto
+          const segundoNombre = partes.length > 2 ? partes[1] : null
+          const primerApellido = partes.length > 2 ? partes[2] : partes[1] || ''
+          const segundoApellido =
+            partes.length > 3 ? partes.slice(3).join(' ') : ''
+
           // Usar upsert para crear o actualizar en una sola operación
           await db.user.upsert({
             where: { email },
             update: {
-              name: user.name || undefined,
+              name: nombreCompleto,
               image: user.image || undefined,
               emailVerified: new Date(),
             },
             create: {
               email: email,
-              name: user.name || email.split('@')[0] || 'Usuario',
+              name: nombreCompleto,
+              primerNombre: primerNombre,
+              segundoNombre: segundoNombre,
+              primerApellido: primerApellido,
+              segundoApellido: segundoApellido,
               image: user.image ?? null,
               role: 'USER',
               perfilCompleto: false,
