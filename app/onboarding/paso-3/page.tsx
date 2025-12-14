@@ -6,7 +6,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -19,7 +19,6 @@ import { TooltipProvider, InfoTooltip } from '@/components/ui/tooltip'
 import { InfoBanner } from '@/components/ui/info-banner'
 import { ProgressIndicator } from '@/components/onboarding/progress-indicator'
 import { FormFieldWrapper } from '@/components/onboarding/form-field-wrapper'
-import { useOnboardingStorage } from '@/hooks/use-onboarding-storage'
 import {
   EPS_COLOMBIA,
   FONDOS_PENSION,
@@ -49,7 +48,6 @@ const createPaso3Schema = (ingresoMensual: number) => {
     })
     .refine(
       (data) => {
-        // Si gana más de 1 SMMLV, NO puede estar sin salud
         if (requiereAfiliacion && data.entidadSalud === 'NO_AFILIADO') {
           return false
         }
@@ -63,7 +61,6 @@ const createPaso3Schema = (ingresoMensual: number) => {
     )
     .refine(
       (data) => {
-        // Si gana más de 1 SMMLV, NO puede estar sin pensión
         if (requiereAfiliacion && data.entidadPension === 'NO_AFILIADO') {
           return false
         }
@@ -77,7 +74,6 @@ const createPaso3Schema = (ingresoMensual: number) => {
     )
     .refine(
       (data) => {
-        // Si tiene ARL, debe tener nivel de riesgo
         if (data.arl && data.arl !== 'NO_AFILIADO' && !data.nivelRiesgo) {
           return false
         }
@@ -109,21 +105,17 @@ const STEPS = [
   { number: 4, title: 'Confirmación' },
 ]
 
+const DEFAULT_VALUES: Paso3FormData = {
+  entidadSalud: '',
+  entidadPension: '',
+  arl: '',
+}
+
 export default function OnboardingPaso3Page() {
   const router = useRouter()
-  const [currentStep] = useState(3)
+  const currentStep = 3
   const [ingresoMensual, setIngresoMensual] = useState(0)
-
-  // Hook de localStorage
-  const {
-    value: formData,
-    setValue: setFormData,
-    isLoaded,
-  } = useOnboardingStorage<Paso3FormData>('onboarding-step-3', {
-    entidadSalud: '',
-    entidadPension: '',
-    arl: '',
-  })
+  const hasLoadedRef = useRef(false)
 
   // Recuperar ingreso del paso 2
   useEffect(() => {
@@ -142,32 +134,29 @@ export default function OnboardingPaso3Page() {
     watch,
     setValue,
     control,
+    reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<Paso3FormData>({
     resolver: zodResolver(schema),
-    defaultValues: formData,
+    defaultValues: DEFAULT_VALUES,
   })
 
-  // Cargar datos guardados cuando el componente monte
+  // Cargar datos de localStorage SOLO UNA VEZ al montar
   useEffect(() => {
-    if (isLoaded) {
-      setValue('entidadSalud', formData.entidadSalud || '')
-      setValue('fechaAfiliacionSalud', formData.fechaAfiliacionSalud || '')
-      setValue('entidadPension', formData.entidadPension || '')
-      setValue('fechaAfiliacionPension', formData.fechaAfiliacionPension || '')
-      setValue('arl', formData.arl || '')
-      setValue('nivelRiesgo', formData.nivelRiesgo)
-      setValue('fechaAfiliacionArl', formData.fechaAfiliacionArl || '')
-    }
-  }, [isLoaded, formData, setValue])
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
 
-  // Watch para actualizar localStorage en tiempo real
-  const watchedFields = watch()
-  useEffect(() => {
-    if (isLoaded) {
-      setFormData(watchedFields)
+    try {
+      const saved = localStorage.getItem('onboarding-step-3')
+      if (saved) {
+        const data = JSON.parse(saved) as Paso3FormData
+        reset(data)
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
     }
-  }, [watchedFields, setFormData, isLoaded])
+  }, [reset])
 
   // Watch para mostrar campos condicionales
   const watchEntidadSalud = watch('entidadSalud')
@@ -186,19 +175,15 @@ export default function OnboardingPaso3Page() {
   const showPensionWarning = watchEntidadPension === 'NO_AFILIADO'
   const showArlInfo = watchArl === 'NO_AFILIADO'
 
+  // Guardar en localStorage al enviar
   const onSubmit = async (data: Paso3FormData) => {
-    // Guardar en localStorage
-    setFormData(data)
-
-    // Navegar a paso 4
+    localStorage.setItem('onboarding-step-3', JSON.stringify(data))
     router.push('/onboarding/paso-4')
   }
 
   const handleBack = () => {
-    // Guardar datos actuales
-    const currentData = watch()
-    setFormData(currentData)
-
+    const currentData = getValues()
+    localStorage.setItem('onboarding-step-3', JSON.stringify(currentData))
     router.push('/onboarding/paso-2')
   }
 
@@ -209,6 +194,17 @@ export default function OnboardingPaso3Page() {
   const handleWantPensionRegistration = () => {
     setValue('needsPensionRegistration', true)
   }
+
+  // Guardar al salir de la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = getValues()
+      localStorage.setItem('onboarding-step-3', JSON.stringify(data))
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [getValues])
 
   // Fecha máxima (hoy)
   const today = new Date().toISOString().split('T')[0]

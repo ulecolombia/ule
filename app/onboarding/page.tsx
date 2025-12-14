@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,7 +17,6 @@ import { NativeSelect as Select } from '@/components/ui/select'
 import { Card, CardBody } from '@/components/ui/card'
 import { ProgressIndicator } from '@/components/onboarding/progress-indicator'
 import { FormFieldWrapper } from '@/components/onboarding/form-field-wrapper'
-import { useOnboardingStorage } from '@/hooks/use-onboarding-storage'
 import {
   departamentos,
   ciudadesPorDepartamento,
@@ -52,27 +51,23 @@ const STEPS = [
   { number: 4, title: 'Confirmación' },
 ]
 
+const DEFAULT_VALUES: Paso1FormData = {
+  nombre: '',
+  tipoDocumento: TipoDocumento.CC,
+  numeroDocumento: '',
+  telefono: '',
+  direccion: '',
+  departamento: '',
+  ciudad: '',
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
-  const [currentStep] = useState(1)
+  const currentStep = 1
   const [isCheckingDocument, setIsCheckingDocument] = useState(false)
   const [documentError, setDocumentError] = useState<string | null>(null)
   const [selectedDepartamento, setSelectedDepartamento] = useState<string>('')
-
-  // Hook de localStorage
-  const {
-    value: formData,
-    setValue: setFormData,
-    isLoaded,
-  } = useOnboardingStorage<Paso1FormData>('onboarding-step-1', {
-    nombre: '',
-    tipoDocumento: TipoDocumento.CC,
-    numeroDocumento: '',
-    telefono: '',
-    direccion: '',
-    departamento: '',
-    ciudad: '',
-  })
+  const hasLoadedRef = useRef(false)
 
   // React Hook Form
   const {
@@ -80,96 +75,100 @@ export default function OnboardingPage() {
     handleSubmit,
     watch,
     setValue,
+    reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<Paso1FormData>({
     resolver: zodResolver(paso1Schema),
-    defaultValues: formData,
+    defaultValues: DEFAULT_VALUES,
   })
 
-  // Cargar datos guardados cuando el componente monte
+  // Cargar datos de localStorage SOLO UNA VEZ al montar
   useEffect(() => {
-    if (isLoaded) {
-      setValue('nombre', formData.nombre)
-      setValue('tipoDocumento', formData.tipoDocumento)
-      setValue('numeroDocumento', formData.numeroDocumento)
-      setValue('telefono', formData.telefono)
-      setValue('direccion', formData.direccion)
-      setValue('departamento', formData.departamento)
-      setValue('ciudad', formData.ciudad)
-      setSelectedDepartamento(formData.departamento)
-    }
-  }, [isLoaded, formData, setValue])
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
 
-  // Watch para actualizar localStorage en tiempo real
-  const watchedFields = watch()
-  useEffect(() => {
-    if (isLoaded) {
-      setFormData(watchedFields)
+    try {
+      const saved = localStorage.getItem('onboarding-step-1')
+      if (saved) {
+        const data = JSON.parse(saved) as Paso1FormData
+        reset(data)
+        setSelectedDepartamento(data.departamento || '')
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
     }
-  }, [watchedFields, setFormData, isLoaded])
+  }, [reset])
 
   // Watch departamento para actualizar ciudades
   const watchDepartamento = watch('departamento')
   useEffect(() => {
     if (watchDepartamento !== selectedDepartamento) {
       setSelectedDepartamento(watchDepartamento)
-      setValue('ciudad', '') // Reset ciudad cuando cambia departamento
+      if (watchDepartamento) {
+        setValue('ciudad', '')
+      }
     }
   }, [watchDepartamento, selectedDepartamento, setValue])
 
-  // Validar documento único
-  const checkDocument = async (
-    tipoDocumento: TipoDocumento,
-    numeroDocumento: string
-  ) => {
-    if (!numeroDocumento || numeroDocumento.length < 6) return
-
-    setIsCheckingDocument(true)
-    setDocumentError(null)
-
-    try {
-      const response = await fetch('/api/user/check-document', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipoDocumento, numeroDocumento }),
-      })
-
-      const data = await response.json()
-
-      if (data.exists) {
-        setDocumentError('Este documento ya está registrado')
-      }
-    } catch (error) {
-      console.error('Error checking document:', error)
-    } finally {
-      setIsCheckingDocument(false)
-    }
-  }
-
-  // Validar documento al cambiar
+  // Validar documento único con debounce
   const watchTipoDocumento = watch('tipoDocumento')
   const watchNumeroDocumento = watch('numeroDocumento')
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (watchNumeroDocumento && watchNumeroDocumento.length >= 6) {
-        checkDocument(watchTipoDocumento, watchNumeroDocumento)
+    if (!watchNumeroDocumento || watchNumeroDocumento.length < 6) {
+      setDocumentError(null)
+      return
+    }
+
+    const timeout = setTimeout(async () => {
+      setIsCheckingDocument(true)
+      setDocumentError(null)
+
+      try {
+        const response = await fetch('/api/user/check-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipoDocumento: watchTipoDocumento,
+            numeroDocumento: watchNumeroDocumento,
+          }),
+        })
+
+        const data = await response.json()
+        if (data.exists) {
+          setDocumentError('Este documento ya está registrado')
+        }
+      } catch (error) {
+        console.error('Error checking document:', error)
+      } finally {
+        setIsCheckingDocument(false)
       }
     }, 500)
 
     return () => clearTimeout(timeout)
   }, [watchTipoDocumento, watchNumeroDocumento])
 
+  // Guardar en localStorage al enviar
   const onSubmit = async (data: Paso1FormData) => {
-    if (documentError) {
-      return
-    }
+    if (documentError) return
 
     // Guardar en localStorage
-    setFormData(data)
+    localStorage.setItem('onboarding-step-1', JSON.stringify(data))
 
     // Navegar a paso 2
     router.push('/onboarding/paso-2')
   }
+
+  // Guardar al salir de la página (beforeunload)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = getValues()
+      localStorage.setItem('onboarding-step-1', JSON.stringify(data))
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [getValues])
 
   const ciudadesDisponibles = selectedDepartamento
     ? ciudadesPorDepartamento[selectedDepartamento] || []

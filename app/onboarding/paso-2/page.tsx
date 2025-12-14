@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,7 +21,6 @@ import { TooltipProvider, InfoTooltip } from '@/components/ui/tooltip'
 import { ProgressIndicator } from '@/components/onboarding/progress-indicator'
 import { FormFieldWrapper } from '@/components/onboarding/form-field-wrapper'
 import { CIIUSearchModal } from '@/components/onboarding/ciiu-search-modal'
-import { useOnboardingStorage } from '@/hooks/use-onboarding-storage'
 import { PROFESIONES_COMUNES } from '@/lib/data/profesiones'
 import { CODIGOS_CIIU } from '@/lib/data/codigos-ciiu'
 
@@ -80,24 +79,20 @@ const TIPOS_CONTRATO = [
   },
 ]
 
+const DEFAULT_VALUES: Paso2FormData = {
+  tipoContrato: TipoContrato.OPS,
+  profesion: '',
+  actividadEconomica: '',
+  numeroContratos: 1,
+  ingresoMensualPromedio: 0,
+}
+
 export default function OnboardingPaso2Page() {
   const router = useRouter()
-  const [currentStep] = useState(2)
+  const currentStep = 2
   const [showCIIUModal, setShowCIIUModal] = useState(false)
   const [showOtraProfesion, setShowOtraProfesion] = useState(false)
-
-  // Hook de localStorage
-  const {
-    value: formData,
-    setValue: setFormData,
-    isLoaded,
-  } = useOnboardingStorage<Paso2FormData>('onboarding-step-2', {
-    tipoContrato: TipoContrato.OPS,
-    profesion: '',
-    actividadEconomica: '',
-    numeroContratos: 1,
-    ingresoMensualPromedio: 0,
-  })
+  const hasLoadedRef = useRef(false)
 
   // React Hook Form
   const {
@@ -106,38 +101,37 @@ export default function OnboardingPaso2Page() {
     watch,
     setValue,
     control,
+    reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<Paso2FormData>({
     resolver: zodResolver(paso2Schema),
-    defaultValues: formData,
+    defaultValues: DEFAULT_VALUES,
   })
 
-  // Cargar datos guardados cuando el componente monte
+  // Cargar datos de localStorage SOLO UNA VEZ al montar
   useEffect(() => {
-    if (isLoaded) {
-      setValue('tipoContrato', formData.tipoContrato)
-      setValue('profesion', formData.profesion)
-      setValue('actividadEconomica', formData.actividadEconomica)
-      setValue('numeroContratos', formData.numeroContratos)
-      setValue('ingresoMensualPromedio', formData.ingresoMensualPromedio)
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
 
-      // Verificar si tiene profesión personalizada
-      if (
-        formData.profesion &&
-        !PROFESIONES_COMUNES.includes(formData.profesion as any)
-      ) {
-        setShowOtraProfesion(true)
+    try {
+      const saved = localStorage.getItem('onboarding-step-2')
+      if (saved) {
+        const data = JSON.parse(saved) as Paso2FormData
+        reset(data)
+
+        // Verificar si tiene profesión personalizada
+        if (
+          data.profesion &&
+          !PROFESIONES_COMUNES.includes(data.profesion as any)
+        ) {
+          setShowOtraProfesion(true)
+        }
       }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
     }
-  }, [isLoaded, formData, setValue])
-
-  // Watch para actualizar localStorage en tiempo real
-  const watchedFields = watch()
-  useEffect(() => {
-    if (isLoaded) {
-      setFormData(watchedFields)
-    }
-  }, [watchedFields, setFormData, isLoaded])
+  }, [reset])
 
   // Watch profesión para mostrar input personalizado
   const watchProfesion = watch('profesion')
@@ -150,25 +144,33 @@ export default function OnboardingPaso2Page() {
     }
   }, [watchProfesion, setValue])
 
+  // Guardar en localStorage al enviar
   const onSubmit = async (data: Paso2FormData) => {
-    // Guardar en localStorage
-    setFormData(data)
-
-    // Navegar a paso 3
+    localStorage.setItem('onboarding-step-2', JSON.stringify(data))
     router.push('/onboarding/paso-3')
   }
 
   const handleBack = () => {
-    // Guardar datos actuales
-    const currentData = watch()
-    setFormData(currentData)
-
+    // Guardar datos actuales antes de salir
+    const currentData = getValues()
+    localStorage.setItem('onboarding-step-2', JSON.stringify(currentData))
     router.push('/onboarding')
   }
 
   const handleCIIUSelect = (codigo: string) => {
     setValue('actividadEconomica', codigo)
   }
+
+  // Guardar al salir de la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = getValues()
+      localStorage.setItem('onboarding-step-2', JSON.stringify(data))
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [getValues])
 
   // Opciones para select de CIIU
   const ciiuOptions = CODIGOS_CIIU.map((item) => ({
@@ -183,8 +185,9 @@ export default function OnboardingPaso2Page() {
   }))
 
   // Obtener descripción del código CIIU seleccionado
+  const watchActividadEconomica = watch('actividadEconomica')
   const selectedCIIU = CODIGOS_CIIU.find(
-    (item) => item.codigo === watch('actividadEconomica')
+    (item) => item.codigo === watchActividadEconomica
   )
 
   return (
@@ -408,7 +411,6 @@ export default function OnboardingPaso2Page() {
                         type="number"
                         min="1"
                         max="50"
-                        defaultValue="1"
                       />
                     </FormFieldWrapper>
                   </div>
