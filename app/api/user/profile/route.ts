@@ -205,7 +205,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    console.log('[Profile API] Datos recibidos:', JSON.stringify(body, null, 2))
+
     const validatedData = updateProfileSchema.parse(body)
+    console.log('[Profile API] Datos validados OK')
 
     // Sanitizar inputs sensibles
     const sanitizedData = {
@@ -296,6 +299,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     secureLogger.error('Error creando perfil completo', error)
+    console.error('[Profile API] Error completo:', error)
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -304,8 +308,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Devolver más detalles del error para debugging
+    const errorMessage =
+      error instanceof Error ? error.message : 'Error desconocido'
     return NextResponse.json(
-      { error: 'Error al guardar perfil' },
+      {
+        error: 'Error al guardar perfil',
+        details: errorMessage,
+        stack:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.stack
+              : undefined
+            : undefined,
+      },
       { status: 500 }
     )
   }
