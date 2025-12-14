@@ -326,7 +326,7 @@ export default function OnboardingPaso3Page() {
                   {/* Fecha de Afiliación a Salud */}
                   {showFechaAfiliacionSalud && (
                     <FormFieldWrapper
-                      label="Fecha de Afiliación a EPS"
+                      label="Fecha de Afiliación a EPS (opcional)"
                       icon={
                         <span className="material-symbols-outlined text-base">
                           calendar_today
@@ -410,7 +410,7 @@ export default function OnboardingPaso3Page() {
                   {/* Fecha de Afiliación a Pensión */}
                   {showFechaAfiliacionPension && (
                     <FormFieldWrapper
-                      label="Fecha de Afiliación a Pensión"
+                      label="Fecha de Afiliación a Pensión (opcional)"
                       icon={
                         <span className="material-symbols-outlined text-base">
                           calendar_today
@@ -557,7 +557,7 @@ export default function OnboardingPaso3Page() {
                   {/* Fecha de Afiliación a ARL */}
                   {showFechaAfiliacionArl && (
                     <FormFieldWrapper
-                      label="Fecha de Afiliación a ARL"
+                      label="Fecha de Afiliación a ARL (opcional)"
                       icon={
                         <span className="material-symbols-outlined text-base">
                           calendar_today
