@@ -115,12 +115,15 @@ export default function OnboardingPaso3Page() {
   const [ingresoMensual, setIngresoMensual] = useState(0)
 
   // Hook de localStorage
-  const { value: formData, setValue: setFormData, isLoaded } =
-    useOnboardingStorage<Paso3FormData>('onboarding-step-3', {
-      entidadSalud: '',
-      entidadPension: '',
-      arl: '',
-    })
+  const {
+    value: formData,
+    setValue: setFormData,
+    isLoaded,
+  } = useOnboardingStorage<Paso3FormData>('onboarding-step-3', {
+    entidadSalud: '',
+    entidadPension: '',
+    arl: '',
+  })
 
   // Recuperar ingreso del paso 2
   useEffect(() => {
@@ -187,9 +190,8 @@ export default function OnboardingPaso3Page() {
     // Guardar en localStorage
     setFormData(data)
 
-    // TODO: Navegar a paso 4
-    console.log('Paso 3 completado:', data)
-    // router.push('/onboarding/paso-4')
+    // Navegar a paso 4
+    router.push('/onboarding/paso-4')
   }
 
   const handleBack = () => {
@@ -229,14 +231,14 @@ export default function OnboardingPaso3Page() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen bg-light-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="bg-light-50 min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="mb-4">
               <h1 className="text-2xl font-bold text-primary">Ule</h1>
             </div>
-            <h2 className="mb-2 text-3xl font-bold text-dark">
+            <h2 className="text-dark mb-2 text-3xl font-bold">
               Completa tu perfil
             </h2>
             <p className="text-dark-100">Paso 3 de 4: Seguridad Social</p>
@@ -277,7 +279,7 @@ export default function OnboardingPaso3Page() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* SECCIÓN A: SALUD (EPS) */}
                 <div className="space-y-4">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-dark">
+                  <h3 className="text-dark flex items-center gap-2 text-lg font-semibold">
                     <span className="material-symbols-outlined text-primary">
                       medical_services
                     </span>
@@ -287,9 +289,9 @@ export default function OnboardingPaso3Page() {
                   {/* EPS Actual */}
                   <div>
                     <div className="mb-3 flex items-center gap-2">
-                      <label className="text-sm font-medium text-dark">
+                      <label className="text-dark text-sm font-medium">
                         EPS Actual
-                        <span className="ml-1 text-error">*</span>
+                        <span className="text-error ml-1">*</span>
                       </label>
                       <InfoTooltip
                         content="Entidad que administra tu plan de salud obligatorio"
@@ -316,7 +318,7 @@ export default function OnboardingPaso3Page() {
                     />
 
                     {errors.entidadSalud && (
-                      <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                      <p className="text-error mt-2 flex items-center gap-1 text-sm">
                         <span className="material-symbols-outlined text-base">
                           error
                         </span>
@@ -357,11 +359,11 @@ export default function OnboardingPaso3Page() {
                   )}
                 </div>
 
-                <div className="border-t border-light-200" />
+                <div className="border-light-200 border-t" />
 
                 {/* SECCIÓN B: PENSIÓN */}
                 <div className="space-y-4">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-dark">
+                  <h3 className="text-dark flex items-center gap-2 text-lg font-semibold">
                     <span className="material-symbols-outlined text-primary">
                       savings
                     </span>
@@ -371,9 +373,9 @@ export default function OnboardingPaso3Page() {
                   {/* Fondo de Pensión Actual */}
                   <div>
                     <div className="mb-3 flex items-center gap-2">
-                      <label className="text-sm font-medium text-dark">
+                      <label className="text-dark text-sm font-medium">
                         Fondo de Pensión Actual
-                        <span className="ml-1 text-error">*</span>
+                        <span className="text-error ml-1">*</span>
                       </label>
                       <InfoTooltip
                         content="Fondo que administra tu ahorro para pensión"
@@ -400,7 +402,7 @@ export default function OnboardingPaso3Page() {
                     />
 
                     {errors.entidadPension && (
-                      <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                      <p className="text-error mt-2 flex items-center gap-1 text-sm">
                         <span className="material-symbols-outlined text-base">
                           error
                         </span>
@@ -441,11 +443,11 @@ export default function OnboardingPaso3Page() {
                   )}
                 </div>
 
-                <div className="border-t border-light-200" />
+                <div className="border-light-200 border-t" />
 
                 {/* SECCIÓN C: ARL */}
                 <div className="space-y-4">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-dark">
+                  <h3 className="text-dark flex items-center gap-2 text-lg font-semibold">
                     <span className="material-symbols-outlined text-primary">
                       health_and_safety
                     </span>
@@ -455,7 +457,7 @@ export default function OnboardingPaso3Page() {
                   {/* ARL Actual */}
                   <div>
                     <div className="mb-3 flex items-center gap-2">
-                      <label className="text-sm font-medium text-dark">
+                      <label className="text-dark text-sm font-medium">
                         ARL Actual
                       </label>
                       <InfoTooltip
@@ -487,9 +489,9 @@ export default function OnboardingPaso3Page() {
                   {showNivelRiesgo && (
                     <div>
                       <div className="mb-3 flex items-center gap-2">
-                        <label className="text-sm font-medium text-dark">
+                        <label className="text-dark text-sm font-medium">
                           Nivel de Riesgo
-                          <span className="ml-1 text-error">*</span>
+                          <span className="text-error ml-1">*</span>
                         </label>
                         <InfoTooltip
                           content="El nivel de riesgo determina el porcentaje de cotización a la ARL"
@@ -532,10 +534,10 @@ export default function OnboardingPaso3Page() {
                                   )}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="font-medium text-dark">
+                                  <p className="text-dark font-medium">
                                     {nivel.label}
                                   </p>
-                                  <p className="text-sm text-dark-100">
+                                  <p className="text-dark-100 text-sm">
                                     {nivel.description}
                                   </p>
                                 </div>
@@ -546,7 +548,7 @@ export default function OnboardingPaso3Page() {
                       </div>
 
                       {errors.nivelRiesgo && (
-                        <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                        <p className="text-error mt-2 flex items-center gap-1 text-sm">
                           <span className="material-symbols-outlined text-base">
                             error
                           </span>
@@ -625,7 +627,7 @@ export default function OnboardingPaso3Page() {
           </Card>
 
           {/* Helper Text */}
-          <p className="mt-6 text-center text-sm text-dark-100">
+          <p className="text-dark-100 mt-6 text-center text-sm">
             Tu información está segura y protegida. Los datos se guardan
             automáticamente.
           </p>

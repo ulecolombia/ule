@@ -34,7 +34,9 @@ const paso2Schema = z.object({
     .string()
     .min(3, 'La profesión debe tener al menos 3 caracteres')
     .max(100, 'Máximo 100 caracteres'),
-  actividadEconomica: z.string().regex(/^\d{4}$/, 'Selecciona un código CIIU válido'),
+  actividadEconomica: z
+    .string()
+    .regex(/^\d{4}$/, 'Selecciona un código CIIU válido'),
   numeroContratos: z
     .number({ invalid_type_error: 'Debe ser un número' })
     .int('Debe ser un número entero')
@@ -85,16 +87,17 @@ export default function OnboardingPaso2Page() {
   const [showOtraProfesion, setShowOtraProfesion] = useState(false)
 
   // Hook de localStorage
-  const { value: formData, setValue: setFormData, isLoaded } = useOnboardingStorage<Paso2FormData>(
-    'onboarding-step-2',
-    {
-      tipoContrato: TipoContrato.OPS,
-      profesion: '',
-      actividadEconomica: '',
-      numeroContratos: 1,
-      ingresoMensualPromedio: 0,
-    }
-  )
+  const {
+    value: formData,
+    setValue: setFormData,
+    isLoaded,
+  } = useOnboardingStorage<Paso2FormData>('onboarding-step-2', {
+    tipoContrato: TipoContrato.OPS,
+    profesion: '',
+    actividadEconomica: '',
+    numeroContratos: 1,
+    ingresoMensualPromedio: 0,
+  })
 
   // React Hook Form
   const {
@@ -151,9 +154,8 @@ export default function OnboardingPaso2Page() {
     // Guardar en localStorage
     setFormData(data)
 
-    // TODO: Navegar a paso 3
-    console.log('Paso 2 completado:', data)
-    // router.push('/onboarding/paso-3')
+    // Navegar a paso 3
+    router.push('/onboarding/paso-3')
   }
 
   const handleBack = () => {
@@ -187,14 +189,14 @@ export default function OnboardingPaso2Page() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen bg-light-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="bg-light-50 min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="mb-4">
               <h1 className="text-2xl font-bold text-primary">Ule</h1>
             </div>
-            <h2 className="mb-2 text-3xl font-bold text-dark">
+            <h2 className="text-dark mb-2 text-3xl font-bold">
               Completa tu perfil
             </h2>
             <p className="text-dark-100">Paso 2 de 4: Información Laboral</p>
@@ -216,9 +218,9 @@ export default function OnboardingPaso2Page() {
                 {/* Tipo de Contrato */}
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <label className="text-sm font-medium text-dark">
+                    <label className="text-dark text-sm font-medium">
                       Tipo de Contrato
-                      <span className="ml-1 text-error">*</span>
+                      <span className="text-error ml-1">*</span>
                     </label>
                     <InfoTooltip
                       content="Selecciona el tipo de relación contractual que tienes actualmente"
@@ -252,7 +254,7 @@ export default function OnboardingPaso2Page() {
                   </div>
 
                   {errors.tipoContrato && (
-                    <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                    <p className="text-error mt-2 flex items-center gap-1 text-sm">
                       <span className="material-symbols-outlined text-base">
                         error
                       </span>
@@ -264,9 +266,9 @@ export default function OnboardingPaso2Page() {
                 {/* Profesión */}
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <label className="text-sm font-medium text-dark">
+                    <label className="text-dark text-sm font-medium">
                       Profesión
-                      <span className="ml-1 text-error">*</span>
+                      <span className="text-error ml-1">*</span>
                     </label>
                     <InfoTooltip
                       content="Indica tu profesión u oficio principal"
@@ -311,7 +313,7 @@ export default function OnboardingPaso2Page() {
                   )}
 
                   {errors.profesion && (
-                    <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                    <p className="text-error mt-2 flex items-center gap-1 text-sm">
                       <span className="material-symbols-outlined text-base">
                         error
                       </span>
@@ -323,9 +325,9 @@ export default function OnboardingPaso2Page() {
                 {/* Actividad Económica (Código CIIU) */}
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <label className="text-sm font-medium text-dark">
+                    <label className="text-dark text-sm font-medium">
                       Actividad Económica (Código CIIU)
-                      <span className="ml-1 text-error">*</span>
+                      <span className="text-error ml-1">*</span>
                     </label>
                     <InfoTooltip
                       content="Código que identifica tu actividad económica según la DIAN"
@@ -352,7 +354,7 @@ export default function OnboardingPaso2Page() {
                   />
 
                   {selectedCIIU && (
-                    <p className="mt-2 text-xs text-dark-100">
+                    <p className="text-dark-100 mt-2 text-xs">
                       <strong>Categoría:</strong> {selectedCIIU.categoria}
                     </p>
                   )}
@@ -366,7 +368,7 @@ export default function OnboardingPaso2Page() {
                   </button>
 
                   {errors.actividadEconomica && (
-                    <p className="mt-2 flex items-center gap-1 text-sm text-error">
+                    <p className="text-error mt-2 flex items-center gap-1 text-sm">
                       <span className="material-symbols-outlined text-base">
                         error
                       </span>
@@ -380,9 +382,9 @@ export default function OnboardingPaso2Page() {
                   {/* Número de Contratos */}
                   <div>
                     <div className="mb-3 flex items-center gap-2">
-                      <label className="text-sm font-medium text-dark">
+                      <label className="text-dark text-sm font-medium">
                         Número de Contratos Activos
-                        <span className="ml-1 text-error">*</span>
+                        <span className="text-error ml-1">*</span>
                       </label>
                       <InfoTooltip
                         content="¿Con cuántas empresas o clientes tienes contratos activos actualmente?"
@@ -414,9 +416,9 @@ export default function OnboardingPaso2Page() {
                   {/* Ingreso Mensual Promedio */}
                   <div>
                     <div className="mb-3 flex items-center gap-2">
-                      <label className="text-sm font-medium text-dark">
+                      <label className="text-dark text-sm font-medium">
                         Ingreso Mensual Promedio
-                        <span className="ml-1 text-error">*</span>
+                        <span className="text-error ml-1">*</span>
                       </label>
                       <InfoTooltip
                         content="Ingresa el promedio de tus ingresos mensuales antes de deducciones. Esta información es confidencial y se usa para calcular tus aportes a seguridad social."
@@ -448,7 +450,7 @@ export default function OnboardingPaso2Page() {
                       />
                     </FormFieldWrapper>
 
-                    <p className="mt-2 text-xs text-dark-100">
+                    <p className="text-dark-100 mt-2 text-xs">
                       <strong>Nota:</strong> Este valor determina tu base de
                       cotización para PILA
                     </p>
@@ -496,7 +498,7 @@ export default function OnboardingPaso2Page() {
           </Card>
 
           {/* Helper Text */}
-          <p className="mt-6 text-center text-sm text-dark-100">
+          <p className="text-dark-100 mt-6 text-center text-sm">
             Tu información está segura y protegida. Los datos se guardan
             automáticamente.
           </p>

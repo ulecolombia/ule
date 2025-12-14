@@ -129,15 +129,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     /**
      * Callback JWT: Agregar campos custom al token
      * ✅ ALTO #10: Cachear permisos de admin para evitar queries en cada request
+     * ✅ FIX: Para usuarios OAuth, obtener perfilCompleto desde la BD
      */
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
       // En el primer login, agregar datos del usuario al token
       if (user) {
         token.id = user.id
         token.role = (user as User).role
-        token.perfilCompleto = (user as User).perfilCompleto
         token.isAdmin = (user as User).isAdmin || false
         token.isSuperAdmin = (user as User).isSuperAdmin || false
+
+        // Para usuarios OAuth, perfilCompleto no viene en el objeto user
+        // Necesitamos obtenerlo de la BD
+        if (account?.provider && account.provider !== 'credentials') {
+          // OAuth user - fetch from database
+          const { db } = await import('@/lib/db')
+          const dbUser = await db.user.findUnique({
+            where: { email: user.email! },
+            select: {
+              perfilCompleto: true,
+              role: true,
+              isAdmin: true,
+              isSuperAdmin: true,
+            },
+          })
+
+          if (dbUser) {
+            token.perfilCompleto = dbUser.perfilCompleto
+            token.role = dbUser.role
+            token.isAdmin = dbUser.isAdmin || false
+            token.isSuperAdmin = dbUser.isSuperAdmin || false
+          } else {
+            // Usuario nuevo OAuth - perfilCompleto será false
+            token.perfilCompleto = false
+          }
+        } else {
+          // Credentials user - ya viene con perfilCompleto
+          token.perfilCompleto = (user as User).perfilCompleto
+        }
       }
 
       // Actualizar token si hay cambios en la sesión
@@ -146,7 +175,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = session.email
         token.perfilCompleto = session.perfilCompleto
         if (session.isAdmin !== undefined) token.isAdmin = session.isAdmin
-        if (session.isSuperAdmin !== undefined) token.isSuperAdmin = session.isSuperAdmin
+        if (session.isSuperAdmin !== undefined)
+          token.isSuperAdmin = session.isSuperAdmin
       }
 
       return token
@@ -222,7 +252,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 emailVerified: new Date(), // Confiar en el proveedor OAuth
               },
             })
-            console.log(`[Ule Auth] Nuevo usuario creado desde ${account.provider}`)
+            console.log(
+              `[Ule Auth] Nuevo usuario creado desde ${account.provider}`
+            )
           } else if (existingUser && user.email) {
             // Actualizar información del usuario existente
             await db.user.update({
@@ -233,10 +265,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 emailVerified: new Date(),
               },
             })
-            console.log(`[Ule Auth] Usuario actualizado desde ${account.provider}`)
+            console.log(
+              `[Ule Auth] Usuario actualizado desde ${account.provider}`
+            )
           }
         } catch (error) {
-          console.error('[Ule Auth] Error al crear/actualizar usuario OAuth:', error)
+          console.error(
+            '[Ule Auth] Error al crear/actualizar usuario OAuth:',
+            error
+          )
         }
       }
     },

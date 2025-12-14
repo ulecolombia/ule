@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -48,6 +49,7 @@ type Paso4FormData = z.infer<typeof paso4Schema>
 
 export default function OnboardingPaso4() {
   const router = useRouter()
+  const { update: updateSession } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [termsModalOpen, setTermsModalOpen] = useState(false)
   const [termsModalType, setTermsModalType] = useState<'terms' | 'privacy'>(
@@ -84,10 +86,10 @@ export default function OnboardingPaso4() {
   // Load data from localStorage
   useEffect(() => {
     const loadData = () => {
-      const paso1 = localStorage.getItem('onboarding-paso-1')
-      const paso2 = localStorage.getItem('onboarding-paso-2')
-      const paso3 = localStorage.getItem('onboarding-paso-3')
-      const paso4 = localStorage.getItem('onboarding-paso-4')
+      const paso1 = localStorage.getItem('onboarding-step-1')
+      const paso2 = localStorage.getItem('onboarding-step-2')
+      const paso3 = localStorage.getItem('onboarding-step-3')
+      const paso4 = localStorage.getItem('onboarding-step-4')
 
       if (paso1) setPaso1Data(JSON.parse(paso1))
       if (paso2) setPaso2Data(JSON.parse(paso2))
@@ -115,7 +117,7 @@ export default function OnboardingPaso4() {
         personasACargo: personasACargo || 0,
         suscribirNewsletter: suscribirNewsletter || false,
       }
-      localStorage.setItem('onboarding-paso-4', JSON.stringify(data))
+      localStorage.setItem('onboarding-step-4', JSON.stringify(data))
     }
   }, [estadoCivil, personasACargo, suscribirNewsletter])
 
@@ -223,11 +225,14 @@ export default function OnboardingPaso4() {
       // Success!
       toast.success('¡Perfil completado exitosamente! 🎉')
 
+      // Actualizar la sesión con perfilCompleto = true
+      await updateSession({ perfilCompleto: true })
+
       // Clean localStorage
-      localStorage.removeItem('onboarding-paso-1')
-      localStorage.removeItem('onboarding-paso-2')
-      localStorage.removeItem('onboarding-paso-3')
-      localStorage.removeItem('onboarding-paso-4')
+      localStorage.removeItem('onboarding-step-1')
+      localStorage.removeItem('onboarding-step-2')
+      localStorage.removeItem('onboarding-step-3')
+      localStorage.removeItem('onboarding-step-4')
 
       // Redirect to dashboard after 1 second
       setTimeout(() => {

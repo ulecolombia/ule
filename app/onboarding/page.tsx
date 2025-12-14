@@ -167,14 +167,8 @@ export default function OnboardingPage() {
     // Guardar en localStorage
     setFormData(data)
 
-    // TODO: Navegar a paso 2
-    console.log('Paso 1 completado:', data)
-    // router.push('/onboarding/paso-2')
-  }
-
-  const handleSkip = () => {
-    // TODO: Guardar perfilCompleto=false
-    router.push('/dashboard')
+    // Navegar a paso 2
+    router.push('/onboarding/paso-2')
   }
 
   const ciudadesDisponibles = selectedDepartamento
@@ -388,14 +382,6 @@ export default function OnboardingPage() {
                     </>
                   )}
                 </Button>
-
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="text-dark-100 text-center text-sm transition-colors hover:text-primary"
-                >
-                  Saltar por ahora
-                </button>
               </div>
             </form>
           </CardBody>
