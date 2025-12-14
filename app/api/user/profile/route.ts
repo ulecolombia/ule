@@ -226,14 +226,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Generar nombre completo para compatibilidad con NextAuth
-    const nombreCompleto = [
-      sanitizedData.primerNombre,
-      sanitizedData.segundoNombre,
-      sanitizedData.primerApellido,
-      sanitizedData.segundoApellido,
-    ]
-      .filter(Boolean)
-      .join(' ')
+    const nombreCompleto =
+      [
+        sanitizedData.primerNombre,
+        sanitizedData.segundoNombre,
+        sanitizedData.primerApellido,
+        sanitizedData.segundoApellido,
+      ]
+        .filter(Boolean)
+        .join(' ') || 'Usuario' // Fallback por si está vacío
 
     // Convertir nivel de riesgo de string a number si existe
     const nivelRiesgo = validatedData.nivelRiesgoARL
@@ -275,6 +276,7 @@ export async function POST(req: NextRequest) {
           : null,
         estadoCivil: sanitizedData.estadoCivil,
         personasACargo: sanitizedData.personasACargo,
+        suscribirNewsletter: sanitizedData.suscribirNewsletter ?? false,
         perfilCompleto: true,
         updatedAt: new Date(),
       },
