@@ -33,7 +33,12 @@ export function MainNav() {
     return null
   }
 
-  const menuItems: Array<{ href: string; label: string; icon: string; disabled?: boolean }> = [
+  const menuItems: Array<{
+    href: string
+    label: string
+    icon: string
+    disabled?: boolean
+  }> = [
     { href: '/dashboard', label: 'Página Principal', icon: 'dashboard' },
     { href: '/pila', label: 'PILA', icon: 'account_balance' },
     { href: '/facturacion', label: 'Facturación', icon: 'receipt_long' },
@@ -54,7 +59,7 @@ export function MainNav() {
   return (
     <>
       {/* Navbar Superior */}
-      <nav className="fixed top-0 z-50 w-full border-b border-light-200 bg-white shadow-sm">
+      <nav className="border-light-200 fixed top-0 z-50 w-full border-b bg-white shadow-sm">
         <div className="flex h-16 items-center justify-between px-4">
           {/* Lado Izquierdo: Hamburger + Logo */}
           <div className="flex items-center gap-4">
@@ -62,7 +67,7 @@ export function MainNav() {
             <button
               type="button"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="rounded-lg p-2 text-dark-100 transition-colors hover:bg-light-50 hover:text-dark"
+              className="text-dark-100 hover:bg-light-50 hover:text-dark rounded-lg p-2 transition-colors"
               aria-label="Menú"
             >
               <span className="material-symbols-outlined text-2xl">menu</span>
@@ -75,17 +80,17 @@ export function MainNav() {
           </div>
 
           {/* Centro: Barra de Búsqueda */}
-          <div className="hidden md:block flex-1 max-w-xl mx-8">
+          <div className="mx-8 hidden max-w-xl flex-1 md:block">
             <form onSubmit={handleSearch} className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-dark-100">
+              <span className="material-symbols-outlined text-dark-100 absolute left-3 top-1/2 -translate-y-1/2">
                 search
               </span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar facturas, clientes, documentos..."
-                className="w-full rounded-lg border border-light-200 bg-light-50 py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Buscar archivos..."
+                className="border-light-200 bg-light-50 w-full rounded-lg border py-2 pl-10 pr-4 text-sm transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </form>
           </div>
@@ -95,7 +100,7 @@ export function MainNav() {
             {/* Botón de búsqueda móvil */}
             <button
               type="button"
-              className="md:hidden rounded-lg p-2 text-dark-100 transition-colors hover:bg-light-50 hover:text-dark"
+              className="text-dark-100 hover:bg-light-50 hover:text-dark rounded-lg p-2 transition-colors md:hidden"
             >
               <span className="material-symbols-outlined">search</span>
             </button>
@@ -108,7 +113,7 @@ export function MainNav() {
               <button
                 type="button"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-light-50"
+                className="hover:bg-light-50 flex items-center gap-2 rounded-lg p-2 transition-colors"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
                   {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -128,13 +133,13 @@ export function MainNav() {
                   />
 
                   {/* Dropdown Menu */}
-                  <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-light-200 bg-white shadow-lg z-50">
+                  <div className="border-light-200 absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border bg-white shadow-lg">
                     {/* Header del dropdown */}
-                    <div className="border-b border-light-200 p-4">
-                      <p className="font-semibold text-dark">
+                    <div className="border-light-200 border-b p-4">
+                      <p className="text-dark font-semibold">
                         {session?.user?.name || 'Usuario'}
                       </p>
-                      <p className="text-sm text-dark-100">
+                      <p className="text-dark-100 text-sm">
                         {session?.user?.email}
                       </p>
                     </div>
@@ -144,7 +149,7 @@ export function MainNav() {
                       <Link
                         href="/perfil"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-dark transition-colors hover:bg-light-50"
+                        className="text-dark hover:bg-light-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors"
                       >
                         <span className="material-symbols-outlined text-primary">
                           person
@@ -160,7 +165,9 @@ export function MainNav() {
                         }}
                         className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                       >
-                        <span className="material-symbols-outlined">logout</span>
+                        <span className="material-symbols-outlined">
+                          logout
+                        </span>
                         <span>Cerrar Sesión</span>
                       </button>
                     </div>
@@ -182,14 +189,14 @@ export function MainNav() {
           />
 
           {/* Sidebar */}
-          <aside className="fixed left-0 top-0 z-50 h-full w-64 bg-white shadow-xl transform transition-transform">
+          <aside className="fixed left-0 top-0 z-50 h-full w-64 transform bg-white shadow-xl transition-transform">
             {/* Header del Sidebar */}
-            <div className="flex items-center justify-between border-b border-light-200 p-4">
+            <div className="border-light-200 flex items-center justify-between border-b p-4">
               <Logo size="sm" />
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(false)}
-                className="rounded-lg p-2 text-dark-100 transition-colors hover:bg-light-50"
+                className="text-dark-100 hover:bg-light-50 rounded-lg p-2 transition-colors"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -206,13 +213,13 @@ export function MainNav() {
                     return (
                       <div
                         key={item.href}
-                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-dark-100 opacity-50 cursor-not-allowed"
+                        className="text-dark-100 flex cursor-not-allowed items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium opacity-50"
                       >
                         <span className="material-symbols-outlined text-xl">
                           {item.icon}
                         </span>
                         <span>{item.label}</span>
-                        <span className="ml-auto text-xs bg-warning-light text-warning-text-light px-2 py-0.5 rounded-full">
+                        <span className="ml-auto rounded-full bg-warning-light px-2 py-0.5 text-xs text-warning-text-light">
                           Próximamente
                         </span>
                       </div>

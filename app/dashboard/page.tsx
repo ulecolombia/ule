@@ -11,25 +11,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Card, CardBody } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils'
-
-interface ProximoPagoPILA {
-  id: string
-  periodo: string
-  monto: number
-  fechaLimite: string
-  diasRestantes: number
-}
-
-interface FacturasDelMes {
-  cantidad: number
-  total: number
-}
-
-interface ConsultasIA {
-  usadas: number
-  total: number
-}
+import { getInfoVencimientoPILA } from '@/lib/pila-utils'
 
 interface ProximaFechaTributaria {
   fecha: string
@@ -49,10 +31,11 @@ interface Actividad {
   color: string
 }
 
+interface UserProfile {
+  numeroDocumento: string | null
+}
+
 interface DashboardStats {
-  proximoPagoPILA: ProximoPagoPILA | null
-  facturasDelMes: FacturasDelMes
-  consultasIA: ConsultasIA
   proximaFechaTributaria: ProximaFechaTributaria | null
   actividadReciente: Actividad[]
   fromCache?: boolean
@@ -66,12 +49,10 @@ export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
-    proximoPagoPILA: null,
-    facturasDelMes: { cantidad: 0, total: 0 },
-    consultasIA: { usadas: 0, total: 20 },
     proximaFechaTributaria: null,
     actividadReciente: [],
   })
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -82,28 +63,41 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      fetchDashboardStats()
+      fetchDashboardData()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true)
 
-      const response = await fetch('/api/dashboard/stats')
+      // Fetch stats y perfil en paralelo
+      const [statsResponse, profileResponse] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/user/profile'),
+      ])
 
-      if (response.ok) {
-        const data: DashboardStats = await response.json()
+      if (statsResponse.ok) {
+        const data = await statsResponse.json()
         setStats(data)
+      }
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json()
+        setUserProfile({
+          numeroDocumento: profileData.user?.numeroDocumento || null,
+        })
       }
     } catch (err) {
       console.error('Error loading dashboard:', err)
-      // Mantener datos vacíos por defecto
     } finally {
       setLoading(false)
     }
   }
+
+  // Calcular info de vencimiento PILA basada en cédula del usuario
+  const infoPILA = getInfoVencimientoPILA(userProfile?.numeroDocumento)
 
   if (status === 'loading' || loading) {
     return (
@@ -130,8 +124,6 @@ export default function DashboardPage() {
     return null
   }
 
-  const proximoPagoPILA = stats.proximoPagoPILA
-  const facturasDelMes = stats.facturasDelMes
   const proximaFechaTributaria = stats.proximaFechaTributaria
   const actividadReciente = stats.actividadReciente
 
@@ -156,8 +148,8 @@ export default function DashboardPage() {
           {/* Alertas Importantes */}
           {/* <AlertasBanner /> */}
 
-          {/* 3 Cards de Resumen - Métricas Clave */}
-          <div className="mb-10 grid gap-5 md:grid-cols-3">
+          {/* Centro de Información - 2 Cards */}
+          <div className="mb-10 grid gap-5 md:grid-cols-2">
             {/* Card 1: Próximo Pago PILA */}
             <Card className="border-light-200 border-2">
               <CardBody className="p-5">
@@ -167,28 +159,30 @@ export default function DashboardPage() {
                       account_balance
                     </span>
                   </div>
+                  {infoPILA && (
+                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                      Día {infoPILA.diaDelMes} de cada mes
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="text-dark-100 mb-2 text-sm font-semibold uppercase tracking-wide">
                     Próximo Pago PILA
                   </p>
-                  {proximoPagoPILA ? (
+                  {infoPILA ? (
                     <>
-                      <p className="text-dark mb-1.5 text-3xl font-bold">
-                        {formatCurrency(proximoPagoPILA.monto)}
+                      <p className="text-dark mb-1.5 text-2xl font-bold">
+                        {infoPILA.fechaFormateada}
                       </p>
                       <p className="text-dark-100 text-sm font-medium">
-                        Vence en {proximoPagoPILA.diasRestantes} día
-                        {proximoPagoPILA.diasRestantes !== 1 ? 's' : ''}
+                        {infoPILA.textodiasRestantes}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="text-dark mb-1.5 text-3xl font-bold">
-                        Sin pagos
-                      </p>
+                      <p className="text-dark mb-1.5 text-3xl font-bold">--</p>
                       <p className="text-dark-100 text-sm font-medium">
-                        No hay pagos pendientes
+                        Completa tu perfil para ver tu fecha
                       </p>
                     </>
                   )}
@@ -196,31 +190,7 @@ export default function DashboardPage() {
               </CardBody>
             </Card>
 
-            {/* Card 2: Facturas del Mes */}
-            <Card className="border-light-200 border-2">
-              <CardBody className="p-5">
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="rounded-xl bg-green-50 p-3.5">
-                    <span className="material-symbols-outlined text-2xl text-green-600">
-                      receipt_long
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-dark-100 mb-2 text-sm font-semibold uppercase tracking-wide">
-                    Facturas Electrónicas del Mes
-                  </p>
-                  <p className="text-dark mb-1.5 text-3xl font-bold">
-                    {facturasDelMes.cantidad}
-                  </p>
-                  <p className="text-dark-100 text-sm font-medium">
-                    Total: {formatCurrency(facturasDelMes.total)}
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
-
-            {/* Card 3: Próxima Fecha Tributaria */}
+            {/* Card 2: Próxima Fecha Tributaria */}
             <Card className="border-light-200 border-2">
               <CardBody className="p-5">
                 <div className="mb-4 flex items-start justify-between">
@@ -236,7 +206,7 @@ export default function DashboardPage() {
                   </p>
                   {proximaFechaTributaria ? (
                     <>
-                      <p className="text-dark mb-1.5 text-3xl font-bold">
+                      <p className="text-dark mb-1.5 text-2xl font-bold">
                         {proximaFechaTributaria.fechaFormateada}
                       </p>
                       <p className="text-dark-100 text-sm font-medium">

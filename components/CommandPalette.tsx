@@ -177,7 +177,7 @@ export function CommandPalette() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Buscar facturas, clientes, páginas..."
+            placeholder="Buscar archivos..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="text-dark placeholder-dark-100 flex-1 bg-transparent outline-none"
