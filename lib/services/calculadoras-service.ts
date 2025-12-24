@@ -3,11 +3,22 @@
  * Cálculos según normativa colombiana 2025
  */
 
+import { calcularImpuestoOrdinario } from '@/lib/calculators/regimen-ordinario'
+import { calcularImpuestoSimple } from '@/lib/calculators/regimen-simple'
+import type {
+  DatosEntradaSimulador,
+  ComparacionRegimenes,
+  OportunidadAhorro,
+  ResultadoRegimenOrdinario,
+  ResultadoRegimenSimple,
+} from '@/lib/types/simulador-tributario'
+
 /**
  * Constantes tributarias Colombia 2025
+ * UVT: Resolución DIAN 000193 de diciembre 4 de 2024
  */
 export const CONSTANTES_2025 = {
-  UVT: 47065,
+  UVT: 49799, // CORREGIDO - Resolución DIAN 000193 de 2024
   SMMLV: 1423500,
   IVA_GENERAL: 0.19,
   SALUD: 0.125,
@@ -231,112 +242,276 @@ export interface SimulacionRegimen {
   recomendacion: string
 }
 
+/**
+ * Simulador de regímenes - Versión básica (compatibilidad)
+ * @deprecated Usar simularRegimenesCompleto para acceso a todas las funcionalidades
+ */
 export function simularRegimenes(
   ingresoAnual: number,
   gastosDeducibles: number = 0
 ): SimulacionRegimen {
-  const { UVT } = CONSTANTES_2025
-  const uvtAnual = ingresoAnual / UVT
-
-  // RÉGIMEN SIMPLE: Tarifa única sobre ingresos brutos
-  let tarifaSimple = 0
-  if (uvtAnual <= 1400) {
-    tarifaSimple = 0.015 // 1.5%
-  } else if (uvtAnual <= 3500) {
-    tarifaSimple = 0.03 // 3%
-  } else if (uvtAnual <= 7000) {
-    tarifaSimple = 0.06 // 6%
-  } else if (uvtAnual <= 14000) {
-    tarifaSimple = 0.09 // 9%
-  } else if (uvtAnual <= 80000) {
-    tarifaSimple = 0.135 // 13.5%
-  } else {
-    // Fuera del umbral
-    tarifaSimple = 0
+  // Crear datos básicos para el nuevo motor
+  const datosBasicos: DatosEntradaSimulador = {
+    ingresosBrutosAnuales: ingresoAnual,
+    actividadEconomica: 'PROFESIONAL_LIBERAL',
+    costosGastos: gastosDeducibles,
+    dependientes: 0,
+    comprasFacturaElectronica: 0,
+    aportesVoluntariosPension: 0,
+    aportesAFC: 0,
+    interesesViviendaAnuales: 0,
+    medicinaPrepagadaAnual: 0,
+    aplicarRentaExenta25: gastosDeducibles === 0, // Solo si no tiene gastos
+    pagosRecibidosElectronicos: 0,
+    gmfPagadoAnual: 0,
   }
 
-  const impuestoSimple = ingresoAnual * tarifaSimple
-  const netoSimple = ingresoAnual - impuestoSimple
+  // Calcular con nuevos motores
+  const ordinario = calcularImpuestoOrdinario(datosBasicos)
+  const simple = calcularImpuestoSimple(datosBasicos)
 
-  // RÉGIMEN ORDINARIO: Tarifa progresiva sobre renta líquida
-  const rentaLiquida = ingresoAnual - gastosDeducibles
-  const uvtRentaLiquida = rentaLiquida / UVT
-
-  let tarifaOrdinario = 0
-  let impuestoOrdinario = 0
-
-  if (uvtRentaLiquida <= 1090) {
-    tarifaOrdinario = 0
-    impuestoOrdinario = 0
-  } else if (uvtRentaLiquida <= 1700) {
-    tarifaOrdinario = 0.19
-    impuestoOrdinario = (uvtRentaLiquida - 1090) * UVT * 0.19
-  } else if (uvtRentaLiquida <= 4100) {
-    impuestoOrdinario = (1700 - 1090) * UVT * 0.19
-    impuestoOrdinario += (uvtRentaLiquida - 1700) * UVT * 0.28
-    tarifaOrdinario = impuestoOrdinario / rentaLiquida
-  } else if (uvtRentaLiquida <= 8670) {
-    impuestoOrdinario = (1700 - 1090) * UVT * 0.19
-    impuestoOrdinario += (4100 - 1700) * UVT * 0.28
-    impuestoOrdinario += (uvtRentaLiquida - 4100) * UVT * 0.33
-    tarifaOrdinario = impuestoOrdinario / rentaLiquida
-  } else if (uvtRentaLiquida <= 18970) {
-    impuestoOrdinario = (1700 - 1090) * UVT * 0.19
-    impuestoOrdinario += (4100 - 1700) * UVT * 0.28
-    impuestoOrdinario += (8670 - 4100) * UVT * 0.33
-    impuestoOrdinario += (uvtRentaLiquida - 8670) * UVT * 0.35
-    tarifaOrdinario = impuestoOrdinario / rentaLiquida
-  } else {
-    impuestoOrdinario = (1700 - 1090) * UVT * 0.19
-    impuestoOrdinario += (4100 - 1700) * UVT * 0.28
-    impuestoOrdinario += (8670 - 4100) * UVT * 0.33
-    impuestoOrdinario += (18970 - 8670) * UVT * 0.35
-    impuestoOrdinario += (uvtRentaLiquida - 18970) * UVT * 0.37
-    tarifaOrdinario = impuestoOrdinario / rentaLiquida
-  }
-
-  const netoOrdinario = ingresoAnual - impuestoOrdinario
-
-  // Comparación
-  const diferencia = impuestoSimple - impuestoOrdinario
+  // Convertir al formato anterior para compatibilidad
+  const diferencia = simple.impuestoSimpleNeto - ordinario.impuestoNeto
   const regimenMasConveniente = diferencia > 0 ? 'ORDINARIO' : 'SIMPLE'
 
   let recomendacion = ''
-  if (uvtAnual > 80000) {
+  if (!simple.esElegible) {
     recomendacion =
-      'Estás fuera del umbral del Régimen Simple. Debes usar Régimen Ordinario.'
+      'No eres elegible para el Régimen Simple. ' +
+      simple.razonesNoElegible.join(' ')
   } else if (gastosDeducibles > ingresoAnual * 0.3) {
     recomendacion =
       'Con gastos altos, el Régimen Ordinario es más conveniente porque permite deducciones.'
   } else if (diferencia < 0) {
-    recomendacion = `El Régimen Simple te ahorra ${Math.abs(
-      diferencia
-    ).toLocaleString('es-CO', { style: 'currency', currency: 'COP' })} al año.`
+    recomendacion = `El Régimen Simple te ahorra ${formatearMoneda(Math.abs(diferencia))} al año.`
   } else {
-    recomendacion = `El Régimen Ordinario te ahorra ${diferencia.toLocaleString(
-      'es-CO',
-      { style: 'currency', currency: 'COP' }
-    )} al año.`
+    recomendacion = `El Régimen Ordinario te ahorra ${formatearMoneda(diferencia)} al año.`
   }
 
   return {
     ingresoAnual,
     gastosDeducibles,
     regimenSimple: {
-      tarifa: tarifaSimple,
-      impuesto: impuestoSimple,
-      ingresoNeto: netoSimple,
+      tarifa: simple.tarifaConsolidada,
+      impuesto: simple.impuestoSimpleNeto,
+      ingresoNeto: ingresoAnual - simple.impuestoSimpleNeto,
     },
     regimenOrdinario: {
-      rentaLiquida,
-      tarifa: tarifaOrdinario,
-      impuesto: impuestoOrdinario,
-      ingresoNeto: netoOrdinario,
+      rentaLiquida: ordinario.rentaLiquidaGravable,
+      tarifa: ordinario.tarifaEfectiva,
+      impuesto: ordinario.impuestoNeto,
+      ingresoNeto: ingresoAnual - ordinario.impuestoNeto,
     },
     diferencia,
     regimenMasConveniente,
     recomendacion,
   }
+}
+
+/**
+ * Simulador de regímenes - Versión completa con todas las deducciones
+ */
+export function simularRegimenesCompleto(
+  datos: DatosEntradaSimulador
+): ComparacionRegimenes {
+  const ordinario = calcularImpuestoOrdinario(datos)
+  const simple = calcularImpuestoSimple(datos)
+
+  // Calcular diferencia (positivo = RST ahorra)
+  const diferencia = ordinario.impuestoNeto - simple.impuestoSimpleNeto
+  const mayorImpuesto = Math.max(
+    ordinario.impuestoNeto,
+    simple.impuestoSimpleNeto
+  )
+  const porcentajeAhorro =
+    mayorImpuesto > 0 ? (Math.abs(diferencia) / mayorImpuesto) * 100 : 0
+
+  // Determinar régimen recomendado
+  let regimenRecomendado: 'ORDINARIO' | 'SIMPLE' =
+    diferencia > 0 ? 'SIMPLE' : 'ORDINARIO'
+
+  // Si no es elegible para RST, forzar ordinario
+  if (!simple.esElegible) {
+    regimenRecomendado = 'ORDINARIO'
+  }
+
+  // Generar razones de recomendación
+  const razonesRecomendacion = generarRazonesRecomendacion(
+    datos,
+    ordinario,
+    simple,
+    diferencia
+  )
+
+  // Identificar oportunidades de ahorro
+  const oportunidadesAhorro = identificarOportunidadesAhorro(datos, ordinario)
+
+  // Generar advertencias
+  const advertencias = generarAdvertencias(datos, simple)
+
+  return {
+    datosEntrada: datos,
+    fechaSimulacion: new Date(),
+    regimenOrdinario: ordinario,
+    regimenSimple: simple,
+    diferencia,
+    porcentajeAhorro,
+    regimenRecomendado,
+    razonesRecomendacion,
+    oportunidadesAhorro,
+    advertencias,
+  }
+}
+
+/**
+ * Genera razones explicativas de la recomendación
+ */
+function generarRazonesRecomendacion(
+  datos: DatosEntradaSimulador,
+  ordinario: ResultadoRegimenOrdinario,
+  simple: ResultadoRegimenSimple,
+  diferencia: number
+): string[] {
+  const razones: string[] = []
+
+  if (!simple.esElegible) {
+    razones.push(
+      ...simple.razonesNoElegible.map((r: string) => `No elegible: ${r}`)
+    )
+    return razones
+  }
+
+  if (diferencia > 0) {
+    razones.push(
+      `El Régimen Simple te ahorra ${formatearMoneda(diferencia)} al año`
+    )
+
+    if (simple.anticipos.exentoAnticipos) {
+      razones.push('No pagas anticipos bimestrales (ingresos < 3.500 UVT)')
+    }
+
+    razones.push('No te practican retención en la fuente en cada pago')
+    razones.push('Declaración unificada más simple')
+  } else {
+    razones.push(
+      `El Régimen Ordinario te ahorra ${formatearMoneda(Math.abs(diferencia))} al año`
+    )
+
+    if (datos.costosGastos > datos.ingresosBrutosAnuales * 0.2) {
+      razones.push(
+        'Tus gastos deducibles reducen significativamente la base gravable'
+      )
+    }
+
+    if (ordinario.deducciones.totalDeduccionesOrdinario > 0) {
+      razones.push(
+        'Aprovechas deducciones personales (dependientes, vivienda, etc.)'
+      )
+    }
+  }
+
+  return razones
+}
+
+/**
+ * Identifica oportunidades de ahorro no aprovechadas
+ */
+function identificarOportunidadesAhorro(
+  datos: DatosEntradaSimulador,
+  _ordinario: ResultadoRegimenOrdinario
+): OportunidadAhorro[] {
+  const oportunidades: OportunidadAhorro[] = []
+  const UVT = CONSTANTES_2025.UVT
+
+  // 1. Dependientes
+  if (datos.dependientes < 4) {
+    const ahorroEstimado = (4 - datos.dependientes) * 72 * UVT * 0.25 // Aprox 25% marginal
+    oportunidades.push({
+      tipo: 'DEPENDIENTES',
+      titulo: 'Deducción por dependientes',
+      descripcion: `Puedes deducir ${(72 * UVT).toLocaleString()} por cada dependiente (máx. 4)`,
+      ahorroEstimado,
+      comoAprovechar:
+        'Registra tus dependientes (hijos, cónyuge sin ingresos, padres mayores) en tu declaración',
+      porcentajeAprovechado: (datos.dependientes / 4) * 100,
+      limiteMaximo: 4 * 72 * UVT,
+    })
+  }
+
+  // 2. Compras con factura electrónica
+  if (datos.comprasFacturaElectronica === 0) {
+    const limiteDeduccion = 240 * UVT
+    oportunidades.push({
+      tipo: 'COMPRAS_FE',
+      titulo: '1% de compras con factura electrónica',
+      descripcion: `Deduce el 1% de tus compras personales hasta ${formatearMoneda(limiteDeduccion)}`,
+      ahorroEstimado: limiteDeduccion * 0.25, // Aprox 25% marginal
+      comoAprovechar:
+        'Pide factura electrónica en todas tus compras personales (supermercados, restaurantes, etc.)',
+      porcentajeAprovechado: 0,
+      limiteMaximo: limiteDeduccion,
+    })
+  }
+
+  // 3. AFC/Pensión voluntaria
+  if (datos.aportesAFC + datos.aportesVoluntariosPension === 0) {
+    const limite = 2500 * UVT
+    oportunidades.push({
+      tipo: 'AFC',
+      titulo: 'Aportes AFC o pensión voluntaria',
+      descripcion: `Ahorra impuestos aportando a AFC o pensión voluntaria (hasta ${formatearMoneda(limite)})`,
+      ahorroEstimado: limite * 0.15 * 0.25, // 15% de aporte típico al 25% marginal
+      comoAprovechar:
+        'Abre una cuenta AFC en tu banco o haz aportes voluntarios a tu fondo de pensiones',
+      porcentajeAprovechado: 0,
+      limiteMaximo: limite,
+    })
+  }
+
+  // 4. Pagos electrónicos (para RST)
+  if (
+    datos.pagosRecibidosElectronicos === 0 &&
+    datos.ingresosBrutosAnuales > 0
+  ) {
+    const descuentoPotencial = datos.ingresosBrutosAnuales * 0.5 * 0.005 // 50% de ingresos por tarjeta
+    oportunidades.push({
+      tipo: 'PAGOS_ELECTRONICOS',
+      titulo: 'Descuento por pagos electrónicos (RST)',
+      descripcion:
+        'En Régimen Simple, obtén 0.5% de descuento por pagos recibidos con tarjeta o PSE',
+      ahorroEstimado: descuentoPotencial,
+      comoAprovechar:
+        'Acepta pagos con tarjeta de crédito/débito o transferencias bancarias',
+      porcentajeAprovechado: 0,
+      limiteMaximo: datos.ingresosBrutosAnuales * 0.005,
+    })
+  }
+
+  return oportunidades
+}
+
+/**
+ * Genera advertencias importantes
+ */
+function generarAdvertencias(
+  datos: DatosEntradaSimulador,
+  _simple: ResultadoRegimenSimple
+): string[] {
+  const advertencias: string[] = []
+  const UVT = CONSTANTES_2025.UVT
+
+  // Cerca del límite de RST
+  const umbralRST = 100000 * UVT
+  if (
+    datos.ingresosBrutosAnuales > umbralRST * 0.8 &&
+    datos.ingresosBrutosAnuales < umbralRST
+  ) {
+    advertencias.push(
+      'Tus ingresos están cerca del límite del Régimen Simple. Si crecen, podrías perder elegibilidad.'
+    )
+  }
+
+  return advertencias
 }
 
 /**
@@ -369,3 +544,32 @@ export function convertirCOPaUVT(cop: number): ConversionUVT {
     uvtValor: UVT,
   }
 }
+
+/**
+ * Helper para formatear valores como moneda colombiana
+ */
+function formatearMoneda(valor: number): string {
+  return valor.toLocaleString('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+}
+
+// Re-exportar tipos y funciones de los nuevos calculadores para conveniencia
+export { calcularImpuestoOrdinario } from '@/lib/calculators/regimen-ordinario'
+export {
+  calcularImpuestoSimple,
+  verificarElegibilidadRST,
+  getCalendarioAnticiposRST,
+  getResumenTarifasRST,
+} from '@/lib/calculators/regimen-simple'
+export type {
+  DatosEntradaSimulador,
+  ComparacionRegimenes,
+  ResultadoRegimenOrdinario,
+  ResultadoRegimenSimple,
+  OportunidadAhorro,
+  ActividadEconomicaRST,
+} from '@/lib/types/simulador-tributario'

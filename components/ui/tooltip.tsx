@@ -37,6 +37,7 @@ export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
 
 /**
  * Componente InfoTooltip para mostrar íconos de ayuda
+ * Soporta hover Y click para mejor accesibilidad móvil
  */
 interface InfoTooltipProps {
   content: React.ReactNode
@@ -44,12 +45,21 @@ interface InfoTooltipProps {
 }
 
 export function InfoTooltip({ content, side = 'top' }: InfoTooltipProps) {
+  const [isOpen, setIsOpen] = React.useState(false)
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsOpen((prev) => !prev)
+  }
+
   return (
-    <Tooltip>
+    <Tooltip open={isOpen} onOpenChange={setIsOpen}>
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center justify-center text-dark-100 hover:text-primary transition-colors"
+          onClick={handleClick}
+          className="text-dark-100 inline-flex items-center justify-center transition-colors hover:text-primary"
           aria-label="Más información"
         >
           <span className="material-symbols-outlined text-base">info</span>

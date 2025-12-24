@@ -26,6 +26,8 @@ export const FINANCIAL_TERMS = {
     'Clasificación del riesgo laboral de tu actividad económica. Va de I (mínimo riesgo) a V (máximo riesgo). Determina el porcentaje de aporte a riesgos laborales.',
 
   // Términos Tributarios
+  'Ingresos Brutos':
+    'Total de ingresos que recibes en el año por tu actividad económica, ANTES de restar cualquier gasto o deducción. Incluye honorarios, ventas, comisiones, etc.',
   'Régimen Simple':
     'Sistema simplificado de impuestos para pequeñas empresas. Tarifa única sobre ingresos brutos, sin deducciones.',
   'Régimen Ordinario':
@@ -33,7 +35,7 @@ export const FINANCIAL_TERMS = {
   'Base Gravable':
     'Valor sobre el cual se aplica el impuesto. En Régimen Simple son los ingresos totales. En Ordinario es la renta líquida (ingresos - deducciones).',
   'Gastos Deducibles':
-    'Gastos que puedes restar de tus ingresos en Régimen Ordinario para reducir tu base gravable (ej: nómina, arriendos, servicios).',
+    'Gastos que puedes restar de tus ingresos en Régimen Ordinario para reducir tu base gravable (ej: nómina, arriendos, servicios con factura).',
 
   // Términos de IVA
   IVA: 'Impuesto al Valor Agregado: Impuesto indirecto sobre el consumo. Tarifa general del 19% en Colombia.',
