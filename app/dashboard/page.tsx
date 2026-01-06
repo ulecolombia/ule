@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -54,6 +54,22 @@ export default function DashboardPage() {
   })
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showHerramientas, setShowHerramientas] = useState(false)
+  const herramientasRef = useRef<HTMLDivElement>(null)
+
+  // Cerrar el menú de herramientas al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        herramientasRef.current &&
+        !herramientasRef.current.contains(event.target as Node)
+      ) {
+        setShowHerramientas(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -226,7 +242,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* 7 Acciones Rápidas */}
+          {/* 6 Acciones Rápidas */}
           <Card className="border-light-200 mb-8 border-2">
             <CardBody className="p-6">
               <div className="mb-6">
@@ -237,7 +253,7 @@ export default function DashboardPage() {
                   Accede a nuestras funciones principales
                 </p>
               </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {/* Acción 1: Liquidar PILA */}
                 <Link
                   href="/pila/liquidar"
@@ -259,20 +275,20 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 2: Facturación Electrónica */}
+                {/* Acción 2: Cuenta de Cobro */}
                 <Link
-                  href="/facturacion/nueva"
+                  href="/cuenta-cobro/nueva"
                   className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
                   style={{ backgroundColor: '#F8F9FA' }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
                     <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
-                      receipt_long
+                      request_quote
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-dark font-semibold group-hover:text-white">
-                      Facturación Electrónica
+                      Cuenta de Cobro
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
@@ -280,70 +296,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 3: Calendario Tributario */}
-                <Link
-                  href="/calendario"
-                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
-                  style={{ backgroundColor: '#F8F9FA' }}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
-                    <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
-                      event
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-dark font-semibold group-hover:text-white">
-                      Calendario Tributario
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
-                    arrow_forward
-                  </span>
-                </Link>
-
-                {/* Acción 4: Calculadoras */}
-                <Link
-                  href="/herramientas/calculadoras"
-                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
-                  style={{ backgroundColor: '#F8F9FA' }}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
-                    <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
-                      dialpad
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-dark font-semibold group-hover:text-white">
-                      Calculadora Tributaria
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
-                    arrow_forward
-                  </span>
-                </Link>
-
-                {/* Acción 5: Simuladores */}
-                <Link
-                  href="/herramientas/simuladores"
-                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
-                  style={{ backgroundColor: '#F8F9FA' }}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
-                    <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
-                      science
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-dark font-semibold group-hover:text-white">
-                      Simulador
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
-                    arrow_forward
-                  </span>
-                </Link>
-
-                {/* Acción 6: Biblioteca */}
+                {/* Acción 3: Biblioteca de Archivos */}
                 <Link
                   href="/biblioteca"
                   className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
@@ -364,7 +317,28 @@ export default function DashboardPage() {
                   </span>
                 </Link>
 
-                {/* Acción 7: Consulta Educativa con IA */}
+                {/* Acción 4: Calendario Tributario */}
+                <Link
+                  href="/calendario"
+                  className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
+                  style={{ backgroundColor: '#F8F9FA' }}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-white/20">
+                    <span className="material-symbols-outlined text-2xl text-primary group-hover:text-white">
+                      event
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-dark font-semibold group-hover:text-white">
+                      Calendario Tributario
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined text-dark-100 flex-shrink-0 group-hover:text-white">
+                    arrow_forward
+                  </span>
+                </Link>
+
+                {/* Acción 5: Asesoría con IA */}
                 <Link
                   href="/asesoria"
                   className="border-light-200 group flex items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:!bg-primary hover:text-white hover:shadow-lg"
@@ -384,6 +358,103 @@ export default function DashboardPage() {
                     arrow_forward
                   </span>
                 </Link>
+
+                {/* Acción 6: Herramientas (con menú desplegable) */}
+                <div className="relative" ref={herramientasRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowHerramientas(!showHerramientas)}
+                    className={`border-light-200 group flex w-full items-center gap-4 rounded-lg border-2 p-4 transition-all hover:border-primary hover:shadow-lg ${
+                      showHerramientas
+                        ? 'border-primary !bg-primary text-white shadow-lg'
+                        : ''
+                    }`}
+                    style={{
+                      backgroundColor: showHerramientas ? undefined : '#F8F9FA',
+                    }}
+                  >
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg transition-colors ${
+                        showHerramientas
+                          ? 'bg-white/20'
+                          : 'bg-primary/10 group-hover:bg-primary/20'
+                      }`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-2xl ${
+                          showHerramientas ? 'text-white' : 'text-primary'
+                        }`}
+                      >
+                        construction
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p
+                        className={`font-semibold ${showHerramientas ? 'text-white' : 'text-dark'}`}
+                      >
+                        Herramientas
+                      </p>
+                    </div>
+                    <span
+                      className={`material-symbols-outlined flex-shrink-0 transition-transform ${
+                        showHerramientas
+                          ? 'rotate-180 text-white'
+                          : 'text-dark-100'
+                      }`}
+                    >
+                      expand_more
+                    </span>
+                  </button>
+
+                  {/* Menú desplegable compacto - abre hacia la derecha */}
+                  {showHerramientas && (
+                    <div className="border-light-200 absolute left-full top-1/2 z-50 ml-3 w-52 -translate-y-1/2 overflow-hidden rounded-xl border bg-white shadow-2xl">
+                      <div className="p-1.5">
+                        {/* Calculadora Tributaria */}
+                        <Link
+                          href="/herramientas/calculadoras"
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                          onClick={() => setShowHerramientas(false)}
+                        >
+                          <span className="material-symbols-outlined text-lg text-blue-600">
+                            calculate
+                          </span>
+                          <span className="text-dark text-sm font-medium">
+                            Calculadora Tributaria
+                          </span>
+                        </Link>
+
+                        {/* Simulador de Régimen */}
+                        <Link
+                          href="/herramientas/simuladores"
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                          onClick={() => setShowHerramientas(false)}
+                        >
+                          <span className="material-symbols-outlined text-lg text-purple-600">
+                            science
+                          </span>
+                          <span className="text-dark text-sm font-medium">
+                            Simulador de Régimen
+                          </span>
+                        </Link>
+
+                        {/* Facturación Electrónica */}
+                        <Link
+                          href="/facturacion/nueva"
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                          onClick={() => setShowHerramientas(false)}
+                        >
+                          <span className="material-symbols-outlined text-lg text-green-600">
+                            receipt_long
+                          </span>
+                          <span className="text-dark text-sm font-medium">
+                            Facturación Electrónica
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardBody>
           </Card>

@@ -44,6 +44,14 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
+    label: 'Cuenta de Cobro',
+    icon: 'request_quote',
+    subItems: [
+      { label: 'Nueva Cuenta', href: '/cuenta-cobro/nueva' },
+      { label: 'Mis Cuentas', href: '/cuenta-cobro/lista' },
+    ],
+  },
+  {
     label: 'Calendario',
     icon: 'event',
     href: '/calendario',

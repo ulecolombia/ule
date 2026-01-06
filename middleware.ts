@@ -1,6 +1,12 @@
 /**
  * ULE - MIDDLEWARE DE AUTENTICACIÓN
  * Protección de rutas con NextAuth v5
+ *
+ * Flujo de verificación:
+ * 1. ¿Está autenticado? → Si no, redirigir a /login
+ * 2. ¿Tiene perfil completo? → Si no, redirigir a /onboarding
+ * 3. ¿Tiene autorización PILA? → Si no, redirigir a /autorizacion-pila
+ * 4. Si todo OK → Permitir acceso
  */
 
 import { auth } from '@/lib/auth'
@@ -16,9 +22,12 @@ export default auth(async (req) => {
 
   // Permitir acceso a rutas de auth sin autenticación
   if (path.startsWith('/login') || path.startsWith('/registro')) {
-    // Si ya está autenticado Y tiene perfil completo, redirigir a dashboard
-    // Pero permitir acceso a login si perfil incompleto (para cerrar sesión/cambiar cuenta)
-    if (session && session.user?.perfilCompleto === true) {
+    // Si ya está autenticado Y tiene perfil completo Y autorización PILA, redirigir a dashboard
+    if (
+      session &&
+      session.user?.perfilCompleto === true &&
+      session.user?.autorizacionPILACompleta === true
+    ) {
       const redirectUrl = new URL('/dashboard', req.url)
       redirectUrl.searchParams.set('message', 'already-authenticated')
       return NextResponse.redirect(redirectUrl)
@@ -31,8 +40,28 @@ export default auth(async (req) => {
     if (!session) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
-    // Si ya completó el perfil, redirigir al dashboard
+    // Si ya completó el perfil, redirigir a autorización PILA o dashboard
     if (session.user?.perfilCompleto === true) {
+      // Si no tiene autorización PILA, redirigir a esa página
+      if (session.user?.autorizacionPILACompleta !== true) {
+        return NextResponse.redirect(new URL('/autorizacion-pila', req.url))
+      }
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+    return NextResponse.next()
+  }
+
+  // Permitir acceso a autorización PILA si tiene perfil completo pero no autorización
+  if (path.startsWith('/autorizacion-pila')) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    // Si no tiene perfil completo, primero debe completarlo
+    if (session.user?.perfilCompleto !== true) {
+      return NextResponse.redirect(new URL('/onboarding', req.url))
+    }
+    // Si ya tiene autorización PILA, redirigir al dashboard
+    if (session.user?.autorizacionPILACompleta === true) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     return NextResponse.next()
@@ -53,6 +82,23 @@ export default auth(async (req) => {
   if (!esRutaPermitida && session.user?.perfilCompleto === false) {
     const redirectUrl = new URL('/onboarding', req.url)
     redirectUrl.searchParams.set('message', 'complete-profile')
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // IMPORTANTE: Redirigir usuarios sin autorización PILA
+  // Excepto para rutas permitidas
+  const rutasPermitidasSinAutorizacion = ['/perfil', '/api', '/legal']
+  const esRutaPermitidaSinAuth = rutasPermitidasSinAutorizacion.some((ruta) =>
+    path.startsWith(ruta)
+  )
+
+  if (
+    !esRutaPermitidaSinAuth &&
+    session.user?.perfilCompleto === true &&
+    session.user?.autorizacionPILACompleta !== true
+  ) {
+    const redirectUrl = new URL('/autorizacion-pila', req.url)
+    redirectUrl.searchParams.set('message', 'authorization-required')
     return NextResponse.redirect(redirectUrl)
   }
 
@@ -78,5 +124,11 @@ export const config = {
     '/login',
     '/registro',
     '/onboarding/:path*',
+    '/autorizacion-pila/:path*',
+    '/cuenta-cobro/:path*',
+    '/calendario/:path*',
+    '/biblioteca/:path*',
+    '/herramientas/:path*',
+    '/ayuda/:path*',
   ],
 }

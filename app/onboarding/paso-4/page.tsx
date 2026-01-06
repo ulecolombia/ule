@@ -229,7 +229,7 @@ export default function OnboardingPaso4() {
       }
 
       // Success!
-      toast.success('¡Perfil completado exitosamente! 🎉')
+      toast.success('¡Perfil completado! Ahora autoriza la gestión de PILA')
 
       // Actualizar la sesión con perfilCompleto = true
       await updateSession({ perfilCompleto: true })
@@ -240,9 +240,9 @@ export default function OnboardingPaso4() {
       localStorage.removeItem('onboarding-step-3')
       localStorage.removeItem('onboarding-step-4')
 
-      // Redirect to dashboard after 1 second
+      // Redirect to autorizacion-pila after 1 second
       setTimeout(() => {
-        router.push('/dashboard')
+        router.push('/autorizacion-pila')
       }, 1000)
     } catch (error) {
       console.error('[Paso 4] Error:', error)

@@ -119,6 +119,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           image: user.image,
           perfilCompleto: user.perfilCompleto,
+          autorizacionPILACompleta: user.autorizacionPILACompleta,
           isAdmin: user.isAdmin,
           isSuperAdmin: user.isSuperAdmin,
         }
@@ -207,6 +208,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               select: {
                 id: true,
                 perfilCompleto: true,
+                autorizacionPILACompleta: true,
                 role: true,
                 isAdmin: true,
                 isSuperAdmin: true,
@@ -217,6 +219,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               // Usar el ID de nuestra BD, no el de OAuth
               token.id = dbUser.id
               token.perfilCompleto = dbUser.perfilCompleto
+              token.autorizacionPILACompleta = dbUser.autorizacionPILACompleta
               token.role = dbUser.role
               token.isAdmin = dbUser.isAdmin || false
               token.isSuperAdmin = dbUser.isSuperAdmin || false
@@ -227,6 +230,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               // Usuario no encontrado en BD (raro, pero manejamos)
               token.id = user.id
               token.perfilCompleto = false
+              token.autorizacionPILACompleta = false
               token.role = 'USER'
               token.isAdmin = false
               token.isSuperAdmin = false
@@ -237,6 +241,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Defaults seguros
             token.id = user.id
             token.perfilCompleto = false
+            token.autorizacionPILACompleta = false
             token.role = 'USER'
             token.isAdmin = false
             token.isSuperAdmin = false
@@ -245,6 +250,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Credentials user - datos vienen del authorize()
           token.id = user.id
           token.perfilCompleto = (user as User).perfilCompleto
+          token.autorizacionPILACompleta = (
+            user as User
+          ).autorizacionPILACompleta
           token.role = (user as User).role
           token.isAdmin = (user as User).isAdmin || false
           token.isSuperAdmin = (user as User).isSuperAdmin || false
@@ -256,6 +264,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.name = session.name
         token.email = session.email
         token.perfilCompleto = session.perfilCompleto
+        if (session.autorizacionPILACompleta !== undefined)
+          token.autorizacionPILACompleta = session.autorizacionPILACompleta
         if (session.isAdmin !== undefined) token.isAdmin = session.isAdmin
         if (session.isSuperAdmin !== undefined)
           token.isSuperAdmin = session.isSuperAdmin
@@ -273,6 +283,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string
         session.user.role = token.role as User['role']
         session.user.perfilCompleto = token.perfilCompleto as boolean
+        session.user.autorizacionPILACompleta =
+          token.autorizacionPILACompleta as boolean
         session.user.isAdmin = token.isAdmin as boolean
         session.user.isSuperAdmin = token.isSuperAdmin as boolean
       }
