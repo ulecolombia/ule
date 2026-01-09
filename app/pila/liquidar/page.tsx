@@ -34,6 +34,7 @@ export default function LiquidarPilaPage() {
     nivelRiesgo: 'I' as NivelRiesgoARL,
     mes: new Date().getMonth() + 1,
     anio: new Date().getFullYear(),
+    incluirARL: false, // Por defecto NO incluir ARL (independientes no obligados)
   })
 
   // Resultado del cálculo
@@ -93,7 +94,11 @@ export default function LiquidarPilaPage() {
         return
       }
 
-      const calculo = calcularTotalAportes(ingreso, formData.nivelRiesgo)
+      const calculo = calcularTotalAportes(
+        ingreso,
+        formData.nivelRiesgo,
+        formData.incluirARL
+      )
       setResultado(calculo)
       setShowResults(true)
       toast.success('Aportes calculados correctamente')
@@ -125,6 +130,7 @@ export default function LiquidarPilaPage() {
           mes: formData.mes,
           anio: formData.anio,
           nivelRiesgo: formData.nivelRiesgo,
+          incluirARL: formData.incluirARL,
         }),
       })
 
@@ -233,24 +239,60 @@ export default function LiquidarPilaPage() {
               </p>
             </div>
 
-            {/* Nivel de Riesgo ARL */}
+            {/* Toggle ARL */}
             <div className="mb-4">
-              <label className="text-dark mb-2 block text-sm font-semibold">
-                Nivel de Riesgo ARL
-              </label>
-              <select
-                name="nivelRiesgo"
-                value={formData.nivelRiesgo}
-                onChange={handleInputChange}
-                className="border-light-200 w-full rounded-lg border-2 px-4 py-2 transition-colors focus:border-primary focus:outline-none"
-              >
-                <option value="I">Nivel I - Riesgo Mínimo (0.522%)</option>
-                <option value="II">Nivel II - Riesgo Bajo (1.044%)</option>
-                <option value="III">Nivel III - Riesgo Medio (2.436%)</option>
-                <option value="IV">Nivel IV - Riesgo Alto (4.350%)</option>
-                <option value="V">Nivel V - Riesgo Máximo (6.960%)</option>
-              </select>
+              <div className="border-light-200 bg-light-50 flex items-center justify-between rounded-lg border-2 p-4">
+                <div className="flex-1">
+                  <label className="text-dark block text-sm font-semibold">
+                    ¿Aporta a Riesgos Laborales (ARL)?
+                  </label>
+                  <p className="text-dark-100 mt-1 text-xs">
+                    Solo obligatorio si tiene contrato que lo exija o actividad
+                    de alto riesgo
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      incluirARL: !prev.incluirARL,
+                    }))
+                    setShowResults(false)
+                  }}
+                  className={`relative ml-4 h-7 w-14 rounded-full transition-colors ${
+                    formData.incluirARL ? 'bg-primary' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform ${
+                      formData.incluirARL ? 'translate-x-8' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
+
+            {/* Nivel de Riesgo ARL - Solo si incluirARL está activo */}
+            {formData.incluirARL && (
+              <div className="mb-4">
+                <label className="text-dark mb-2 block text-sm font-semibold">
+                  Nivel de Riesgo ARL
+                </label>
+                <select
+                  name="nivelRiesgo"
+                  value={formData.nivelRiesgo}
+                  onChange={handleInputChange}
+                  className="border-light-200 w-full rounded-lg border-2 px-4 py-2 transition-colors focus:border-primary focus:outline-none"
+                >
+                  <option value="I">Nivel I - Riesgo Mínimo (0.522%)</option>
+                  <option value="II">Nivel II - Riesgo Bajo (1.044%)</option>
+                  <option value="III">Nivel III - Riesgo Medio (2.436%)</option>
+                  <option value="IV">Nivel IV - Riesgo Alto (4.350%)</option>
+                  <option value="V">Nivel V - Riesgo Máximo (6.960%)</option>
+                </select>
+              </div>
+            )}
 
             {/* Período */}
             <div className="mb-6 grid grid-cols-2 gap-4">
@@ -310,7 +352,9 @@ export default function LiquidarPilaPage() {
               </div>
 
               {/* Desglose de Aportes */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div
+                className={`grid grid-cols-1 gap-4 ${formData.incluirARL ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}
+              >
                 {/* Salud */}
                 <div className="border-light-200 hover:border-success/50 rounded-lg border-2 bg-white p-5 transition-colors">
                   <div className="mb-3 flex items-center justify-between">
@@ -341,18 +385,22 @@ export default function LiquidarPilaPage() {
                   </p>
                 </div>
 
-                {/* ARL */}
-                <div className="border-light-200 hover:border-warning/50 rounded-lg border-2 bg-white p-5 transition-colors">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-dark text-sm font-semibold">ARL</span>
-                    <span className="rounded-full bg-warning-light px-2 py-1 text-xs font-medium text-warning-text-light">
-                      {resultado.desglose.arl.porcentaje}%
-                    </span>
+                {/* ARL - Solo si está activo */}
+                {formData.incluirARL && (
+                  <div className="border-light-200 hover:border-warning/50 rounded-lg border-2 bg-white p-5 transition-colors">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-dark text-sm font-semibold">
+                        ARL
+                      </span>
+                      <span className="rounded-full bg-warning-light px-2 py-1 text-xs font-medium text-warning-text-light">
+                        {resultado.desglose.arl.porcentaje}%
+                      </span>
+                    </div>
+                    <p className="text-dark text-2xl font-bold">
+                      {formatearMoneda(resultado.arl)}
+                    </p>
                   </div>
-                  <p className="text-dark text-2xl font-bold">
-                    {formatearMoneda(resultado.arl)}
-                  </p>
-                </div>
+                )}
               </div>
 
               {/* Total */}

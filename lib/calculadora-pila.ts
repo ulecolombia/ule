@@ -358,23 +358,31 @@ export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
  * - Ingreso Base de Cotización (IBC)
  * - Aporte a Salud (12.5%)
  * - Aporte a Pensión (16%)
- * - Aporte a ARL (según nivel de riesgo)
+ * - Aporte a ARL (según nivel de riesgo) - OPCIONAL para independientes
  * - Total a pagar
+ *
+ * NOTA: Los independientes NO están obligados a cotizar ARL a menos que:
+ * - Tengan contrato de prestación de servicios que lo exija
+ * - Realicen actividades de alto riesgo
  *
  * @param ingresoMensual - Ingreso mensual reportado
  * @param nivelRiesgo - Nivel de riesgo ARL (por defecto: 'I')
+ * @param incluirARL - Si se debe incluir ARL en el cálculo (por defecto: true)
  * @returns Objeto con todos los valores calculados y desglose
  *
  * @example
  * ```typescript
- * const aportes = calcularTotalAportes(3000000, 'I');
- * console.log(aportes.total); // 870660
- * console.log(aportes.desglose.salud.valor); // 375000
+ * // Con ARL (contrato que lo exige)
+ * const aportes = calcularTotalAportes(3000000, 'I', true);
+ *
+ * // Sin ARL (independiente sin obligación)
+ * const aportesSinARL = calcularTotalAportes(3000000, 'I', false);
  * ```
  */
 export function calcularTotalAportes(
   ingresoMensual: number,
-  nivelRiesgo: NivelRiesgoARL = 'I'
+  nivelRiesgo: NivelRiesgoARL = 'I',
+  incluirARL: boolean = true
 ): CalculoAportes {
   // Calcular IBC
   const { ibc } = calcularIBC(ingresoMensual)
@@ -382,7 +390,7 @@ export function calcularTotalAportes(
   // Calcular cada componente
   const salud = calcularSalud(ibc)
   const pension = calcularPension(ibc)
-  const arl = calcularARL(ibc, nivelRiesgo)
+  const arl = incluirARL ? calcularARL(ibc, nivelRiesgo) : 0
   const total = salud + pension + arl
 
   return {
@@ -404,7 +412,7 @@ export function calcularTotalAportes(
       },
       arl: {
         base: ibc,
-        porcentaje: PORCENTAJES_ARL[nivelRiesgo],
+        porcentaje: incluirARL ? PORCENTAJES_ARL[nivelRiesgo] : 0,
         valor: arl,
         nivelRiesgo,
       },
@@ -577,7 +585,8 @@ export const calcularIBCMemoized = memoize(calcularIBC, {
 export const calcularTotalAportesMemoized = memoize(calcularTotalAportes, {
   maxSize: 200,
   ttl: 10 * 60 * 1000, // 10 minutos
-  keyGenerator: (ingreso, nivel) => `${ingreso}-${nivel}`,
+  keyGenerator: (ingreso, nivel, incluirARL = true) =>
+    `${ingreso}-${nivel}-${incluirARL}`,
 })
 
 /**
