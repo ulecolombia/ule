@@ -7,7 +7,7 @@ import {
   calcularTotalAportes,
   formatearMoneda,
   formatearPeriodo,
-  SMMLV_2025,
+  SMMLV_2026,
   NivelRiesgoARL,
   CalculoAportes,
 } from '@/lib/calculadora-pila'
@@ -225,11 +225,11 @@ export default function LiquidarPilaPage() {
                   value={formData.ingresoMensual}
                   onChange={handleInputChange}
                   className="border-light-200 w-full rounded-lg border-2 py-2 pl-8 pr-4 transition-colors focus:border-primary focus:outline-none"
-                  placeholder="1.423.500"
+                  placeholder="1.750.905"
                 />
               </div>
               <p className="text-dark-100 mt-1 text-xs">
-                Mínimo: {formatearMoneda(SMMLV_2025)} (1 SMMLV)
+                Mínimo: {formatearMoneda(SMMLV_2026)} (1 SMMLV)
               </p>
             </div>
 
@@ -266,7 +266,7 @@ export default function LiquidarPilaPage() {
                 >
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                     <option key={m} value={m}>
-                      {formatearPeriodo(m, 2025).split(' ')[0]}
+                      {formatearPeriodo(m, 2026).split(' ')[0]}
                     </option>
                   ))}
                 </select>
@@ -281,8 +281,8 @@ export default function LiquidarPilaPage() {
                   onChange={handleInputChange}
                   className="border-light-200 w-full rounded-lg border-2 px-4 py-2 transition-colors focus:border-primary focus:outline-none"
                 >
-                  <option value={2025}>2025</option>
                   <option value={2026}>2026</option>
+                  <option value={2027}>2027</option>
                 </select>
               </div>
             </div>
@@ -397,14 +397,14 @@ export default function LiquidarPilaPage() {
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
                     <span>
-                      El IBC mínimo es 1 SMMLV ({formatearMoneda(SMMLV_2025)})
+                      El IBC mínimo es 1 SMMLV ({formatearMoneda(SMMLV_2026)})
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
                     <span>
                       El IBC máximo es 25 SMMLV (
-                      {formatearMoneda(SMMLV_2025 * 25)})
+                      {formatearMoneda(SMMLV_2026 * 25)})
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -416,7 +416,7 @@ export default function LiquidarPilaPage() {
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
                     <span>
-                      Los porcentajes corresponden a la normativa vigente 2025
+                      Los porcentajes corresponden a la normativa vigente 2026
                     </span>
                   </li>
                 </ul>

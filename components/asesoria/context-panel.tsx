@@ -144,8 +144,8 @@ export function ContextPanel({ session: _session }: ContextPanelProps) {
             />
             {profile.ingresoMensualPromedio && (
               <InfoItem
-                label="En SMMLV 2025"
-                value={`${(profile.ingresoMensualPromedio / 1423500).toFixed(2)} SMMLV`}
+                label="En SMMLV 2026"
+                value={`${(profile.ingresoMensualPromedio / 1750905).toFixed(2)} SMMLV`}
               />
             )}
           </Section>

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import {
   convertirUVTaCOP,
   convertirCOPaUVT,
-  CONSTANTES_2025,
+  CONSTANTES_2026,
 } from '@/lib/services/calculadoras-service'
 import { formatearMoneda } from '@/lib/utils/format'
 import { toast } from 'sonner'
@@ -77,16 +77,16 @@ export function ConversorUVT() {
           Conversor UVT ↔ COP
         </h2>
         <p className="text-dark-100 mt-1 text-sm">
-          Convierte entre UVT y pesos colombianos (Vigencia 2025)
+          Convierte entre UVT y pesos colombianos (Vigencia 2026)
         </p>
       </div>
 
       <div className="space-y-6">
-        {/* Valor UVT 2025 */}
+        {/* Valor UVT 2026 */}
         <div className="rounded-lg bg-primary/10 p-4 text-center">
-          <p className="text-dark-100 text-sm">Valor UVT 2025</p>
+          <p className="text-dark-100 text-sm">Valor UVT 2026</p>
           <p className="text-3xl font-bold text-primary">
-            {formatearMoneda(CONSTANTES_2025.UVT)}
+            {formatearMoneda(CONSTANTES_2026.UVT)}
           </p>
         </div>
 
@@ -201,9 +201,9 @@ export function ConversorUVT() {
               <p className="text-dark text-sm">
                 La Unidad de Valor Tributario (UVT) es una medida usada en
                 Colombia para calcular impuestos, multas y sanciones. Se
-                actualiza cada año según la inflación. Para 2025, una UVT
+                actualiza cada año según la inflación. Para 2026, una UVT
                 equivale a{' '}
-                <strong>{formatearMoneda(CONSTANTES_2025.UVT)}</strong>.
+                <strong>{formatearMoneda(CONSTANTES_2026.UVT)}</strong>.
               </p>
             </div>
 

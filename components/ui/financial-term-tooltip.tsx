@@ -41,7 +41,7 @@ export const FINANCIAL_TERMS = {
   IVA: 'Impuesto al Valor Agregado: Impuesto indirecto sobre el consumo. Tarifa general del 19% en Colombia.',
   'Base Gravable IVA':
     'Valor sin IVA sobre el cual se calcula el impuesto. Si tienes el total con IVA, la base es: Total / 1.19',
-  UVT: 'Unidad de Valor Tributario: Unidad de medida usada en temas tributarios. Se actualiza cada año. Para 2025 es de $47,065 COP.',
+  UVT: 'Unidad de Valor Tributario: Unidad de medida usada en temas tributarios. Se actualiza cada año. Para 2026 es de $52,374 COP.',
 
   // Términos de Retención en la Fuente
   'Retención en la Fuente':

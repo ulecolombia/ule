@@ -1,7 +1,7 @@
 /**
  * SIMULADOR RÉGIMEN TRIBUTARIO - VERSIÓN PROFESIONAL
  * Comparación RST vs Ordinario con cuadros explicativos
- * Colombia 2025 - UVT $49,799
+ * Colombia 2026 - UVT $52,374
  */
 
 'use client'
@@ -25,7 +25,7 @@ import type {
 } from '@/lib/types/simulador-tributario'
 
 // Constantes
-const UVT_2025 = 49799
+const UVT_2026 = 52374
 
 // Solo actividades relevantes para ULE (profesionales independientes)
 const ACTIVIDADES_ECONOMICAS: {
@@ -283,9 +283,9 @@ export function SimuladorRegimen() {
       <div className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm">
         <span className="material-symbols-outlined text-gray-500">info</span>
         <span className="text-gray-600">
-          UVT 2025:{' '}
-          <strong className="text-gray-900">${formatNumber(UVT_2025)}</strong>
-          <span className="ml-1 text-gray-400">(Resolución DIAN 000193)</span>
+          UVT 2026:{' '}
+          <strong className="text-gray-900">${formatNumber(UVT_2026)}</strong>
+          <span className="ml-1 text-gray-400">(Resolución DIAN 238/2025)</span>
         </span>
       </div>
 
@@ -318,8 +318,8 @@ export function SimuladorRegimen() {
         )}
         {datos.ingresosBrutosAnuales > 0 && (
           <p className="mt-1 text-sm text-gray-500">
-            = {(datos.ingresosBrutosAnuales / UVT_2025).toFixed(0)} UVT
-            {datos.ingresosBrutosAnuales / UVT_2025 < 1090 && (
+            = {(datos.ingresosBrutosAnuales / UVT_2026).toFixed(0)} UVT
+            {datos.ingresosBrutosAnuales / UVT_2026 < 1090 && (
               <span className="ml-2 text-green-600">
                 (Dentro de franja 0% en Ordinario)
               </span>
@@ -414,16 +414,16 @@ export function SimuladorRegimen() {
         >
           <option value="0">Sin dependientes</option>
           <option value="1">
-            1 dependiente (deduce ${formatNumber(72 * UVT_2025)})
+            1 dependiente (deduce ${formatNumber(72 * UVT_2026)})
           </option>
           <option value="2">
-            2 dependientes (deduce ${formatNumber(144 * UVT_2025)})
+            2 dependientes (deduce ${formatNumber(144 * UVT_2026)})
           </option>
           <option value="3">
-            3 dependientes (deduce ${formatNumber(216 * UVT_2025)})
+            3 dependientes (deduce ${formatNumber(216 * UVT_2026)})
           </option>
           <option value="4">
-            4 dependientes (deduce ${formatNumber(288 * UVT_2025)})
+            4 dependientes (deduce ${formatNumber(288 * UVT_2026)})
           </option>
         </NativeSelect>
       </div>
@@ -513,7 +513,7 @@ export function SimuladorRegimen() {
             <span>
               <strong>Aplicar Renta Exenta 25%</strong> (Art. 206 num. 10 E.T.)
               <span className="ml-1 text-sm text-gray-500">
-                - Límite: ${formatNumber(2880 * UVT_2025)}/año
+                - Límite: ${formatNumber(2880 * UVT_2026)}/año
               </span>
             </span>
           }
@@ -541,7 +541,7 @@ export function SimuladorRegimen() {
       : 0
     const impuestoOrdinario = regimenOrdinario.impuestoNeto
     const rentaLiquidaUVT = Math.round(
-      regimenOrdinario.rentaLiquidaGravable / UVT_2025
+      regimenOrdinario.rentaLiquidaGravable / UVT_2026
     )
 
     return (
@@ -752,7 +752,7 @@ export function SimuladorRegimen() {
             Simulador: RST vs Régimen Ordinario
           </h2>
           <p className="text-sm text-gray-600">
-            Colombia 2025 - Personas Naturales
+            Colombia 2026 - Personas Naturales
           </p>
         </div>
 

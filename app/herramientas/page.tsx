@@ -15,10 +15,16 @@ import { SimuladorRegimen } from '@/components/calculadoras/simulador-regimen'
 import { ConversorUVT } from '@/components/calculadoras/conversor-uvt'
 import { HistorialCalculos } from '@/components/calculadoras/historial-calculos'
 
-type CalculadoraTipo = 'RETENCION_FUENTE' | 'IVA' | 'PROYECCION_PILA' | 'SIMULADOR_REGIMEN' | 'CONVERSOR_UVT'
+type CalculadoraTipo =
+  | 'RETENCION_FUENTE'
+  | 'IVA'
+  | 'PROYECCION_PILA'
+  | 'SIMULADOR_REGIMEN'
+  | 'CONVERSOR_UVT'
 
 export default function HerramientasPage() {
-  const [tabActiva, setTabActiva] = useState<CalculadoraTipo>('RETENCION_FUENTE')
+  const [tabActiva, setTabActiva] =
+    useState<CalculadoraTipo>('RETENCION_FUENTE')
 
   const tabs = [
     {
@@ -37,7 +43,8 @@ export default function HerramientasPage() {
       id: 'PROYECCION_PILA' as CalculadoraTipo,
       nombre: 'Proyección PILA',
       icono: 'savings',
-      descripcion: 'Proyecta tus aportes mensuales y anuales a seguridad social',
+      descripcion:
+        'Proyecta tus aportes mensuales y anuales a seguridad social',
     },
     {
       id: 'SIMULADOR_REGIMEN' as CalculadoraTipo,
@@ -71,18 +78,19 @@ export default function HerramientasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-light-50 p-6">
+    <div className="bg-light-50 min-h-screen p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="mb-2 flex items-center text-3xl font-bold text-dark">
+          <h1 className="text-dark mb-2 flex items-center text-3xl font-bold">
             <span className="material-symbols-outlined mr-3 text-4xl text-primary">
               calculate
             </span>
             Herramientas y Calculadoras
           </h1>
           <p className="text-dark-100">
-            Calculadoras tributarias y contables especializadas para personas naturales en Colombia
+            Calculadoras tributarias y contables especializadas para personas
+            naturales en Colombia
           </p>
         </div>
 
@@ -112,10 +120,10 @@ export default function HerramientasPage() {
               info
             </span>
             <div>
-              <h3 className="mb-1 font-semibold text-dark">
+              <h3 className="text-dark mb-1 font-semibold">
                 {tabs.find((t) => t.id === tabActiva)?.nombre}
               </h3>
-              <p className="text-sm text-dark">
+              <p className="text-dark text-sm">
                 {tabs.find((t) => t.id === tabActiva)?.descripcion}
               </p>
             </div>
@@ -135,42 +143,43 @@ export default function HerramientasPage() {
 
         {/* Footer Info */}
         <Card className="mt-6 p-6">
-          <h3 className="mb-4 flex items-center text-lg font-semibold text-dark">
+          <h3 className="text-dark mb-4 flex items-center text-lg font-semibold">
             <span className="material-symbols-outlined mr-2 text-primary">
               lightbulb
             </span>
             Acerca de estas herramientas
           </h3>
 
-          <div className="space-y-4 text-sm text-dark">
+          <div className="text-dark space-y-4 text-sm">
             <div>
-              <h4 className="mb-1 font-semibold">📊 Cálculos precisos 2025</h4>
+              <h4 className="mb-1 font-semibold">📊 Cálculos precisos 2026</h4>
               <p className="text-dark-100">
-                Todas las calculadoras usan las tarifas y constantes vigentes para el año 2025
-                (UVT: $47,065 | SMMLV: $1,423,500 | IVA: 19%)
+                Todas las calculadoras usan las tarifas y constantes vigentes
+                para el año 2026 (UVT: $52,374 | SMMLV: $1,750,905 | IVA: 19%)
               </p>
             </div>
 
             <div>
               <h4 className="mb-1 font-semibold">💾 Historial automático</h4>
               <p className="text-dark-100">
-                Todos tus cálculos se guardan automáticamente en tu historial para que puedas
-                consultarlos cuando quieras
+                Todos tus cálculos se guardan automáticamente en tu historial
+                para que puedas consultarlos cuando quieras
               </p>
             </div>
 
             <div>
               <h4 className="mb-1 font-semibold">🎓 Educativo</h4>
               <p className="text-dark-100">
-                Cada calculadora te explica cómo se realizan los cálculos y qué significan los
-                resultados
+                Cada calculadora te explica cómo se realizan los cálculos y qué
+                significan los resultados
               </p>
             </div>
 
             <div>
               <h4 className="mb-1 font-semibold">⚡ En tiempo real</h4>
               <p className="text-dark-100">
-                Los resultados se calculan instantáneamente sin recargar la página
+                Los resultados se calculan instantáneamente sin recargar la
+                página
               </p>
             </div>
           </div>

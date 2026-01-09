@@ -27,7 +27,8 @@ export default function AyudaPage() {
     },
     {
       titulo: 'Niveles de riesgo ARL - ¿Cuál es el tuyo?',
-      descripcion: 'Guía para identificar tu nivel de riesgo según tu actividad',
+      descripcion:
+        'Guía para identificar tu nivel de riesgo según tu actividad',
       url: '#',
     },
     {
@@ -69,7 +70,7 @@ export default function AyudaPage() {
     {
       pregunta: '¿Puedo pagar PILA si no tengo ingresos un mes?',
       respuesta:
-        'Sí, pero el valor mínimo es sobre 1 SMMLV ($1.423.500 en 2025). Si no tienes ingresos, el IBC será el salario mínimo y deberás pagar los aportes sobre ese valor.',
+        'Sí, pero el valor mínimo es sobre 1 SMMLV ($1,750,905 en 2026). Si no tienes ingresos, el IBC será el salario mínimo y deberás pagar los aportes sobre ese valor.',
     },
     {
       pregunta: '¿Cómo cambio mis entidades de salud, pensión o ARL?',
@@ -110,7 +111,7 @@ export default function AyudaPage() {
     {
       termino: 'IBC',
       definicion:
-        'Ingreso Base de Cotización. Es el valor sobre el cual se calculan tus aportes a PILA. Mínimo 1 SMMLV ($1.423.500), máximo 25 SMMLV ($35.587.500).',
+        'Ingreso Base de Cotización. Es el valor sobre el cual se calculan tus aportes a PILA. Mínimo 1 SMMLV ($1,750,905), máximo 25 SMMLV ($43,772,625).',
     },
     {
       termino: 'CUFE',
@@ -120,7 +121,7 @@ export default function AyudaPage() {
     {
       termino: 'UVT',
       definicion:
-        'Unidad de Valor Tributario. Valor de referencia para calcular impuestos, multas y sanciones. En 2025 equivale a $47.065. Se actualiza anualmente.',
+        'Unidad de Valor Tributario. Valor de referencia para calcular impuestos, multas y sanciones. En 2026 equivale a $52,374. Se actualiza anualmente.',
     },
     {
       termino: 'ARL',
@@ -130,7 +131,7 @@ export default function AyudaPage() {
     {
       termino: 'SMMLV',
       definicion:
-        'Salario Mínimo Mensual Legal Vigente. Es el salario mínimo establecido por el gobierno. En 2025 es de $1.423.500. Se usa como base para muchos cálculos tributarios.',
+        'Salario Mínimo Mensual Legal Vigente. Es el salario mínimo establecido por el gobierno. En 2026 es de $1,750,905. Se usa como base para muchos cálculos tributarios.',
     },
     {
       termino: 'PILA',
@@ -150,18 +151,19 @@ export default function AyudaPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-light-50 p-6">
+    <div className="bg-light-50 min-h-screen p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="mb-2 flex items-center text-3xl font-bold text-dark">
+          <h1 className="text-dark mb-2 flex items-center text-3xl font-bold">
             <span className="material-symbols-outlined mr-3 text-4xl text-primary">
               help_center
             </span>
             Centro de Ayuda
           </h1>
           <p className="text-dark-100">
-            Guías, tutoriales y respuestas a tus preguntas sobre PILA, facturación y tributación
+            Guías, tutoriales y respuestas a tus preguntas sobre PILA,
+            facturación y tributación
           </p>
         </div>
 
@@ -176,30 +178,30 @@ export default function AyudaPage() {
           {/* GUÍAS */}
           <TabsContent value="guias" className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-4">Guías Paso a Paso</h2>
+              <h2 className="mb-4 text-2xl font-bold">Guías Paso a Paso</h2>
 
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-xl font-semibold mb-3 flex items-center">
-                    <span className="material-symbols-outlined text-primary mr-2">
+                  <h3 className="mb-3 flex items-center text-xl font-semibold">
+                    <span className="material-symbols-outlined mr-2 text-primary">
                       payments
                     </span>
                     PILA - Seguridad Social
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {guiasPILA.map((guia, index) => (
                       <Card
                         key={index}
-                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="cursor-pointer p-4 transition-shadow hover:shadow-lg"
                       >
                         <Link href={guia.url}>
-                          <h4 className="font-semibold mb-2">{guia.titulo}</h4>
+                          <h4 className="mb-2 font-semibold">{guia.titulo}</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {guia.descripcion}
                           </p>
-                          <div className="mt-3 text-primary text-sm flex items-center">
+                          <div className="mt-3 flex items-center text-sm text-primary">
                             Leer guía
-                            <span className="material-symbols-outlined text-sm ml-1">
+                            <span className="material-symbols-outlined ml-1 text-sm">
                               arrow_forward
                             </span>
                           </div>
@@ -210,26 +212,26 @@ export default function AyudaPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold mb-3 flex items-center">
-                    <span className="material-symbols-outlined text-primary mr-2">
+                  <h3 className="mb-3 flex items-center text-xl font-semibold">
+                    <span className="material-symbols-outlined mr-2 text-primary">
                       receipt
                     </span>
                     Facturación Electrónica
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {guiasFacturacion.map((guia, index) => (
                       <Card
                         key={index}
-                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                        className="cursor-pointer p-4 transition-shadow hover:shadow-lg"
                       >
                         <Link href={guia.url}>
-                          <h4 className="font-semibold mb-2">{guia.titulo}</h4>
+                          <h4 className="mb-2 font-semibold">{guia.titulo}</h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {guia.descripcion}
                           </p>
-                          <div className="mt-3 text-primary text-sm flex items-center">
+                          <div className="mt-3 flex items-center text-sm text-primary">
                             Leer guía
-                            <span className="material-symbols-outlined text-sm ml-1">
+                            <span className="material-symbols-outlined ml-1 text-sm">
                               arrow_forward
                             </span>
                           </div>
@@ -244,46 +246,50 @@ export default function AyudaPage() {
 
           {/* VIDEOS */}
           <TabsContent value="videos">
-            <h2 className="text-2xl font-bold mb-4">Video Tutoriales</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="mb-4 text-2xl font-bold">Video Tutoriales</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="overflow-hidden">
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                <div className="flex aspect-video items-center justify-center bg-gray-200 dark:bg-gray-800">
                   <div className="text-center">
-                    <span className="material-symbols-outlined text-6xl text-gray-400 mb-2">
+                    <span className="material-symbols-outlined mb-2 text-6xl text-gray-400">
                       play_circle
                     </span>
-                    <p className="text-sm text-gray-500">Video: Cómo liquidar PILA</p>
+                    <p className="text-sm text-gray-500">
+                      Video: Cómo liquidar PILA
+                    </p>
                   </div>
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">Cómo liquidar tu PILA</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Tutorial completo de 5 minutos
                   </p>
                 </div>
               </Card>
 
               <Card className="overflow-hidden">
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                <div className="flex aspect-video items-center justify-center bg-gray-200 dark:bg-gray-800">
                   <div className="text-center">
-                    <span className="material-symbols-outlined text-6xl text-gray-400 mb-2">
+                    <span className="material-symbols-outlined mb-2 text-6xl text-gray-400">
                       play_circle
                     </span>
-                    <p className="text-sm text-gray-500">Video: Primera Factura</p>
+                    <p className="text-sm text-gray-500">
+                      Video: Primera Factura
+                    </p>
                   </div>
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">Emite tu primera factura</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Paso a paso en 3 minutos
                   </p>
                 </div>
               </Card>
 
               <Card className="overflow-hidden">
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                <div className="flex aspect-video items-center justify-center bg-gray-200 dark:bg-gray-800">
                   <div className="text-center">
-                    <span className="material-symbols-outlined text-6xl text-gray-400 mb-2">
+                    <span className="material-symbols-outlined mb-2 text-6xl text-gray-400">
                       play_circle
                     </span>
                     <p className="text-sm text-gray-500">Video: Asesor IA</p>
@@ -291,7 +297,7 @@ export default function AyudaPage() {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">Usa el asesor con IA</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Cómo hacer preguntas efectivas
                   </p>
                 </div>
@@ -301,12 +307,12 @@ export default function AyudaPage() {
 
           {/* FAQs */}
           <TabsContent value="faqs">
-            <h2 className="text-2xl font-bold mb-4">Preguntas Frecuentes</h2>
+            <h2 className="mb-4 text-2xl font-bold">Preguntas Frecuentes</h2>
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-semibold mb-3 flex items-center">
-                  <span className="material-symbols-outlined text-primary mr-2">
+                <h3 className="mb-3 flex items-center text-xl font-semibold">
+                  <span className="material-symbols-outlined mr-2 text-primary">
                     payments
                   </span>
                   PILA y Seguridad Social
@@ -316,7 +322,7 @@ export default function AyudaPage() {
                     <AccordionItem
                       key={index}
                       value={`pila-${index}`}
-                      className="border rounded-lg px-4 bg-white dark:bg-gray-900"
+                      className="rounded-lg border bg-white px-4 dark:bg-gray-900"
                     >
                       <AccordionTrigger className="font-semibold">
                         {faq.pregunta}
@@ -330,8 +336,8 @@ export default function AyudaPage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-3 flex items-center">
-                  <span className="material-symbols-outlined text-primary mr-2">
+                <h3 className="mb-3 flex items-center text-xl font-semibold">
+                  <span className="material-symbols-outlined mr-2 text-primary">
                     receipt
                   </span>
                   Facturación Electrónica
@@ -341,7 +347,7 @@ export default function AyudaPage() {
                     <AccordionItem
                       key={index}
                       value={`factura-${index}`}
-                      className="border rounded-lg px-4 bg-white dark:bg-gray-900"
+                      className="rounded-lg border bg-white px-4 dark:bg-gray-900"
                     >
                       <AccordionTrigger className="font-semibold">
                         {faq.pregunta}
@@ -358,15 +364,20 @@ export default function AyudaPage() {
 
           {/* GLOSARIO */}
           <TabsContent value="glosario">
-            <h2 className="text-2xl font-bold mb-4">Glosario de Términos</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Todos los términos tributarios y contables explicados de forma simple
+            <h2 className="mb-4 text-2xl font-bold">Glosario de Términos</h2>
+            <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+              Todos los términos tributarios y contables explicados de forma
+              simple
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {glosario.map((item, index) => (
                 <Card key={index} className="p-4">
-                  <h3 className="font-bold text-lg text-primary mb-2">{item.termino}</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{item.definicion}</p>
+                  <h3 className="mb-2 text-lg font-bold text-primary">
+                    {item.termino}
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {item.definicion}
+                  </p>
                 </Card>
               ))}
             </div>
@@ -374,22 +385,27 @@ export default function AyudaPage() {
         </Tabs>
 
         {/* Call to Action */}
-        <Card className="mt-8 p-6 bg-primary/10">
+        <Card className="mt-8 bg-primary/10 p-6">
           <div className="flex items-start gap-4">
             <span className="material-symbols-outlined text-4xl text-primary">
               support_agent
             </span>
             <div>
-              <h3 className="text-xl font-bold mb-2">¿No encuentras lo que buscas?</h3>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
-                Nuestro equipo de soporte está listo para ayudarte con cualquier duda que tengas.
+              <h3 className="mb-2 text-xl font-bold">
+                ¿No encuentras lo que buscas?
+              </h3>
+              <p className="mb-4 text-gray-700 dark:text-gray-300">
+                Nuestro equipo de soporte está listo para ayudarte con cualquier
+                duda que tengas.
               </p>
               <Link
                 href="/contacto"
-                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/90"
               >
                 Contáctanos
-                <span className="material-symbols-outlined ml-2">arrow_forward</span>
+                <span className="material-symbols-outlined ml-2">
+                  arrow_forward
+                </span>
               </Link>
             </div>
           </div>

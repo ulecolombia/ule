@@ -232,11 +232,11 @@ export default function CalculadorasPage() {
                         verified
                       </span>
                     </div>
-                    Cálculos precisos 2025
+                    Cálculos precisos 2026
                   </h4>
                   <p className="text-dark-100 leading-relaxed">
                     Todas las calculadoras usan las tarifas y constantes
-                    vigentes para el año 2025 (UVT: $47,065 | SMMLV: $1,423,500
+                    vigentes para el año 2026 (UVT: $52,374 | SMMLV: $1,750,905
                     | IVA: 19%)
                   </p>
                 </div>
