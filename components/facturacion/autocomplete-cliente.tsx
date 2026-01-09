@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { useDebounce } from '@/hooks/use-debounce'
 
@@ -42,6 +42,28 @@ export function AutocompleteCliente({
   const [isOpen, setIsOpen] = useState(false)
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null)
   const [focusedIndex, setFocusedIndex] = useState(-1)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Cerrar dropdown al hacer click afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+        setFocusedIndex(-1)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const debouncedSearch = useDebounce(searchQuery, 300)
   const displayClientes = searchQuery.trim() ? clientes : clientesFrecuentes
@@ -175,7 +197,7 @@ export function AutocompleteCliente({
   }, [displayClientes])
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <label className="text-dark mb-2 block text-sm font-medium">
         Cliente <span className="text-error">*</span>
       </label>
