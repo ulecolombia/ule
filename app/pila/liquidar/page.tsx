@@ -403,6 +403,21 @@ export default function LiquidarPilaPage() {
                 )}
               </div>
 
+              {/* Nota Decreto 1990 de 2016 */}
+              <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <span className="material-symbols-outlined mt-0.5 text-lg text-blue-600">
+                  gavel
+                </span>
+                <div>
+                  <p className="text-sm text-blue-900">
+                    <span className="font-semibold">Decreto 1990 de 2016:</span>{' '}
+                    El IBC (Ingreso Base de Cotización) se aproxima al peso
+                    superior más cercano y el valor de cada cotización se
+                    redondea al múltiplo de 100 superior.
+                  </p>
+                </div>
+              </div>
+
               {/* Total */}
               <div className="rounded-lg border-2 border-primary bg-primary/10 p-6">
                 <div className="flex items-center justify-between">
