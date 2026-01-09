@@ -68,8 +68,6 @@ export function ClienteModal({
       ciudad: cliente?.ciudad || '',
       razonSocial: cliente?.razonSocial || '',
       nombreComercial: cliente?.nombreComercial || '',
-      regimenTributario: cliente?.regimenTributario || undefined,
-      responsabilidadFiscal: cliente?.responsabilidadFiscal || undefined,
     },
   })
 
@@ -133,8 +131,6 @@ export function ClienteModal({
         ciudad: cliente?.ciudad || '',
         razonSocial: cliente?.razonSocial || '',
         nombreComercial: cliente?.nombreComercial || '',
-        regimenTributario: cliente?.regimenTributario || undefined,
-        responsabilidadFiscal: cliente?.responsabilidadFiscal || undefined,
       })
       setDocumentoError(null)
     }
@@ -345,51 +341,14 @@ export function ClienteModal({
             </div>
           </div>
 
-          {/* SECCIÓN: INFORMACIÓN FISCAL (Solo para NIT) */}
+          {/* Nombre Comercial (Solo para NIT/Empresas) */}
           {esEmpresa && (
-            <div>
-              <h3 className="text-dark mb-4 text-lg font-semibold">
-                Información Fiscal
-              </h3>
-              <div className="space-y-4">
-                {/* Nombre Comercial */}
-                <Input
-                  label="Nombre Comercial"
-                  placeholder="Ej: Mi Tienda"
-                  error={errors.nombreComercial?.message}
-                  {...register('nombreComercial')}
-                />
-
-                {/* Régimen Tributario */}
-                <Select
-                  label="Régimen Tributario"
-                  error={errors.regimenTributario?.message}
-                  {...register('regimenTributario')}
-                >
-                  <option value="">Selecciona un régimen</option>
-                  <option value="SIMPLIFICADO">Simplificado</option>
-                  <option value="COMUN">Común</option>
-                  <option value="SIMPLE">Régimen Simple</option>
-                  <option value="ORDINARIO">Ordinario</option>
-                </Select>
-
-                {/* Responsabilidad Fiscal */}
-                <Select
-                  label="Responsabilidad Fiscal"
-                  error={errors.responsabilidadFiscal?.message}
-                  {...register('responsabilidadFiscal')}
-                >
-                  <option value="">Selecciona una responsabilidad</option>
-                  <option value="O-13">O-13 - Gran Contribuyente</option>
-                  <option value="O-15">O-15 - Autoretenedor</option>
-                  <option value="O-23">O-23 - Agente de Retención IVA</option>
-                  <option value="O-47">
-                    O-47 - Régimen Simple de Tributación
-                  </option>
-                  <option value="R-99-PN">R-99-PN - No Responsable</option>
-                </Select>
-              </div>
-            </div>
+            <Input
+              label="Nombre Comercial (opcional)"
+              placeholder="Ej: Mi Tienda"
+              error={errors.nombreComercial?.message}
+              {...register('nombreComercial')}
+            />
           )}
 
           {/* FOOTER ACTIONS */}
