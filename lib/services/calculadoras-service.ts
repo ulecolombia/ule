@@ -1,6 +1,11 @@
 /**
  * SERVICIO DE CALCULADORAS TRIBUTARIAS
- * Cálculos según normativa colombiana 2025
+ * Cálculos según normativa colombiana 2026
+ *
+ * Referencias:
+ * - UVT 2026: Resolución DIAN 238 de noviembre 2025 ($52,374)
+ * - SMMLV 2026: Decreto del Ministerio de Trabajo ($1,750,905)
+ * - Redondeo PILA: Decreto 1990 de 2016
  */
 
 import { calcularImpuestoOrdinario } from '@/lib/calculators/regimen-ordinario'
@@ -14,12 +19,14 @@ import type {
 } from '@/lib/types/simulador-tributario'
 
 /**
- * Constantes tributarias Colombia 2025
- * UVT: Resolución DIAN 000193 de diciembre 4 de 2024
+ * Constantes tributarias Colombia 2026
+ * UVT: Resolución DIAN 238 de noviembre 2025
  */
-export const CONSTANTES_2025 = {
-  UVT: 49799, // CORREGIDO - Resolución DIAN 000193 de 2024
-  SMMLV: 1423500,
+export const CONSTANTES_2026 = {
+  UVT: 52374,
+  SMMLV: 1750905,
+  IBC_MINIMO: 1750905,
+  IBC_MAXIMO: 43772625, // 25 SMMLV
   IVA_GENERAL: 0.19,
   SALUD: 0.125,
   PENSION: 0.16,
@@ -31,6 +38,9 @@ export const CONSTANTES_2025 = {
     V: 0.0696,
   },
 }
+
+/** @deprecated Usar CONSTANTES_2026 - Mantenido para compatibilidad */
+export const CONSTANTES_2025 = CONSTANTES_2026
 
 /**
  * 1. CALCULADORA DE RETENCIÓN EN LA FUENTE

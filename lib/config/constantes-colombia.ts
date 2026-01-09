@@ -1,13 +1,25 @@
 /**
  * CONSTANTES LEGALES COLOMBIA
- * Valores actualizados para 2025
+ * Valores actualizados para 2026
  * Fuente: Gobierno de Colombia, DANE, Ministerio de Hacienda
+ *
+ * Referencias:
+ * - UVT 2026: Resolución DIAN 238 de noviembre 2025
+ * - SMMLV 2026: Decreto del Ministerio de Trabajo
  */
 
-export const CONSTANTES_2025 = {
+export const CONSTANTES_2026 = {
   // Salario y valores tributarios
-  SMMLV: 1_423_500,
-  UVT: 47_065,
+  SMMLV: 1_750_905,
+  UVT: 52_374,
+
+  // Límites IBC para seguridad social
+  IBC_MINIMO: 1_750_905, // 1 SMMLV
+  IBC_MAXIMO: 43_772_625, // 25 SMMLV
+
+  // Porcentajes de aportes seguridad social (OPS/Independientes)
+  PORCENTAJE_SALUD: 12.5, // 100% lo paga el contratista
+  PORCENTAJE_PENSION: 16.0, // 100% lo paga el contratista
 
   // Pensiones - Régimen de Prima Media (RPM)
   TOPE_IBL_SMMLV: 25, // Máximo IBL en SMMLV
@@ -22,7 +34,7 @@ export const CONSTANTES_2025 = {
   EDAD_PENSION_HOMBRES: 62,
   EDAD_PENSION_MUJERES: 57,
 
-  // Expectativa de vida después de pensión (DANE 2024)
+  // Expectativa de vida después de pensión (DANE 2025)
   EXPECTATIVA_VIDA_PENSION_HOMBRES: 18, // años a los 62
   EXPECTATIVA_VIDA_PENSION_MUJERES: 22, // años a los 57
 
@@ -40,24 +52,35 @@ export const CONSTANTES_2025 = {
   // IVA
   IVA_GENERAL: 0.19,
   IVA_REDUCIDO: 0.05,
+
+  // Tarifas ARL por nivel de riesgo
+  TARIFAS_ARL: {
+    I: 0.522,
+    II: 1.044,
+    III: 2.436,
+    IV: 4.35,
+    V: 6.96,
+  },
 }
 
-export type ConstantesAnio = typeof CONSTANTES_2025
+/** @deprecated Usar CONSTANTES_2026 - Mantenido para compatibilidad */
+export const CONSTANTES_2025 = CONSTANTES_2026
+
+export type ConstantesAnio = typeof CONSTANTES_2026
 
 /**
  * Obtiene las constantes para el año actual
- * TODO: En el futuro, detectar año automáticamente
  */
 export function getConstantesActuales(): ConstantesAnio {
   const añoActual = new Date().getFullYear()
 
-  // Por ahora solo tenemos 2025
-  if (añoActual >= 2025) {
-    return CONSTANTES_2025
+  // 2026 es el año vigente
+  if (añoActual >= 2026) {
+    return CONSTANTES_2026
   }
 
-  // Fallback a 2025
-  return CONSTANTES_2025
+  // Fallback a 2026
+  return CONSTANTES_2026
 }
 
 /**

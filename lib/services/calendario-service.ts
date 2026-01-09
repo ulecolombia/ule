@@ -179,8 +179,8 @@ function determinarRegimen(
   if (!user.ingresoMensualPromedio) return 'INDETERMINADO'
 
   const ingresoAnual = user.ingresoMensualPromedio.toNumber() * 12
-  const uvt2025 = 47065
-  const uvtAnual = ingresoAnual / uvt2025
+  const uvt2026 = 52374
+  const uvtAnual = ingresoAnual / uvt2026
 
   // Si está dentro del umbral del Régimen Simple (80.000 UVT)
   if (uvtAnual <= 80000) {

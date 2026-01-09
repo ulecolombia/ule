@@ -1,9 +1,12 @@
 /**
  * MOTOR DE CÁLCULO - RÉGIMEN SIMPLE DE TRIBUTACIÓN (RST)
- * ULE Colombia - 2025
+ * ULE Colombia - 2026
  *
  * Implementa el cálculo del impuesto unificado del RST
  * según Art. 908 E.T. y Sentencia C-540/2023 para profesiones liberales
+ *
+ * Referencias:
+ * - UVT 2026: Resolución DIAN 238 de noviembre 2025 ($52,374)
  */
 
 import {
@@ -57,17 +60,20 @@ const TARIFAS_RST_POR_ACTIVIDAD = {
 } as const
 
 /**
- * Fechas límite de pago anticipos bimestrales 2025
- * Según calendario tributario DIAN
+ * Fechas límite de pago anticipos bimestrales 2026
+ * Según calendario tributario DIAN (fechas estimadas)
  */
-const FECHAS_LIMITE_ANTICIPOS_2025 = [
-  '2025-03-07', // Bimestre 1 (Ene-Feb)
-  '2025-05-09', // Bimestre 2 (Mar-Abr)
-  '2025-07-11', // Bimestre 3 (May-Jun)
-  '2025-09-05', // Bimestre 4 (Jul-Ago)
-  '2025-11-07', // Bimestre 5 (Sep-Oct)
-  '2026-01-09', // Bimestre 6 (Nov-Dic)
+const FECHAS_LIMITE_ANTICIPOS_2026 = [
+  '2026-03-06', // Bimestre 1 (Ene-Feb)
+  '2026-05-08', // Bimestre 2 (Mar-Abr)
+  '2026-07-10', // Bimestre 3 (May-Jun)
+  '2026-09-04', // Bimestre 4 (Jul-Ago)
+  '2026-11-06', // Bimestre 5 (Sep-Oct)
+  '2027-01-08', // Bimestre 6 (Nov-Dic)
 ]
+
+/** @deprecated Usar FECHAS_LIMITE_ANTICIPOS_2026 */
+const FECHAS_LIMITE_ANTICIPOS_2025 = FECHAS_LIMITE_ANTICIPOS_2026
 
 const MESES_POR_BIMESTRE = [
   'Enero - Febrero',
@@ -83,7 +89,7 @@ const MESES_POR_BIMESTRE = [
  */
 export function verificarElegibilidadRST(
   datos: DatosEntradaSimulador,
-  año: number = 2025
+  año: number = 2026
 ): {
   esElegible: boolean
   razones: string[]
@@ -116,13 +122,13 @@ export function verificarElegibilidadRST(
  */
 function obtenerTarifasActividad(
   actividad: ActividadEconomicaRST,
-  año: number = 2025
+  año: number = 2026
 ) {
   if (actividad === 'PROFESIONAL_LIBERAL') {
     return (
       TARIFAS_RST_PROFESIONALES[
         año as keyof typeof TARIFAS_RST_PROFESIONALES
-      ] || TARIFAS_RST_PROFESIONALES[2025]
+      ] || TARIFAS_RST_PROFESIONALES[2026]
     )
   }
 
@@ -136,13 +142,13 @@ function obtenerTarifasActividad(
  */
 function obtenerTarifasAnticipo(
   actividad: ActividadEconomicaRST,
-  año: number = 2025
+  año: number = 2026
 ) {
   if (actividad === 'PROFESIONAL_LIBERAL') {
     return (
       ANTICIPOS_BIMESTRALES_PROFESIONALES[
         año as keyof typeof ANTICIPOS_BIMESTRALES_PROFESIONALES
-      ] || ANTICIPOS_BIMESTRALES_PROFESIONALES[2025]
+      ] || ANTICIPOS_BIMESTRALES_PROFESIONALES[2026]
     )
   }
 
@@ -161,11 +167,11 @@ function obtenerTarifasAnticipo(
  */
 export function calcularImpuestoSimple(
   datos: DatosEntradaSimulador,
-  año: number = 2025
+  año: number = 2026
 ): ResultadoRegimenSimple {
   const valores = getValoresVigentes(año)
   const UVT = valores.UVT
-  const beneficiosRST = valores.BENEFICIOS_RST || BENEFICIOS_RST[2025]
+  const beneficiosRST = valores.BENEFICIOS_RST || BENEFICIOS_RST[2026]
   const pasosCalculo: PasoCalculo[] = []
   let orden = 1
 
@@ -464,25 +470,24 @@ function calcularBeneficiosAdicionales(
 /**
  * Obtiene el calendario de anticipos RST para un año
  */
-export function getCalendarioAnticiposRST(_año: number = 2025): {
+export function getCalendarioAnticiposRST(_año: number = 2026): {
   bimestre: number
   meses: string
   fechaLimite: string
 }[] {
   // Fechas varían según el último dígito del NIT
   // Estas son las fechas base (último dígito 0)
-  // TODO: Implementar calendario por año cuando se dispongan fechas de otros años
   return MESES_POR_BIMESTRE.map((meses, i) => ({
     bimestre: i + 1,
     meses,
-    fechaLimite: FECHAS_LIMITE_ANTICIPOS_2025[i] || '2025-12-31',
+    fechaLimite: FECHAS_LIMITE_ANTICIPOS_2026[i] || '2026-12-31',
   }))
 }
 
 /**
  * Obtiene resumen comparativo de tarifas RST por actividad
  */
-export function getResumenTarifasRST(año: number = 2025) {
+export function getResumenTarifasRST(año: number = 2026) {
   const valores = getValoresVigentes(año)
   const UVT = valores.UVT
 
@@ -490,7 +495,7 @@ export function getResumenTarifasRST(año: number = 2025) {
     profesionalLiberal: {
       actividad: 'Profesiones Liberales',
       referencia: 'Art. 908 num. 6 E.T.',
-      tarifas: TARIFAS_RST_PROFESIONALES[2025].map((t) => ({
+      tarifas: TARIFAS_RST_PROFESIONALES[2026].map((t) => ({
         rango: `${t.desdeUVT.toLocaleString()} - ${t.hastaUVT.toLocaleString()} UVT`,
         rangoPesos: `${formatCurrency(t.desdeUVT * UVT)} - ${formatCurrency(t.hastaUVT * UVT)}`,
         tarifa: `${(t.tarifaConsolidada * 100).toFixed(1)}%`,

@@ -1,25 +1,32 @@
 /**
  * ULE - CALCULADORA DE APORTES PILA PARA COLOMBIA
- * Normativa vigente 2025
+ * Normativa vigente 2026
  *
  * Sistema de cálculo de aportes a seguridad social según normativa colombiana
  * para trabajadores independientes y por prestación de servicios (OPS).
+ *
+ * IMPORTANTE - Decreto 1990 de 2016:
+ * - El IBC deberá aproximarse al peso superior más cercano (Math.ceil)
+ * - El valor de la cotización deberá redondearse al múltiplo de 100 superior más cercano
  */
 
 import { memoize } from '@/lib/cache/memoize'
 
 // ============================================
-// CONSTANTES OFICIALES 2025
+// CONSTANTES OFICIALES 2026
 // ============================================
 
-/** Salario Mínimo Legal Mensual Vigente 2025 */
-export const SMMLV_2025 = 1423500
+/** Salario Mínimo Legal Mensual Vigente 2026 */
+export const SMMLV_2026 = 1750905
+
+/** @deprecated Usar SMMLV_2026 - Mantenido para compatibilidad */
+export const SMMLV_2025 = SMMLV_2026
 
 /** Ingreso Base de Cotización Mínimo (1 SMMLV) */
-export const IBC_MINIMO = SMMLV_2025
+export const IBC_MINIMO = SMMLV_2026
 
 /** Ingreso Base de Cotización Máximo (25 SMMLV) */
-export const IBC_MAXIMO = SMMLV_2025 * 25
+export const IBC_MAXIMO = SMMLV_2026 * 25 // $43,772,625
 
 // ============================================
 // PORCENTAJES DE COTIZACIÓN
@@ -42,6 +49,38 @@ export const PORCENTAJES_ARL = {
   IV: 4.35, // Riesgo alto - Procesos industriales, mecánicos
   V: 6.96, // Riesgo máximo - Minería, construcción, alturas
 } as const
+
+// ============================================
+// REDONDEO DECRETO 1990 DE 2016
+// ============================================
+
+/**
+ * Redondea el IBC al peso superior más cercano
+ * Según Decreto 1990 de 2016, Art. 2.2.1.1.1.7
+ *
+ * @param valor - Valor del IBC a redondear
+ * @returns IBC redondeado al peso superior
+ */
+export function redondearIBCPesoSuperior(valor: number): number {
+  return Math.ceil(valor)
+}
+
+/**
+ * Redondea el valor de cotización al múltiplo de 100 superior más cercano
+ * Según Decreto 1990 de 2016, Art. 2.2.1.1.1.7
+ *
+ * @param valor - Valor de la cotización a redondear
+ * @returns Cotización redondeada al múltiplo de 100 superior
+ *
+ * @example
+ * ```typescript
+ * redondearCotizacionMultiplo100(218863.125) // 218900
+ * redondearCotizacionMultiplo100(280144.8) // 280200
+ * ```
+ */
+export function redondearCotizacionMultiplo100(valor: number): number {
+  return Math.ceil(valor / 100) * 100
+}
 
 // ============================================
 // TIPOS
@@ -168,8 +207,11 @@ function validarNumeroPositivo(valor: any, nombreCampo: string): number {
  * Calcula el Ingreso Base de Cotización (IBC)
  *
  * Aplica límites mínimos y máximos según normativa:
- * - Mínimo: 1 SMMLV ($1,423,500)
- * - Máximo: 25 SMMLV ($35,587,500)
+ * - Mínimo: 1 SMMLV ($1,750,905)
+ * - Máximo: 25 SMMLV ($43,772,625)
+ *
+ * IMPORTANTE - Decreto 1990 de 2016:
+ * El IBC se redondea al peso superior más cercano (Math.ceil)
  *
  * @param ingresoMensual - Ingreso mensual reportado
  * @returns Objeto con IBC calculado e información de ajustes
@@ -207,9 +249,10 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
     motivoAjuste = 'MAXIMO'
   }
 
+  // Decreto 1990/2016: Redondear IBC al peso superior
   return {
     ingresoReportado: ingresoValidado,
-    ibc: Math.round(ibc),
+    ibc: redondearIBCPesoSuperior(ibc),
     ajustado,
     motivoAjuste,
   }
@@ -219,7 +262,9 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
  * Calcula el aporte de salud (12.5% del IBC)
  *
  * Según Ley 1122 de 2007 y normativa vigente
- * Utiliza aritmética decimal para precisión exacta
+ *
+ * IMPORTANTE - Decreto 1990 de 2016:
+ * El valor de la cotización se redondea al múltiplo de 100 superior
  *
  * @param ibc - Ingreso Base de Cotización
  * @returns Valor del aporte a salud
@@ -227,26 +272,28 @@ export function calcularIBC(ingresoMensual: number): CalculoIBC {
  *
  * @example
  * ```typescript
- * const salud = calcularSalud(3000000);
- * console.log(salud); // 375000
+ * const salud = calcularSalud(1750905);
+ * console.log(salud); // 218900 (218863.125 redondeado a múltiplo de 100 superior)
  * ```
  */
 export function calcularSalud(ibc: number): number {
   // 🛡️ Validación robusta de entrada
   const ibcValidado = validarNumeroPositivo(ibc, 'IBC')
 
-  // Calcular porcentaje y redondear
+  // Calcular porcentaje
   const resultado = ibcValidado * (PORCENTAJE_SALUD / 100)
 
-  // Redondear al entero más cercano
-  return Math.round(resultado)
+  // Decreto 1990/2016: Redondear al múltiplo de 100 superior
+  return redondearCotizacionMultiplo100(resultado)
 }
 
 /**
  * Calcula el aporte de pensión (16% del IBC)
  *
  * Según Ley 100 de 1993 y modificaciones
- * Utiliza aritmética decimal para precisión exacta
+ *
+ * IMPORTANTE - Decreto 1990 de 2016:
+ * El valor de la cotización se redondea al múltiplo de 100 superior
  *
  * @param ibc - Ingreso Base de Cotización
  * @returns Valor del aporte a pensión
@@ -254,26 +301,28 @@ export function calcularSalud(ibc: number): number {
  *
  * @example
  * ```typescript
- * const pension = calcularPension(3000000);
- * console.log(pension); // 480000
+ * const pension = calcularPension(1750905);
+ * console.log(pension); // 280200 (280144.8 redondeado a múltiplo de 100 superior)
  * ```
  */
 export function calcularPension(ibc: number): number {
   // 🛡️ Validación robusta de entrada
   const ibcValidado = validarNumeroPositivo(ibc, 'IBC')
 
-  // Calcular porcentaje y redondear
+  // Calcular porcentaje
   const resultado = ibcValidado * (PORCENTAJE_PENSION / 100)
 
-  // Redondear al entero más cercano
-  return Math.round(resultado)
+  // Decreto 1990/2016: Redondear al múltiplo de 100 superior
+  return redondearCotizacionMultiplo100(resultado)
 }
 
 /**
  * Calcula el aporte de ARL según nivel de riesgo
  *
  * Según Decreto 1772 de 1994 y Resolución 2388 de 2016
- * Utiliza aritmética decimal para precisión exacta
+ *
+ * IMPORTANTE - Decreto 1990 de 2016:
+ * El valor de la cotización se redondea al múltiplo de 100 superior
  *
  * @param ibc - Ingreso Base de Cotización
  * @param nivelRiesgo - Nivel de riesgo (I, II, III, IV, V)
@@ -282,8 +331,8 @@ export function calcularPension(ibc: number): number {
  *
  * @example
  * ```typescript
- * const arl = calcularARL(3000000, 'I');
- * console.log(arl); // 15660
+ * const arl = calcularARL(1750905, 'I');
+ * console.log(arl); // 9200 (9139.7261 redondeado a múltiplo de 100 superior)
  * ```
  */
 export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
@@ -295,11 +344,11 @@ export function calcularARL(ibc: number, nivelRiesgo: NivelRiesgoARL): number {
     throw new Error(`Nivel de riesgo inválido: ${nivelRiesgo}`)
   }
 
-  // Calcular porcentaje y redondear
+  // Calcular porcentaje
   const resultado = ibcValidado * (porcentaje / 100)
 
-  // Redondear al entero más cercano
-  return Math.round(resultado)
+  // Decreto 1990/2016: Redondear al múltiplo de 100 superior
+  return redondearCotizacionMultiplo100(resultado)
 }
 
 /**

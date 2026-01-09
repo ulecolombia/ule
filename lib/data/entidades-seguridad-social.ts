@@ -25,7 +25,11 @@ export const FONDOS_PENSION = [
   { value: 'COLFONDOS', label: 'Colfondos', disabled: false },
   { value: 'OLD_MUTUAL', label: 'Old Mutual', disabled: false },
   { value: 'SKANDIA', label: 'Skandia', disabled: false },
-  { value: 'COLPENSIONES', label: 'Colpensiones (Régimen Público)', disabled: false },
+  {
+    value: 'COLPENSIONES',
+    label: 'Colpensiones (Régimen Público)',
+    disabled: false,
+  },
 ] as const
 
 export const ARL_COLOMBIA = [
@@ -67,7 +71,14 @@ export const NIVELES_RIESGO = [
   },
 ] as const
 
-export const SMMLV_2025 = 1423500
+/** SMMLV 2026 - Decreto del Ministerio de Trabajo */
+export const SMMLV_2026 = 1750905
+
+/** @deprecated Usar SMMLV_2026 - Mantenido para compatibilidad */
+export const SMMLV_2025 = SMMLV_2026
+
+/** IBC Máximo 2026 (25 SMMLV) */
+export const IBC_MAXIMO_2026 = 43772625
 
 export type EPS = (typeof EPS_COLOMBIA)[number]['value']
 export type FondoPension = (typeof FONDOS_PENSION)[number]['value']

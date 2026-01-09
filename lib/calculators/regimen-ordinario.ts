@@ -1,9 +1,12 @@
 /**
  * MOTOR DE CÁLCULO - RÉGIMEN ORDINARIO
- * ULE Colombia - 2025
+ * ULE Colombia - 2026
  *
  * Implementa la depuración de la renta según Art. 336 E.T.
  * y el cálculo del impuesto según tabla Art. 241 E.T.
+ *
+ * Referencias:
+ * - UVT 2026: Resolución DIAN 238 de noviembre 2025 ($52,374)
  */
 
 import {
@@ -39,11 +42,11 @@ const TABLA_RENTA_241 = [
  */
 export function calcularImpuestoOrdinario(
   datos: DatosEntradaSimulador,
-  año: number = 2025
+  año: number = 2026
 ): ResultadoRegimenOrdinario {
   const valores = getValoresVigentes(año)
   const UVT = valores.UVT
-  const deducciones2025 = valores.DEDUCCIONES || DEDUCCIONES[2025]
+  const deducciones2026 = valores.DEDUCCIONES || DEDUCCIONES[2026]
   const pasosCalculo: PasoCalculo[] = []
   let orden = 1
 
@@ -80,7 +83,7 @@ export function calcularImpuestoOrdinario(
   // Aproximadamente 16% del ingreso base cotización
   const limiteAportesObligatorios = uvtToCOP(2500, año)
   const ingresosNoConstitutivos = Math.min(
-    ingresosBrutos * deducciones2025.APORTE_OBLIGATORIO_PENSION,
+    ingresosBrutos * deducciones2026.APORTE_OBLIGATORIO_PENSION,
     limiteAportesObligatorios
   )
   pasosCalculo.push({
@@ -109,7 +112,7 @@ export function calcularImpuestoOrdinario(
     datos,
     baseParaDeducciones,
     UVT,
-    deducciones2025
+    deducciones2026
   )
 
   // Agregar pasos de deducciones
@@ -212,14 +215,14 @@ function calcularDeducciones(
   datos: DatosEntradaSimulador,
   baseCalculo: number,
   UVT: number,
-  deducciones2025: (typeof DEDUCCIONES)[2025]
+  deducciones2026: (typeof DEDUCCIONES)[2026]
 ): DesgloseDeducciones {
   // 1. Dependientes (ADICIONAL al límite del 40%)
   const cantidadDependientes = Math.min(
     datos.dependientes,
-    deducciones2025.MAX_DEPENDIENTES
+    deducciones2026.MAX_DEPENDIENTES
   )
-  const valorPorDependiente = deducciones2025.DEPENDIENTE_UVT * UVT
+  const valorPorDependiente = deducciones2026.DEPENDIENTE_UVT * UVT
   const totalDependientes = cantidadDependientes * valorPorDependiente
 
   const dependientes = {
@@ -231,44 +234,44 @@ function calcularDeducciones(
 
   // 2. 1% compras factura electrónica (ADICIONAL al límite del 40%)
   const comprasCalculado =
-    datos.comprasFacturaElectronica * deducciones2025.COMPRAS_FE_PORCENTAJE
-  const comprasLimite = deducciones2025.COMPRAS_FE_LIMITE_UVT * UVT
+    datos.comprasFacturaElectronica * deducciones2026.COMPRAS_FE_PORCENTAJE
+  const comprasLimite = deducciones2026.COMPRAS_FE_LIMITE_UVT * UVT
 
   const comprasFacturaElectronica = {
     valorCompras: datos.comprasFacturaElectronica,
-    porcentajeAplicado: deducciones2025.COMPRAS_FE_PORCENTAJE,
+    porcentajeAplicado: deducciones2026.COMPRAS_FE_PORCENTAJE,
     deduccionCalculada: comprasCalculado,
-    limiteUVT: deducciones2025.COMPRAS_FE_LIMITE_UVT,
+    limiteUVT: deducciones2026.COMPRAS_FE_LIMITE_UVT,
     deduccionFinal: Math.min(comprasCalculado, comprasLimite),
     esAdicionalAlLimite: true,
   }
 
   // 3. Medicina prepagada (sujeta al límite del 40%)
-  const medicinaLimite = deducciones2025.MEDICINA_PREPAGADA_ANUAL_UVT * UVT
+  const medicinaLimite = deducciones2026.MEDICINA_PREPAGADA_ANUAL_UVT * UVT
 
   const medicinaPrepagada = {
     valorAnual: datos.medicinaPrepagadaAnual,
-    limiteUVT: deducciones2025.MEDICINA_PREPAGADA_ANUAL_UVT,
+    limiteUVT: deducciones2026.MEDICINA_PREPAGADA_ANUAL_UVT,
     deduccionFinal: Math.min(datos.medicinaPrepagadaAnual, medicinaLimite),
   }
 
   // 4. Intereses vivienda (sujeta al límite del 40%)
-  const interesesLimite = deducciones2025.INTERESES_VIVIENDA_LIMITE_UVT * UVT
+  const interesesLimite = deducciones2026.INTERESES_VIVIENDA_LIMITE_UVT * UVT
 
   const interesesVivienda = {
     valorAnual: datos.interesesViviendaAnuales,
-    limiteUVT: deducciones2025.INTERESES_VIVIENDA_LIMITE_UVT,
+    limiteUVT: deducciones2026.INTERESES_VIVIENDA_LIMITE_UVT,
     deduccionFinal: Math.min(datos.interesesViviendaAnuales, interesesLimite),
   }
 
   // 5. Aportes voluntarios AFC y pensión (sujeta al límite del 40%)
   const aportesTotal = datos.aportesAFC + datos.aportesVoluntariosPension
-  const aportesLimite = deducciones2025.AFC_PENSION_LIMITE_UVT * UVT
+  const aportesLimite = deducciones2026.AFC_PENSION_LIMITE_UVT * UVT
 
   const aportesVoluntarios = {
     pension: datos.aportesVoluntariosPension,
     afc: datos.aportesAFC,
-    limiteUVT: deducciones2025.AFC_PENSION_LIMITE_UVT,
+    limiteUVT: deducciones2026.AFC_PENSION_LIMITE_UVT,
     deduccionFinal: Math.min(aportesTotal, aportesLimite),
   }
 
@@ -276,7 +279,7 @@ function calcularDeducciones(
   // Solo aplica si NO imputa costos y gastos (independientes que optan por el 25%)
   const aplicaRentaExenta =
     datos.aplicarRentaExenta25 && datos.costosGastos === 0
-  const rentaExentaLimite = deducciones2025.RENTA_EXENTA_25_LIMITE_UVT * UVT
+  const rentaExentaLimite = deducciones2026.RENTA_EXENTA_25_LIMITE_UVT * UVT
 
   // Base para renta exenta: después de otras deducciones sujetas al límite
   const baseRentaExenta =
@@ -294,7 +297,7 @@ function calcularDeducciones(
     baseCalculo: Math.max(baseRentaExenta, 0),
     porcentaje: 0.25,
     valorCalculado: rentaExentaCalculada,
-    limiteUVT: deducciones2025.RENTA_EXENTA_25_LIMITE_UVT,
+    limiteUVT: deducciones2026.RENTA_EXENTA_25_LIMITE_UVT,
     valorFinal: Math.min(rentaExentaCalculada, rentaExentaLimite),
   }
 
@@ -312,8 +315,8 @@ function calcularDeducciones(
 
   // Calcular límites
   const limiteGlobal40Porciento =
-    baseCalculo * deducciones2025.LIMITE_PORCENTUAL
-  const limiteGlobal1340UVT = deducciones2025.LIMITE_UVT * UVT
+    baseCalculo * deducciones2026.LIMITE_PORCENTUAL
+  const limiteGlobal1340UVT = deducciones2026.LIMITE_UVT * UVT
   const limiteAplicado = Math.min(limiteGlobal40Porciento, limiteGlobal1340UVT)
 
   // Aplicar límite a las deducciones sujetas
@@ -441,7 +444,7 @@ export function getTablaRenta241(UVT: number) {
 export function estaObligadoADeclararRenta(
   ingresosBrutos: number,
   patrimonioBruto: number,
-  año: number = 2025
+  año: number = 2026
 ): {
   obligado: boolean
   razones: string[]

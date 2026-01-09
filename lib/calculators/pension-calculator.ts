@@ -3,8 +3,12 @@
  * Cálculos basados en Ley 100 de 1993
  * Régimen de Prima Media (RPM) y Régimen de Ahorro Individual con Solidaridad (RAIS)
  *
- * VERSIÓN: 2.0.0 (Corregida - Auditoría Técnica)
- * ÚLTIMA ACTUALIZACIÓN: 2025-01-13
+ * VERSIÓN: 2.1.0 (Actualizada 2026)
+ * ÚLTIMA ACTUALIZACIÓN: 2026-01-09
+ *
+ * Referencias:
+ * - SMMLV 2026: $1,750,905
+ * - UVT 2026: $52,374
  */
 
 import { getConstantesActuales } from '@/lib/config/constantes-colombia'
