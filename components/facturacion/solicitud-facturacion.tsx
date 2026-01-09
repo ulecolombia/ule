@@ -314,7 +314,7 @@ export function SolicitudFacturacion({
                     </h4>
                     <p className="text-dark-100 text-sm">
                       Si eres persona natural con ingresos brutos anuales
-                      superiores a 3.500 UVT (~$165 millones en 2025) o realizas
+                      superiores a 3.500 UVT (~$183 millones en 2026) o realizas
                       ventas a empresas que lo requieran, debes emitir factura
                       electrónica.
                     </p>

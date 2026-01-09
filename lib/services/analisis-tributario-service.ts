@@ -145,7 +145,7 @@ Creado por Ley 2277 de 2022, reemplaza el anterior régimen SIMPLE.
 
 Características principales:
 - Aplica para personas naturales y jurídicas
-- Umbral de ingresos: hasta 80.000 UVT anuales ($3.765.200.000 en 2025)
+- Umbral de ingresos: hasta 80.000 UVT anuales ($4.189.920.000 en 2026)
 - Tarifa única progresiva según ingresos (entre 1.5% y 13.5%)
 - Sustituye impuesto de renta, ICA (en algunos casos), y otros
 - Declaración anual simplificada
@@ -191,12 +191,12 @@ Desventajas:
 - Costos contables más altos
 - Mayor tiempo invertido en cumplimiento
 
-**UMBRALES Y TARIFAS 2025:**
-- UVT 2025: $47.065
-- SMMLV 2025: $1.423.500
-- Umbral Régimen Simple: 80.000 UVT ($3.765.200.000)
+**UMBRALES Y TARIFAS 2026:**
+- UVT 2026: $52.374
+- SMMLV 2026: $1.750.905
+- Umbral Régimen Simple: 80.000 UVT ($4.189.920.000)
 
-Tarifas Régimen Simple (2025):
+Tarifas Régimen Simple (2026):
 - 0 a 1.400 UVT: 1,5%
 - 1.400 a 3.500 UVT: 3%
 - 3.500 a 7.000 UVT: 6%

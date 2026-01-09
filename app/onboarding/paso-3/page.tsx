@@ -1,7 +1,7 @@
 /**
  * ULE - ONBOARDING PASO 3: SEGURIDAD SOCIAL
  * Tercer paso del formulario multi-paso de onboarding
- * Validación dinámica según normativa colombiana (SMMLV 2025)
+ * Validación dinámica según normativa colombiana (SMMLV 2026)
  */
 
 'use client'
@@ -24,13 +24,13 @@ import {
   FONDOS_PENSION,
   ARL_COLOMBIA,
   NIVELES_RIESGO,
-  SMMLV_2025,
+  SMMLV_2026,
 } from '@/lib/data/entidades-seguridad-social'
 import { cn } from '@/lib/utils'
 
 // Schema dinámico que depende de ingresoMensualPromedio del paso 2
 const createPaso3Schema = (ingresoMensual: number) => {
-  const requiereAfiliacion = ingresoMensual > SMMLV_2025
+  const requiereAfiliacion = ingresoMensual > SMMLV_2026
 
   return z
     .object({
@@ -170,7 +170,7 @@ export default function OnboardingPaso3Page() {
   const showNivelRiesgo = watchArl && watchArl !== 'NO_AFILIADO'
   const showFechaAfiliacionArl = watchArl && watchArl !== 'NO_AFILIADO'
 
-  const showMandatoryWarning = ingresoMensual > SMMLV_2025
+  const showMandatoryWarning = ingresoMensual > SMMLV_2026
   const showHealthWarning = watchEntidadSalud === 'NO_AFILIADO'
   const showPensionWarning = watchEntidadPension === 'NO_AFILIADO'
   const showArlInfo = watchArl === 'NO_AFILIADO'
@@ -261,7 +261,7 @@ export default function OnboardingPaso3Page() {
                       style: 'currency',
                       currency: 'COP',
                       minimumFractionDigits: 0,
-                    }).format(SMMLV_2025)}
+                    }).format(SMMLV_2026)}
                     ). La afiliación a salud y pensión es obligatoria.
                   </>
                 }

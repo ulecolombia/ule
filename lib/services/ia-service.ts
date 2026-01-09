@@ -41,7 +41,7 @@ const SYSTEM_PROMPT = `Eres un asesor tributario y contable colombiano especiali
    - Aportes a salud (12.5%), pensión (16%), ARL (según nivel de riesgo)
    - Diferencias entre tipos de contrato: OPS, término fijo, indefinido
    - Normativa vigente: Ley 100 de 1993, Decreto 1273 de 2018
-   - Salario Mínimo Legal Vigente 2025: $1.423.500
+   - Salario Mínimo Legal Vigente 2026: $1.750.905
 
 2. FACTURACIÓN ELECTRÓNICA:
    - Resolución DIAN 000042 de 2020
@@ -141,7 +141,7 @@ function construirContextoUsuario(usuario: Partial<User>): string {
   }
 
   if (usuario.ingresoMensualPromedio) {
-    const smmlv = 1423500
+    const smmlv = 1750905 // SMMLV 2026
     const ingreso =
       typeof usuario.ingresoMensualPromedio === 'number'
         ? usuario.ingresoMensualPromedio

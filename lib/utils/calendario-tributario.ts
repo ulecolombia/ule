@@ -4,7 +4,7 @@
  */
 
 /**
- * Calendario DIAN 2025 - Declaración de Renta Personas Naturales
+ * Calendario DIAN 2026 - Declaración de Renta Personas Naturales
  * Basado en los dos últimos dígitos del NIT/Cédula
  *
  * Distribución estimada (se actualiza anualmente por la DIAN):
@@ -23,7 +23,9 @@ interface FechaTributaria {
 /**
  * Calcula la próxima fecha de declaración de renta según la cédula
  */
-export function calcularProximaDeclaracionRenta(numeroDocumento: string): FechaTributaria | null {
+export function calcularProximaDeclaracionRenta(
+  numeroDocumento: string
+): FechaTributaria | null {
   if (!numeroDocumento) return null
 
   // Obtener los dos últimos dígitos
@@ -35,7 +37,7 @@ export function calcularProximaDeclaracionRenta(numeroDocumento: string): FechaT
   let mes: number
   let dia: number
 
-  // Calendario DIAN 2025 (estimado - se ajusta cuando DIAN publica oficial)
+  // Calendario DIAN 2026 (estimado - se ajusta cuando DIAN publica oficial)
   // Distribución entre Agosto (mes 7), Septiembre (mes 8), Octubre (mes 9)
 
   if (ultimosDosDigitos >= 1 && ultimosDosDigitos <= 10) {
@@ -59,7 +61,8 @@ export function calcularProximaDeclaracionRenta(numeroDocumento: string): FechaT
   } else if (ultimosDosDigitos >= 84 && ultimosDosDigitos <= 99) {
     mes = 9 // Octubre
     dia = 15 + Math.floor((ultimosDosDigitos - 84) / 3)
-  } else { // ultimosDosDigitos === 0 || 100
+  } else {
+    // ultimosDosDigitos === 0 || 100
     mes = 9 // Octubre
     dia = 21
   }

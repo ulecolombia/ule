@@ -71,7 +71,7 @@ export function CalculadoraRetencion() {
           Calculadora de Retención en la Fuente
         </h2>
         <p className="text-dark-100 mt-1 text-sm">
-          Calcula la retención según tabla UVT 2025 para personas naturales
+          Calcula la retención según tabla UVT 2026 para personas naturales
         </p>
       </div>
 
@@ -177,7 +177,7 @@ export function CalculadoraRetencion() {
                 <strong>{formatearMoneda(resultado.ingresoMensual)}</strong> al
                 mes, tu ingreso anual es{' '}
                 <strong>{formatearMoneda(resultado.ingresoAnual)}</strong>.
-                Según la tabla de retención 2025, te retendrán aproximadamente{' '}
+                Según la tabla de retención 2026, te retendrán aproximadamente{' '}
                 <strong>{formatearMoneda(resultado.retencion)}</strong> al año (
                 {formatearMoneda(resultado.retencion / 12)} al mes), con una
                 tarifa del{' '}
