@@ -2,16 +2,17 @@
  * ULE - AUTORIZACIÓN DE GESTIÓN DE INFORMACIÓN
  * Consentimiento previo, expreso e informado
  * Cumplimiento Ley 1581 de 2012
+ *
+ * UI/UX optimizado para móvil (Safari iOS)
  */
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/ui/logo'
-import { Button } from '@/components/ui/button'
 
 export default function AutorizacionPILAPage() {
   const router = useRouter()
@@ -19,8 +20,32 @@ export default function AutorizacionPILAPage() {
   const [acepta, setAcepta] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
 
   const nombreUsuario = session?.user?.name?.split(' ')[0] || 'Usuario'
+
+  // Verificar en la BD si ya tiene autorización (sincronizar con sesión)
+  useEffect(() => {
+    const verificarAutorizacion = async () => {
+      try {
+        const response = await fetch('/api/autorizacion-pila')
+        const data = await response.json()
+
+        if (data.completa) {
+          await updateSession({ autorizacionPILACompleta: true })
+          toast.info('Ya tienes autorización PILA registrada')
+          router.push('/dashboard')
+          return
+        }
+      } catch (error) {
+        console.error('Error verificando autorización:', error)
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    verificarAutorizacion()
+  }, [router, updateSession])
 
   const handleSubmit = async () => {
     if (!acepta) {
@@ -71,258 +96,311 @@ export default function AutorizacionPILAPage() {
     await signOut({ callbackUrl: '/' })
   }
 
-  return (
-    <div className="from-light-50 min-h-screen bg-gradient-to-br via-white to-primary/5">
-      <div className="container mx-auto max-w-2xl px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="mb-6 flex justify-center">
-            <Logo size="md" />
+  // Loading state con diseño mejorado
+  if (isChecking) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-white to-slate-50">
+        <div className="text-center">
+          <div className="relative mx-auto mb-5 h-12 w-12">
+            <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary"></div>
           </div>
-
-          <div className="mb-3">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <span className="material-symbols-outlined text-sm">
-                verified_user
-              </span>
-              Paso final
-            </span>
-          </div>
-
-          <h1 className="text-dark mb-2 text-2xl font-bold sm:text-3xl">
-            Autorización de Tratamiento de Datos
-          </h1>
-          <p className="text-dark-100 text-base">
-            {nombreUsuario}, necesitamos tu consentimiento para gestionar tu
-            información
+          <p className="text-sm font-medium text-slate-500">
+            Verificando autorización...
           </p>
         </div>
+      </div>
+    )
+  }
 
-        {/* Contenido de autorización */}
-        <div className="border-light-200 rounded-2xl border bg-white p-6 shadow-sm">
-          <div className="border-light-100 mb-6 flex items-center gap-3 border-b pb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <span className="material-symbols-outlined text-xl text-primary">
-                security
+  return (
+    <div className="flex min-h-[100dvh] flex-col bg-gradient-to-b from-white to-slate-50">
+      {/* Header fijo con safe area */}
+      <header className="sticky top-0 z-10 border-b border-slate-100 bg-white/80 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
+        <div className="mx-auto max-w-lg">
+          {/* Logo y progreso */}
+          <div className="mb-4 flex items-center justify-between">
+            <Logo size="sm" />
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-400">
+                Paso 3 de 3
               </span>
+              <div className="flex gap-1">
+                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
+                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
+                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-dark font-semibold">
-                Consentimiento Previo, Expreso e Informado
-              </h2>
-              <p className="text-dark-100 text-sm">
-                Ley 1581 de 2012 - Protección de Datos Personales
+          </div>
+
+          {/* Título */}
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
+              Autorización de Datos
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              {nombreUsuario}, necesitamos tu consentimiento
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Contenido scrolleable */}
+      <main className="flex-1 overflow-y-auto px-5 py-6">
+        <div className="mx-auto max-w-lg">
+          {/* Card de consentimiento */}
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Header de la card */}
+            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <span className="material-symbols-outlined text-[22px] text-primary">
+                  verified_user
+                </span>
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-slate-900">
+                  Consentimiento Informado
+                </h2>
+                <p className="text-xs text-slate-500">Ley 1581 de 2012</p>
+              </div>
+            </div>
+
+            {/* Contenido de autorización */}
+            <div className="px-5 py-5">
+              <p className="text-sm leading-relaxed text-slate-600">
+                Yo, en calidad de titular de los datos, de manera{' '}
+                <strong className="text-slate-900">
+                  libre, voluntaria, previa, expresa e informada
+                </strong>
+                , autorizo a{' '}
+                <strong className="text-slate-900">ULE COLOMBIA S.A.S.</strong>{' '}
+                para:
+              </p>
+
+              {/* Lista de permisos mejorada */}
+              <div className="mt-5 space-y-3">
+                {[
+                  {
+                    icon: 'payments',
+                    title: 'Gestionar',
+                    desc: 'La liquidación y pago de mis aportes al Sistema de Seguridad Social Integral.',
+                  },
+                  {
+                    icon: 'person_add',
+                    title: 'Crear y administrar',
+                    desc: 'Mi registro como aportante independiente ante operadores PILA.',
+                  },
+                  {
+                    icon: 'search',
+                    title: 'Consultar y almacenar',
+                    desc: 'Información de aportes, historial de pagos y certificados.',
+                  },
+                  {
+                    icon: 'share',
+                    title: 'Transferir',
+                    desc: 'Mis datos a operadores PILA y entidades del sistema de seguridad social.',
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 rounded-xl bg-slate-50 p-3.5"
+                  >
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                      <span className="material-symbols-outlined text-lg text-primary">
+                        {item.icon}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {item.title}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Declaración */}
+              <p className="mt-5 text-xs leading-relaxed text-slate-500">
+                Declaro que soy mayor de edad, que la información es verídica, y
+                conozco mis derechos como titular: acceso, actualización,
+                rectificación, supresión y revocación.
               </p>
             </div>
-          </div>
 
-          {/* Texto de autorización */}
-          <div className="prose prose-sm text-dark-100 max-w-none">
-            <p className="mb-4 leading-relaxed">
-              Yo, en calidad de titular de los datos, de manera{' '}
-              <strong className="text-dark">
-                libre, voluntaria, previa, expresa e informada
-              </strong>
-              , autorizo a{' '}
-              <strong className="text-dark">ULE COLOMBIA S.A.S.</strong> (NIT
-              901.903.414-4) para:
-            </p>
-
-            <div className="bg-light-50 mb-4 rounded-lg p-4">
-              <ul className="mb-0 space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined mt-0.5 text-base text-primary">
-                    check_circle
-                  </span>
-                  <span>
-                    <strong className="text-dark">Gestionar</strong> la
-                    liquidación y pago de mis aportes al Sistema de Seguridad
-                    Social Integral (salud, pensión y riesgos laborales) a
-                    través de operadores de información PILA autorizados.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined mt-0.5 text-base text-primary">
-                    check_circle
-                  </span>
-                  <span>
-                    <strong className="text-dark">Crear y administrar</strong>{' '}
-                    mi registro como aportante independiente ante las
-                    plataformas de operadores de información.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined mt-0.5 text-base text-primary">
-                    check_circle
-                  </span>
-                  <span>
-                    <strong className="text-dark">Consultar y almacenar</strong>{' '}
-                    información relacionada con mis aportes, historial de pagos,
-                    estados de cuenta y certificados de afiliación.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined mt-0.5 text-base text-primary">
-                    check_circle
-                  </span>
-                  <span>
-                    <strong className="text-dark">Transferir</strong> mis datos
-                    personales a operadores PILA, entidades del sistema de
-                    seguridad social, y proveedores tecnológicos necesarios para
-                    la prestación del servicio.
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            <p className="mb-4 text-sm leading-relaxed">
-              Declaro que soy mayor de edad, que la información proporcionada es
-              verídica, y que conozco mis derechos como titular de datos
-              personales: acceso, actualización, rectificación, supresión,
-              revocación y presentación de quejas ante la SIC.
-            </p>
-
-            <p className="mb-0 text-sm leading-relaxed">
-              Esta autorización podrá ser revocada en cualquier momento desde mi
-              perfil en la plataforma o mediante solicitud a través de los
-              canales de contacto disponibles en Ule.
-            </p>
-          </div>
-
-          {/* Checkbox de aceptación */}
-          <div className="border-light-100 mt-6 border-t pt-6">
-            <div
-              onClick={() => setAcepta(!acepta)}
-              className={`flex cursor-pointer items-start gap-4 rounded-xl border-2 p-4 transition-all ${
-                acepta
-                  ? 'border-primary/40 bg-primary/5'
-                  : 'border-light-200 hover:border-light-300'
-              }`}
-            >
-              <div
-                className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 transition-all ${
+            {/* Checkbox de aceptación - Touch target grande */}
+            <div className="border-t border-slate-100 px-5 py-5">
+              <button
+                type="button"
+                onClick={() => setAcepta(!acepta)}
+                className={`flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-all active:scale-[0.98] ${
                   acepta
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-light-300 bg-white'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-200 bg-white'
                 }`}
               >
-                {acepta && (
-                  <span className="material-symbols-outlined text-base">
-                    check
-                  </span>
-                )}
-              </div>
-              <span className="text-dark font-medium">
-                He leído, entiendo y acepto esta autorización de tratamiento de
-                datos personales
-              </span>
+                <div
+                  className={`mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border-2 transition-all ${
+                    acepta
+                      ? 'border-primary bg-primary'
+                      : 'border-slate-300 bg-white'
+                  }`}
+                >
+                  {acepta && (
+                    <span className="material-symbols-outlined text-lg font-bold text-white">
+                      check
+                    </span>
+                  )}
+                </div>
+                <span className="flex-1 text-sm font-medium leading-snug text-slate-700">
+                  He leído, entiendo y acepto esta autorización de tratamiento
+                  de datos personales
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* Links a documentos legales */}
-          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+          {/* Links legales - Touch targets grandes */}
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center sm:gap-6">
             <a
               href="/legal/politica-privacidad"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+              className="flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10"
             >
-              <span className="material-symbols-outlined text-base">
-                article
-              </span>
-              Política de Protección de Datos
+              <span className="material-symbols-outlined text-lg">article</span>
+              Política de Privacidad
             </a>
             <a
               href="/legal/terminos-condiciones"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+              className="flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10"
             >
-              <span className="material-symbols-outlined text-base">gavel</span>
+              <span className="material-symbols-outlined text-lg">gavel</span>
               Términos y Condiciones
             </a>
           </div>
         </div>
+      </main>
 
-        {/* Botones */}
-        <div className="mt-6 flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowCancelModal(true)}
-            disabled={isSubmitting}
-            className="flex-1"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!acepta || isSubmitting}
-            className={`flex-1 ${!acepta ? 'cursor-not-allowed opacity-50' : ''}`}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="material-symbols-outlined mr-2 animate-spin text-lg">
-                  sync
-                </span>
-                Procesando...
-              </>
-            ) : (
-              <>
-                Autorizar y Continuar
-                <span className="material-symbols-outlined ml-2 text-lg">
-                  arrow_forward
-                </span>
-              </>
-            )}
-          </Button>
+      {/* Footer sticky con safe area */}
+      <footer className="sticky bottom-0 border-t border-slate-200 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
+        <div className="mx-auto max-w-lg">
+          {/* Botones */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(true)}
+              disabled={isSubmitting}
+              className="flex h-[52px] flex-1 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!acepta || isSubmitting}
+              className={`flex h-[52px] flex-[1.5] items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] ${
+                acepta
+                  ? 'bg-primary hover:bg-primary/90'
+                  : 'cursor-not-allowed bg-slate-300'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-lg">
+                    progress_activity
+                  </span>
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  Autorizar
+                  <span className="material-symbols-outlined text-lg">
+                    arrow_forward
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Nota de seguridad */}
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+            <span className="material-symbols-outlined text-sm">lock</span>
+            Tu información está protegida y cifrada
+          </div>
         </div>
+      </footer>
 
-        {/* Nota de seguridad */}
-        <div className="text-dark-100 mt-6 flex items-center justify-center gap-2 text-xs">
-          <span className="material-symbols-outlined text-sm">encrypted</span>
-          Tu información está protegida y cifrada
-        </div>
-      </div>
-
-      {/* Modal de cancelación */}
+      {/* Modal Bottom Sheet */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl">
-            <div className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                <span className="material-symbols-outlined text-3xl text-amber-600">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center"
+          onClick={() => setShowCancelModal(false)}
+        >
+          <div
+            className="w-full max-w-md animate-[slideUp_0.3s_ease-out] rounded-t-3xl bg-white pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:rounded-2xl sm:pb-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle del bottom sheet */}
+            <div className="mb-4 flex justify-center sm:hidden">
+              <div className="h-1 w-10 rounded-full bg-slate-300"></div>
+            </div>
+
+            <div className="px-6 text-center">
+              {/* Icono */}
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+                <span className="material-symbols-outlined text-4xl text-amber-500">
                   warning
                 </span>
               </div>
-              <h3 className="text-dark mb-2 text-lg font-semibold">
+
+              {/* Contenido */}
+              <h3 className="text-lg font-bold text-slate-900">
                 ¿Cancelar autorización?
               </h3>
-              <p className="text-dark-100 mb-6 text-sm">
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
                 Sin esta autorización no podrás gestionar tu seguridad social
                 desde Ule. Podrás completar este paso más adelante.
               </p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
+
+              {/* Botones */}
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+                <button
+                  type="button"
                   onClick={() => setShowCancelModal(false)}
-                  className="flex-1"
+                  className="flex h-12 flex-1 items-center justify-center rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98]"
                 >
                   Volver
-                </Button>
-                <Button
-                  variant="outline"
+                </button>
+                <button
+                  type="button"
                   onClick={confirmCancel}
-                  className="border-error text-error hover:bg-error/10 flex-1"
+                  className="flex h-12 flex-1 items-center justify-center rounded-xl border-2 border-red-200 bg-red-50 text-sm font-semibold text-red-600 transition-all hover:bg-red-100 active:scale-[0.98]"
                 >
-                  Salir
-                </Button>
+                  Salir de Ule
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Keyframes para animación del bottom sheet */}
+      <style jsx>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }
