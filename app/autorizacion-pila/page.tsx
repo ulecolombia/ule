@@ -26,6 +26,16 @@ export default function AutorizacionPILAPage() {
     const verificarAutorizacion = async () => {
       try {
         const response = await fetch('/api/autorizacion-pila')
+
+        // Si no está autorizado (401), redirigir al login
+        if (response.status === 401) {
+          toast.error(
+            'Tu sesión ha expirado. Por favor inicia sesión nuevamente.'
+          )
+          router.push('/login')
+          return
+        }
+
         const data = await response.json()
         if (data.completa) {
           await updateSession({ autorizacionPILACompleta: true })
@@ -61,6 +71,15 @@ export default function AutorizacionPILAPage() {
           aceptaTodo: true,
         }),
       })
+
+      // Si no está autorizado, redirigir al login
+      if (response.status === 401) {
+        toast.error(
+          'Tu sesión ha expirado. Por favor inicia sesión nuevamente.'
+        )
+        router.push('/login')
+        return
+      }
 
       const result = await response.json()
       if (!response.ok) {
