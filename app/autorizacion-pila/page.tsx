@@ -2,8 +2,6 @@
  * ULE - AUTORIZACIÓN DE GESTIÓN DE INFORMACIÓN
  * Consentimiento previo, expreso e informado
  * Cumplimiento Ley 1581 de 2012
- *
- * UI/UX optimizado para móvil (Safari iOS)
  */
 
 'use client'
@@ -24,13 +22,11 @@ export default function AutorizacionPILAPage() {
 
   const nombreUsuario = session?.user?.name?.split(' ')[0] || 'Usuario'
 
-  // Verificar en la BD si ya tiene autorización (sincronizar con sesión)
   useEffect(() => {
     const verificarAutorizacion = async () => {
       try {
         const response = await fetch('/api/autorizacion-pila')
         const data = await response.json()
-
         if (data.completa) {
           await updateSession({ autorizacionPILACompleta: true })
           toast.info('Ya tienes autorización PILA registrada')
@@ -43,7 +39,6 @@ export default function AutorizacionPILAPage() {
         setIsChecking(false)
       }
     }
-
     verificarAutorizacion()
   }, [router, updateSession])
 
@@ -55,7 +50,6 @@ export default function AutorizacionPILAPage() {
 
     try {
       setIsSubmitting(true)
-
       const response = await fetch('/api/autorizacion-pila', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,338 +63,249 @@ export default function AutorizacionPILAPage() {
       })
 
       const result = await response.json()
-
       if (!response.ok) {
         throw new Error(result.error || 'Error al registrar autorización')
       }
 
-      toast.success('¡Autorización registrada correctamente!')
+      toast.success('¡Autorización registrada!')
       await updateSession({ autorizacionPILACompleta: true })
-
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
+      setTimeout(() => router.push('/dashboard'), 800)
     } catch (error) {
       console.error('Error:', error)
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Error al registrar autorización'
-      )
+      toast.error(error instanceof Error ? error.message : 'Error al registrar')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const confirmCancel = async () => {
-    await signOut({ callbackUrl: '/' })
-  }
-
-  // Loading state con diseño mejorado
   if (isChecking) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-white to-slate-50">
-        <div className="text-center">
-          <div className="relative mx-auto mb-5 h-12 w-12">
-            <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary"></div>
-          </div>
-          <p className="text-sm font-medium text-slate-500">
-            Verificando autorización...
-          </p>
-        </div>
+      <div className="flex min-h-[100dvh] items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-gradient-to-b from-white to-slate-50">
-      {/* Header fijo con safe area */}
-      <header className="sticky top-0 z-10 border-b border-slate-100 bg-white/80 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
-        <div className="mx-auto max-w-lg">
-          {/* Logo y progreso */}
-          <div className="mb-4 flex items-center justify-between">
-            <Logo size="sm" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-slate-400">
-                Paso 3 de 3
-              </span>
-              <div className="flex gap-1">
-                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
-                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
-                <div className="h-1.5 w-6 rounded-full bg-primary"></div>
-              </div>
-            </div>
+    <div className="flex min-h-[100dvh] flex-col bg-white">
+      {/* Header compacto */}
+      <header className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <Logo size="sm" />
+        <div className="flex items-center gap-1.5">
+          <div className="flex gap-0.5">
+            <div className="h-1 w-4 rounded-full bg-primary" />
+            <div className="h-1 w-4 rounded-full bg-primary" />
+            <div className="h-1 w-4 rounded-full bg-primary" />
           </div>
-
-          {/* Título */}
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
-              Autorización de Datos
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {nombreUsuario}, necesitamos tu consentimiento
-            </p>
-          </div>
+          <span className="text-[11px] text-gray-400">3/3</span>
         </div>
       </header>
 
-      {/* Contenido scrolleable */}
-      <main className="flex-1 overflow-y-auto px-5 py-6">
-        <div className="mx-auto max-w-lg">
-          {/* Card de consentimiento */}
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {/* Header de la card */}
-            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <span className="material-symbols-outlined text-[22px] text-primary">
+      {/* Contenido */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-md px-4 py-5">
+          {/* Título */}
+          <div className="mb-5">
+            <h1 className="text-lg font-semibold text-gray-900">
+              Autorización de datos
+            </h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {nombreUsuario}, autoriza el tratamiento de tu información
+            </p>
+          </div>
+
+          {/* Card principal */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50/50">
+            {/* Header card */}
+            <div className="flex items-center gap-2.5 rounded-t-xl border-b border-gray-200 bg-white px-4 py-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <span className="material-symbols-outlined text-base text-primary">
                   verified_user
                 </span>
               </div>
-              <div className="min-w-0">
-                <h2 className="font-semibold text-slate-900">
+              <div>
+                <p className="text-sm font-medium text-gray-900">
                   Consentimiento Informado
-                </h2>
-                <p className="text-xs text-slate-500">Ley 1581 de 2012</p>
+                </p>
+                <p className="text-[11px] text-gray-400">Ley 1581 de 2012</p>
               </div>
             </div>
 
-            {/* Contenido de autorización */}
-            <div className="px-5 py-5">
-              <p className="text-sm leading-relaxed text-slate-600">
-                Yo, en calidad de titular de los datos, de manera{' '}
-                <strong className="text-slate-900">
-                  libre, voluntaria, previa, expresa e informada
-                </strong>
-                , autorizo a{' '}
-                <strong className="text-slate-900">ULE COLOMBIA S.A.S.</strong>{' '}
-                para:
+            {/* Contenido legal */}
+            <div className="px-4 py-4">
+              <p className="text-[13px] leading-relaxed text-gray-600">
+                Autorizo a{' '}
+                <span className="font-medium text-gray-800">
+                  ULE COLOMBIA S.A.S.
+                </span>{' '}
+                de manera libre, voluntaria y expresa para:
               </p>
 
-              {/* Lista de permisos mejorada */}
-              <div className="mt-5 space-y-3">
+              {/* Lista compacta */}
+              <ul className="mt-3 space-y-2">
                 {[
                   {
                     icon: 'payments',
-                    title: 'Gestionar',
-                    desc: 'La liquidación y pago de mis aportes al Sistema de Seguridad Social Integral.',
+                    text: 'Gestionar liquidación y pago de aportes PILA',
                   },
                   {
                     icon: 'person_add',
-                    title: 'Crear y administrar',
-                    desc: 'Mi registro como aportante independiente ante operadores PILA.',
+                    text: 'Crear mi registro como aportante independiente',
                   },
                   {
                     icon: 'search',
-                    title: 'Consultar y almacenar',
-                    desc: 'Información de aportes, historial de pagos y certificados.',
+                    text: 'Consultar historial de pagos y certificados',
                   },
                   {
                     icon: 'share',
-                    title: 'Transferir',
-                    desc: 'Mis datos a operadores PILA y entidades del sistema de seguridad social.',
+                    text: 'Transferir datos a operadores autorizados',
                   },
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex gap-3 rounded-xl bg-slate-50 p-3.5"
-                  >
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
-                      <span className="material-symbols-outlined text-lg text-primary">
-                        {item.icon}
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {item.title}
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="material-symbols-outlined mt-0.5 text-[15px] text-primary">
+                      {item.icon}
+                    </span>
+                    <span className="text-[13px] text-gray-600">
+                      {item.text}
+                    </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
-              {/* Declaración */}
-              <p className="mt-5 text-xs leading-relaxed text-slate-500">
-                Declaro que soy mayor de edad, que la información es verídica, y
-                conozco mis derechos como titular: acceso, actualización,
-                rectificación, supresión y revocación.
+              {/* Nota legal */}
+              <p className="mt-4 text-[11px] leading-relaxed text-gray-400">
+                Declaro ser mayor de edad y conocer mis derechos: acceso,
+                actualización, rectificación, supresión y revocación ante la
+                SIC.
               </p>
             </div>
 
-            {/* Checkbox de aceptación - Touch target grande */}
-            <div className="border-t border-slate-100 px-5 py-5">
+            {/* Checkbox */}
+            <div className="rounded-b-xl border-t border-gray-200 bg-white px-4 py-3">
               <button
                 type="button"
                 onClick={() => setAcepta(!acepta)}
-                className={`flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-all active:scale-[0.98] ${
+                className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all ${
                   acepta
                     ? 'border-primary bg-primary/5'
-                    : 'border-slate-200 bg-white'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
                 <div
-                  className={`mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border-2 transition-all ${
-                    acepta
-                      ? 'border-primary bg-primary'
-                      : 'border-slate-300 bg-white'
+                  className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all ${
+                    acepta ? 'border-primary bg-primary' : 'border-gray-300'
                   }`}
                 >
                   {acepta && (
-                    <span className="material-symbols-outlined text-lg font-bold text-white">
+                    <span className="material-symbols-outlined text-sm text-white">
                       check
                     </span>
                   )}
                 </div>
-                <span className="flex-1 text-sm font-medium leading-snug text-slate-700">
-                  He leído, entiendo y acepto esta autorización de tratamiento
-                  de datos personales
+                <span className="text-[13px] font-medium text-gray-700">
+                  Acepto la autorización de tratamiento de datos
                 </span>
               </button>
             </div>
           </div>
 
-          {/* Links legales - Touch targets grandes */}
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center sm:gap-6">
+          {/* Links legales */}
+          <div className="mt-4 flex justify-center gap-4 text-[12px]">
             <a
               href="/legal/politica-privacidad"
               target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10"
+              className="text-gray-400 underline-offset-2 hover:underline"
             >
-              <span className="material-symbols-outlined text-lg">article</span>
-              Política de Privacidad
+              Política de privacidad
             </a>
+            <span className="text-gray-300">•</span>
             <a
               href="/legal/terminos-condiciones"
               target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10"
+              className="text-gray-400 underline-offset-2 hover:underline"
             >
-              <span className="material-symbols-outlined text-lg">gavel</span>
-              Términos y Condiciones
+              Términos
             </a>
           </div>
         </div>
       </main>
 
-      {/* Footer sticky con safe area */}
-      <footer className="sticky bottom-0 border-t border-slate-200 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
-        <div className="mx-auto max-w-lg">
-          {/* Botones */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setShowCancelModal(true)}
-              disabled={isSubmitting}
-              className="flex h-[52px] flex-1 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!acepta || isSubmitting}
-              className={`flex h-[52px] flex-[1.5] items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] ${
-                acepta
-                  ? 'bg-primary hover:bg-primary/90'
-                  : 'cursor-not-allowed bg-slate-300'
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin text-lg">
-                    progress_activity
-                  </span>
-                  Procesando...
-                </>
-              ) : (
-                <>
-                  Autorizar
-                  <span className="material-symbols-outlined text-lg">
-                    arrow_forward
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Nota de seguridad */}
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-            <span className="material-symbols-outlined text-sm">lock</span>
-            Tu información está protegida y cifrada
-          </div>
+      {/* Footer con botones */}
+      <footer className="border-t border-gray-100 bg-white px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
+        <div className="mx-auto flex max-w-md gap-3">
+          <button
+            type="button"
+            onClick={() => setShowCancelModal(true)}
+            disabled={isSubmitting}
+            className="h-11 flex-1 rounded-lg border border-gray-200 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!acepta || isSubmitting}
+            className={`flex h-11 flex-[1.4] items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium text-white transition-all ${
+              acepta ? 'bg-primary hover:bg-primary/90' : 'bg-gray-300'
+            }`}
+          >
+            {isSubmitting ? (
+              <span className="material-symbols-outlined animate-spin text-base">
+                progress_activity
+              </span>
+            ) : (
+              <>
+                Autorizar
+                <span className="material-symbols-outlined text-base">
+                  arrow_forward
+                </span>
+              </>
+            )}
+          </button>
         </div>
+        <p className="mt-2 text-center text-[10px] text-gray-300">
+          Información protegida y cifrada
+        </p>
       </footer>
 
-      {/* Modal Bottom Sheet */}
+      {/* Modal */}
       {showCancelModal && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowCancelModal(false)}
         >
           <div
-            className="w-full max-w-md animate-[slideUp_0.3s_ease-out] rounded-t-3xl bg-white pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:rounded-2xl sm:pb-6"
+            className="w-full max-w-xs rounded-2xl bg-white p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Handle del bottom sheet */}
-            <div className="mb-4 flex justify-center sm:hidden">
-              <div className="h-1 w-10 rounded-full bg-slate-300"></div>
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+              <span className="material-symbols-outlined text-2xl text-amber-600">
+                warning
+              </span>
             </div>
-
-            <div className="px-6 text-center">
-              {/* Icono */}
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
-                <span className="material-symbols-outlined text-4xl text-amber-500">
-                  warning
-                </span>
-              </div>
-
-              {/* Contenido */}
-              <h3 className="text-lg font-bold text-slate-900">
-                ¿Cancelar autorización?
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                Sin esta autorización no podrás gestionar tu seguridad social
-                desde Ule. Podrás completar este paso más adelante.
-              </p>
-
-              {/* Botones */}
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => setShowCancelModal(false)}
-                  className="flex h-12 flex-1 items-center justify-center rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98]"
-                >
-                  Volver
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmCancel}
-                  className="flex h-12 flex-1 items-center justify-center rounded-xl border-2 border-red-200 bg-red-50 text-sm font-semibold text-red-600 transition-all hover:bg-red-100 active:scale-[0.98]"
-                >
-                  Salir de Ule
-                </button>
-              </div>
+            <h3 className="text-base font-semibold text-gray-900">
+              ¿Cancelar autorización?
+            </h3>
+            <p className="mt-1 text-[13px] text-gray-500">
+              No podrás gestionar tu seguridad social sin esta autorización.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="h-10 flex-1 rounded-lg border border-gray-200 text-[13px] font-medium text-gray-600"
+              >
+                Volver
+              </button>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="h-10 flex-1 rounded-lg bg-red-50 text-[13px] font-medium text-red-600"
+              >
+                Salir
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Keyframes para animación del bottom sheet */}
-      <style jsx>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   )
 }
